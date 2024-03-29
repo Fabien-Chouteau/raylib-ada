@@ -2,7 +2,5 @@
 /bin/
 /alire/
 /config/
-/obj/
 /lib/
-/alire/
-/config/
+/build-raylib/
