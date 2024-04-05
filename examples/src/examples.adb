@@ -2,7 +2,6 @@ with Raylib;
 with Resources;
 with Examples_Config;
 with Interfaces.C; use Interfaces.C;
-with Interfaces.C.Strings; use Interfaces.C.Strings;
 
 procedure Examples is
 
@@ -20,39 +19,31 @@ procedure Examples is
    Collision : Raylib.RayCollision :=
      (False, 0.0, (0.0, 0.0, 0.0), (0.0, 0.0, 0.0));
 
-   Str1 : constant chars_ptr :=
-     New_String ("Try clicking on the box with your mouse!");
-   Str2 : constant chars_ptr :=
-     New_String ("Right click mouse to toggle camera controls");
-   Selected_Str : constant chars_ptr := New_String ("BOX SELECTED");
-
    Model : Raylib.Model;
    Texture : Raylib.Texture;
 begin
 
-   Raylib.InitWindow (screenWidth, screenHeight,
-                      New_String ("Example window"));
+   Raylib.InitWindow (screenWidth, screenHeight, "Example window");
 
-   Model := Raylib.LoadModel (New_String (Resource_Path & "/castle.obj"));
-   Texture :=
-     Raylib.LoadTexture (New_String (Resource_Path & "/castle_diffuse.png"));
-   Model.materials.maps.texture_f := Texture;
+   Model := Raylib.LoadModel (Resource_Path & "/castle.obj");
+   Texture := Raylib.LoadTexture (Resource_Path & "/castle_diffuse.png");
+   Model.materials.maps (Raylib.MATERIAL_MAP_ALBEDO).texture_f := Texture;
 
    Cam.position := (10.0, 10.0, 10.0);
    Cam.target := (0.0, 0.0, 0.0);
    Cam.up := (0.0, 1.0, 0.0);
    Cam.fovy := 45.0;
-   Cam.projection := int (Raylib.CAMERA_PERSPECTIVE);
+   Cam.projection := Raylib.CAMERA_PERSPECTIVE;
 
    Raylib.DisableCursor;
    Raylib.SetTargetFPS (60);
    while not Raylib.WindowShouldClose loop
 
       if Raylib.IsCursorHidden then
-         Raylib.UpdateCamera (Cam'Access, int (Raylib.CAMERA_FIRST_PERSON));
+         Raylib.UpdateCamera (Cam'Access, Raylib.CAMERA_FIRST_PERSON);
       end if;
 
-      if Raylib.IsMouseButtonPressed (int (Raylib.MOUSE_BUTTON_RIGHT)) then
+      if Raylib.IsMouseButtonPressed (Raylib.MOUSE_BUTTON_RIGHT) then
          if Raylib.IsCursorHidden then
             Raylib.EnableCursor;
          else
@@ -60,7 +51,7 @@ begin
          end if;
       end if;
 
-      if Raylib.IsMouseButtonPressed (int (Raylib.MOUSE_BUTTON_LEFT)) then
+      if Raylib.IsMouseButtonPressed (Raylib.MOUSE_BUTTON_LEFT) then
          if not Collision.hit then
             Ray := Raylib.GetScreenToWorldRay (Raylib.GetMousePosition, Cam);
             Collision := Raylib.GetRayCollisionBox
@@ -76,7 +67,7 @@ begin
          end if;
       end if;
 
-      if Raylib.IsKeyDown (int (Raylib.KEY_Z)) then
+      if Raylib.IsKeyDown (Raylib.KEY_Z) then
          Cam.target := (0.0, 0.0, 0.0);
       end if;
 
@@ -114,17 +105,19 @@ begin
 
       Raylib.EndMode3D;
 
-      Raylib.DrawText (Str1, 240, 10, 20, Raylib.DARKGRAY);
+      Raylib.DrawText ("Try clicking on the box with your mouse!",
+                       240, 10, 20, Raylib.DARKGRAY);
 
       if Collision.hit then
          Raylib.DrawText
-           (Selected_Str,
-            (screenWidth - Raylib.MeasureText (Selected_Str, 30)) / 2,
+           ("BOX SELECTED",
+            (screenWidth - Raylib.MeasureText ("BOX SELECTED", 30)) / 2,
             int (screenHeight * 0.1), 30,
             Raylib.GREEN);
       end if;
 
-      Raylib.DrawText (Str2, 10, 430, 10, Raylib.GRAY);
+      Raylib.DrawText ("Right click mouse to toggle camera controls",
+                       10, 430, 10, Raylib.GRAY);
 
       Raylib.DrawFPS (10, 10);
       Raylib.EndDrawing;

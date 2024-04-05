@@ -9,270 +9,6 @@ is
    type Float4 is array (0 .. 3) of Interfaces.C.C_float;
    type Int4 is array (0 .. 3) of Interfaces.C.int;
    subtype String32 is String (1 .. 32);
-   type Vector2 is record
-      x : Interfaces.C.C_float; -- Vector x component
-      y : Interfaces.C.C_float; -- Vector y component
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type Vector3 is record
-      x : Interfaces.C.C_float; -- Vector x component
-      y : Interfaces.C.C_float; -- Vector y component
-      z : Interfaces.C.C_float; -- Vector z component
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type Vector4 is record
-      x : Interfaces.C.C_float; -- Vector x component
-      y : Interfaces.C.C_float; -- Vector y component
-      z : Interfaces.C.C_float; -- Vector z component
-      w : Interfaces.C.C_float; -- Vector w component
-   end record
-      with Convention => C_Pass_By_Copy;
-   subtype Quaternion is Vector4;
-
-   type Matrix is record
-      m0 : Interfaces.C.C_float; -- Matrix first row (4 components)
-      m4 : Interfaces.C.C_float; -- Matrix first row (4 components)
-      m8 : Interfaces.C.C_float; -- Matrix first row (4 components)
-      m12 : Interfaces.C.C_float; -- Matrix first row (4 components)
-      m1 : Interfaces.C.C_float; -- Matrix second row (4 components)
-      m5 : Interfaces.C.C_float; -- Matrix second row (4 components)
-      m9 : Interfaces.C.C_float; -- Matrix second row (4 components)
-      m13 : Interfaces.C.C_float; -- Matrix second row (4 components)
-      m2 : Interfaces.C.C_float; -- Matrix third row (4 components)
-      m6 : Interfaces.C.C_float; -- Matrix third row (4 components)
-      m10 : Interfaces.C.C_float; -- Matrix third row (4 components)
-      m14 : Interfaces.C.C_float; -- Matrix third row (4 components)
-      m3 : Interfaces.C.C_float; -- Matrix fourth row (4 components)
-      m7 : Interfaces.C.C_float; -- Matrix fourth row (4 components)
-      m11 : Interfaces.C.C_float; -- Matrix fourth row (4 components)
-      m15 : Interfaces.C.C_float; -- Matrix fourth row (4 components)
-   end record
-      with Convention => C_Pass_By_Copy;
-   type Matrix4 is array (0 .. 3) of Matrix;
-   type Matrix2 is array (0 .. 1) of Matrix;
-
-   type Color is record
-      r : Interfaces.C.unsigned_char; -- Color red value
-      g : Interfaces.C.unsigned_char; -- Color green value
-      b : Interfaces.C.unsigned_char; -- Color blue value
-      a : Interfaces.C.unsigned_char; -- Color alpha value
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type Rectangle is record
-      x : Interfaces.C.C_float; -- Rectangle top-left corner position x
-      y : Interfaces.C.C_float; -- Rectangle top-left corner position y
-      width : Interfaces.C.C_float; -- Rectangle width
-      height : Interfaces.C.C_float; -- Rectangle height
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type Image is record
-      data : System.Address; -- Image raw data
-      width : Interfaces.C.int; -- Image base width
-      height : Interfaces.C.int; -- Image base height
-      mipmaps : Interfaces.C.int; -- Mipmap levels, 1 by default
-      format : Interfaces.C.int; -- Data format (PixelFormat type)
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type Texture is record
-      id : Interfaces.C.unsigned; -- OpenGL texture id
-      width : Interfaces.C.int; -- Texture base width
-      height : Interfaces.C.int; -- Texture base height
-      mipmaps : Interfaces.C.int; -- Mipmap levels, 1 by default
-      format : Interfaces.C.int; -- Data format (PixelFormat type)
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type RenderTexture is record
-      id : Interfaces.C.unsigned; -- OpenGL framebuffer object id
-      texture_f : Texture; -- Color buffer attachment texture
-      depth : Texture; -- Depth buffer attachment texture
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type NPatchInfo is record
-      source : Rectangle; -- Texture source rectangle
-      left : Interfaces.C.int; -- Left border offset
-      top : Interfaces.C.int; -- Top border offset
-      right : Interfaces.C.int; -- Right border offset
-      bottom : Interfaces.C.int; -- Bottom border offset
-      layout : Interfaces.C.int; -- Layout of the n-patch: 3x3, 1x3 or 3x1
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type GlyphInfo is record
-      value : Interfaces.C.int; -- Character value (Unicode)
-      offsetX : Interfaces.C.int; -- Character offset X when drawing
-      offsetY : Interfaces.C.int; -- Character offset Y when drawing
-      advanceX : Interfaces.C.int; -- Character advance position X
-      image_f : Image; -- Character image data
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type Font is record
-      baseSize : Interfaces.C.int; -- Base size (default chars height)
-      glyphCount : Interfaces.C.int; -- Number of glyph characters
-      glyphPadding : Interfaces.C.int; -- Padding around the glyph characters
-      texture_f : Texture; -- Texture atlas containing the glyphs
-      recs : access Rectangle; -- Rectangles in texture for the glyphs
-      glyphs : access GlyphInfo; -- Glyphs info data
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type Camera3D is record
-      position : Vector3; -- Camera position
-      target : Vector3; -- Camera target it looks-at
-      up : Vector3; -- Camera up vector (rotation over its axis)
-      fovy : Interfaces.C.C_float; -- Camera field-of-view aperture in Y (degrees) in perspective, used as near plane width in orthographic
-      projection : Interfaces.C.int; -- Camera projection: CAMERA_PERSPECTIVE or CAMERA_ORTHOGRAPHIC
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type Camera2D is record
-      offset : Vector2; -- Camera offset (displacement from target)
-      target : Vector2; -- Camera target (rotation and zoom origin)
-      rotation : Interfaces.C.C_float; -- Camera rotation in degrees
-      zoom : Interfaces.C.C_float; -- Camera zoom (scaling), should be 1.0f by default
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type Mesh is record
-      vertexCount : Interfaces.C.int; -- Number of vertices stored in arrays
-      triangleCount : Interfaces.C.int; -- Number of triangles stored (indexed or not)
-      vertices : access Interfaces.C.C_float; -- Vertex position (XYZ - 3 components per vertex) (shader-location = 0)
-      texcoords : access Interfaces.C.C_float; -- Vertex texture coordinates (UV - 2 components per vertex) (shader-location = 1)
-      texcoords2 : access Interfaces.C.C_float; -- Vertex texture second coordinates (UV - 2 components per vertex) (shader-location = 5)
-      normals : access Interfaces.C.C_float; -- Vertex normals (XYZ - 3 components per vertex) (shader-location = 2)
-      tangents : access Interfaces.C.C_float; -- Vertex tangents (XYZW - 4 components per vertex) (shader-location = 4)
-      colors : access Interfaces.C.char; -- Vertex colors (RGBA - 4 components per vertex) (shader-location = 3)
-      indices : access Interfaces.C.short; -- Vertex indices (in case vertex data comes indexed)
-      animVertices : access Interfaces.C.C_float; -- Animated vertex positions (after bones transformations)
-      animNormals : access Interfaces.C.C_float; -- Animated normals (after bones transformations)
-      boneIds : access Interfaces.C.char; -- Vertex bone ids, max 255 bone ids, up to 4 bones influence by vertex (skinning)
-      boneWeights : access Interfaces.C.C_float; -- Vertex bone weight, up to 4 bones influence by vertex (skinning)
-      vaoId : Interfaces.C.unsigned; -- OpenGL Vertex Array Object id
-      vboId : access Interfaces.C.unsigned; -- OpenGL Vertex Buffer Objects id (default vertex data)
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type Shader is record
-      id : Interfaces.C.unsigned; -- Shader program id
-      locs : access Interfaces.C.int; -- Shader locations array (RL_MAX_SHADER_LOCATIONS)
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type MaterialMap is record
-      texture_f : Texture; -- Material map texture
-      color_f : Color; -- Material map color
-      value : Interfaces.C.C_float; -- Material map value
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type Material is record
-      shader_f : Shader; -- Material shader
-      maps : access MaterialMap; -- Material maps array (MAX_MATERIAL_MAPS)
-      params : Float4; -- Material generic parameters (if required)
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type Transform is record
-      translation : Vector3; -- Translation
-      rotation : Quaternion; -- Rotation
-      scale : Vector3; -- Scale
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type BoneInfo is record
-      name : String32; -- Bone name
-      parent : Interfaces.C.int; -- Bone parent
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type Model is record
-      transform_f : Matrix; -- Local transform matrix
-      meshCount : Interfaces.C.int; -- Number of meshes
-      materialCount : Interfaces.C.int; -- Number of materials
-      meshes : access Mesh; -- Meshes array
-      materials : access Material; -- Materials array
-      meshMaterial : access Interfaces.C.int; -- Mesh material number
-      boneCount : Interfaces.C.int; -- Number of bones
-      bones : access BoneInfo; -- Bones information (skeleton)
-      bindPose : access Transform; -- Bones base transformation (pose)
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type Ray is record
-      position : Vector3; -- Ray position (origin)
-      direction : Vector3; -- Ray direction
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type RayCollision is record
-      hit : Interfaces.C.C_bool; -- Did the ray hit something?
-      distance : Interfaces.C.C_float; -- Distance to the nearest hit
-      point : Vector3; -- Point of the nearest hit
-      normal : Vector3; -- Surface normal of hit
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type BoundingBox is record
-      min : Vector3; -- Minimum vertex box-corner
-      max : Vector3; -- Maximum vertex box-corner
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type Wave is record
-      frameCount : Interfaces.C.unsigned; -- Total number of frames (considering channels)
-      sampleRate : Interfaces.C.unsigned; -- Frequency (samples per second)
-      sampleSize : Interfaces.C.unsigned; -- Bit depth (bits per sample): 8, 16, 32 (24 not supported)
-      channels : Interfaces.C.unsigned; -- Number of channels (1-mono, 2-stereo, ...)
-      data : System.Address; -- Buffer data pointer
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type VrDeviceInfo is record
-      hResolution : Interfaces.C.int; -- Horizontal resolution in pixels
-      vResolution : Interfaces.C.int; -- Vertical resolution in pixels
-      hScreenSize : Interfaces.C.C_float; -- Horizontal size in meters
-      vScreenSize : Interfaces.C.C_float; -- Vertical size in meters
-      eyeToScreenDistance : Interfaces.C.C_float; -- Distance between eye and display in meters
-      lensSeparationDistance : Interfaces.C.C_float; -- Lens separation distance in meters
-      interpupillaryDistance : Interfaces.C.C_float; -- IPD (distance between pupils) in meters
-      lensDistortionValues : Float4; -- Lens distortion constant parameters
-      chromaAbCorrection : Float4; -- Chromatic aberration correction parameters
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type VrStereoConfig is record
-      projection : Matrix2; -- VR projection matrices (per eye)
-      viewOffset : Matrix2; -- VR view offset matrices (per eye)
-      leftLensCenter : Float2; -- VR left lens center
-      rightLensCenter : Float2; -- VR right lens center
-      leftScreenCenter : Float2; -- VR left screen center
-      rightScreenCenter : Float2; -- VR right screen center
-      scale : Float2; -- VR distortion scale
-      scaleIn : Float2; -- VR distortion scale in
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type AutomationEvent is record
-      frame : Interfaces.C.unsigned; -- Event frame
-      type_K : Interfaces.C.unsigned; -- Event type (AutomationEventType)
-      params : Int4; -- Event parameters (if required)
-   end record
-      with Convention => C_Pass_By_Copy;
-
-   type AutomationEventList is record
-      capacity : Interfaces.C.unsigned; -- Events max entries (MAX_AUTOMATION_EVENTS)
-      count : Interfaces.C.unsigned; -- Events entries count
-      events : access AutomationEvent; -- Events entries
-   end record
-      with Convention => C_Pass_By_Copy;
-
    type ConfigFlags is new Interfaces.C.unsigned;
    --  System/Window config flags
 
@@ -293,19 +29,31 @@ is
    FLAG_MSAA_4X_HINT : constant ConfigFlags := 32; -- Set to try enabling MSAA 4X
    FLAG_INTERLACED_HINT : constant ConfigFlags := 65536; -- Set to try enabling interlaced video format (for V3D)
 
-   type TraceLogLevel is new Interfaces.C.unsigned;
-   --  Trace log level
+   type TraceLogLevel is
+     (
+        LOG_ALL -- Display all logs
+       ,LOG_TRACE -- Trace logging, intended for internal use only
+       ,LOG_DEBUG -- Debug logging, used for internal debugging, it should be disabled on release builds
+       ,LOG_INFO -- Info logging, used for program execution info
+       ,LOG_WARNING -- Warning logging, used on recoverable failures
+       ,LOG_ERROR -- Error logging, used on unrecoverable failures
+       ,LOG_FATAL -- Fatal logging, used to abort program: exit(EXIT_FAILURE)
+       ,LOG_NONE -- Disable logging
+     )
+     with Convention => C;
+   for TraceLogLevel use
+     (
+        LOG_ALL => 0
+       ,LOG_TRACE => 1
+       ,LOG_DEBUG => 2
+       ,LOG_INFO => 3
+       ,LOG_WARNING => 4
+       ,LOG_ERROR => 5
+       ,LOG_FATAL => 6
+       ,LOG_NONE => 7
+     );
 
-   LOG_ALL : constant TraceLogLevel := 0; -- Display all logs
-   LOG_TRACE : constant TraceLogLevel := 1; -- Trace logging, intended for internal use only
-   LOG_DEBUG : constant TraceLogLevel := 2; -- Debug logging, used for internal debugging, it should be disabled on release builds
-   LOG_INFO : constant TraceLogLevel := 3; -- Info logging, used for program execution info
-   LOG_WARNING : constant TraceLogLevel := 4; -- Warning logging, used on recoverable failures
-   LOG_ERROR : constant TraceLogLevel := 5; -- Error logging, used on unrecoverable failures
-   LOG_FATAL : constant TraceLogLevel := 6; -- Fatal logging, used to abort program: exit(EXIT_FAILURE)
-   LOG_NONE : constant TraceLogLevel := 7; -- Disable logging
-
-   type KeyboardKey is new Interfaces.C.unsigned;
+   type KeyboardKey is new Interfaces.C.int;
    --  Keyboard keys (US keyboard layout)
 
    KEY_NULL : constant KeyboardKey := 0; -- Key: NULL, used for no key pressed
@@ -419,7 +167,7 @@ is
    KEY_VOLUME_UP : constant KeyboardKey := 24; -- Key: Android volume up button
    KEY_VOLUME_DOWN : constant KeyboardKey := 25; -- Key: Android volume down button
 
-   type MouseButton is new Interfaces.C.unsigned;
+   type MouseButton is new Interfaces.C.int;
    --  Mouse buttons
 
    MOUSE_BUTTON_LEFT : constant MouseButton := 0; -- Mouse button left
@@ -430,22 +178,37 @@ is
    MOUSE_BUTTON_FORWARD : constant MouseButton := 5; -- Mouse button forward (advanced mouse device)
    MOUSE_BUTTON_BACK : constant MouseButton := 6; -- Mouse button back (advanced mouse device)
 
-   type MouseCursor is new Interfaces.C.unsigned;
-   --  Mouse cursor
+   type MouseCursor is
+     (
+        MOUSE_CURSOR_DEFAULT -- Default pointer shape
+       ,MOUSE_CURSOR_ARROW -- Arrow shape
+       ,MOUSE_CURSOR_IBEAM -- Text writing cursor shape
+       ,MOUSE_CURSOR_CROSSHAIR -- Cross shape
+       ,MOUSE_CURSOR_POINTING_HAND -- Pointing hand cursor
+       ,MOUSE_CURSOR_RESIZE_EW -- Horizontal resize/move arrow shape
+       ,MOUSE_CURSOR_RESIZE_NS -- Vertical resize/move arrow shape
+       ,MOUSE_CURSOR_RESIZE_NWSE -- Top-left to bottom-right diagonal resize/move arrow shape
+       ,MOUSE_CURSOR_RESIZE_NESW -- The top-right to bottom-left diagonal resize/move arrow shape
+       ,MOUSE_CURSOR_RESIZE_ALL -- The omnidirectional resize/move cursor shape
+       ,MOUSE_CURSOR_NOT_ALLOWED -- The operation-not-allowed shape
+     )
+     with Convention => C;
+   for MouseCursor use
+     (
+        MOUSE_CURSOR_DEFAULT => 0
+       ,MOUSE_CURSOR_ARROW => 1
+       ,MOUSE_CURSOR_IBEAM => 2
+       ,MOUSE_CURSOR_CROSSHAIR => 3
+       ,MOUSE_CURSOR_POINTING_HAND => 4
+       ,MOUSE_CURSOR_RESIZE_EW => 5
+       ,MOUSE_CURSOR_RESIZE_NS => 6
+       ,MOUSE_CURSOR_RESIZE_NWSE => 7
+       ,MOUSE_CURSOR_RESIZE_NESW => 8
+       ,MOUSE_CURSOR_RESIZE_ALL => 9
+       ,MOUSE_CURSOR_NOT_ALLOWED => 10
+     );
 
-   MOUSE_CURSOR_DEFAULT : constant MouseCursor := 0; -- Default pointer shape
-   MOUSE_CURSOR_ARROW : constant MouseCursor := 1; -- Arrow shape
-   MOUSE_CURSOR_IBEAM : constant MouseCursor := 2; -- Text writing cursor shape
-   MOUSE_CURSOR_CROSSHAIR : constant MouseCursor := 3; -- Cross shape
-   MOUSE_CURSOR_POINTING_HAND : constant MouseCursor := 4; -- Pointing hand cursor
-   MOUSE_CURSOR_RESIZE_EW : constant MouseCursor := 5; -- Horizontal resize/move arrow shape
-   MOUSE_CURSOR_RESIZE_NS : constant MouseCursor := 6; -- Vertical resize/move arrow shape
-   MOUSE_CURSOR_RESIZE_NWSE : constant MouseCursor := 7; -- Top-left to bottom-right diagonal resize/move arrow shape
-   MOUSE_CURSOR_RESIZE_NESW : constant MouseCursor := 8; -- The top-right to bottom-left diagonal resize/move arrow shape
-   MOUSE_CURSOR_RESIZE_ALL : constant MouseCursor := 9; -- The omnidirectional resize/move cursor shape
-   MOUSE_CURSOR_NOT_ALLOWED : constant MouseCursor := 10; -- The operation-not-allowed shape
-
-   type GamepadButton is new Interfaces.C.unsigned;
+   type GamepadButton is new Interfaces.C.int;
    --  Gamepad buttons
 
    GAMEPAD_BUTTON_UNKNOWN : constant GamepadButton := 0; -- Unknown button, just for error checking
@@ -467,7 +230,7 @@ is
    GAMEPAD_BUTTON_LEFT_THUMB : constant GamepadButton := 16; -- Gamepad joystick pressed button left
    GAMEPAD_BUTTON_RIGHT_THUMB : constant GamepadButton := 17; -- Gamepad joystick pressed button right
 
-   type GamepadAxis is new Interfaces.C.unsigned;
+   type GamepadAxis is new Interfaces.C.int;
    --  Gamepad axis
 
    GAMEPAD_AXIS_LEFT_X : constant GamepadAxis := 0; -- Gamepad left stick X axis
@@ -477,146 +240,287 @@ is
    GAMEPAD_AXIS_LEFT_TRIGGER : constant GamepadAxis := 4; -- Gamepad back trigger left, pressure level: [1..-1]
    GAMEPAD_AXIS_RIGHT_TRIGGER : constant GamepadAxis := 5; -- Gamepad back trigger right, pressure level: [1..-1]
 
-   type MaterialMapIndex is new Interfaces.C.unsigned;
-   --  Material map index
+   type MaterialMapIndex is
+     (
+        MATERIAL_MAP_ALBEDO -- Albedo material (same as: MATERIAL_MAP_DIFFUSE)
+       ,MATERIAL_MAP_METALNESS -- Metalness material (same as: MATERIAL_MAP_SPECULAR)
+       ,MATERIAL_MAP_NORMAL -- Normal material
+       ,MATERIAL_MAP_ROUGHNESS -- Roughness material
+       ,MATERIAL_MAP_OCCLUSION -- Ambient occlusion material
+       ,MATERIAL_MAP_EMISSION -- Emission material
+       ,MATERIAL_MAP_HEIGHT -- Heightmap material
+       ,MATERIAL_MAP_CUBEMAP -- Cubemap material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
+       ,MATERIAL_MAP_IRRADIANCE -- Irradiance material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
+       ,MATERIAL_MAP_PREFILTER -- Prefilter material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
+       ,MATERIAL_MAP_BRDF -- Brdf material
+     )
+     with Convention => C;
+   for MaterialMapIndex use
+     (
+        MATERIAL_MAP_ALBEDO => 0
+       ,MATERIAL_MAP_METALNESS => 1
+       ,MATERIAL_MAP_NORMAL => 2
+       ,MATERIAL_MAP_ROUGHNESS => 3
+       ,MATERIAL_MAP_OCCLUSION => 4
+       ,MATERIAL_MAP_EMISSION => 5
+       ,MATERIAL_MAP_HEIGHT => 6
+       ,MATERIAL_MAP_CUBEMAP => 7
+       ,MATERIAL_MAP_IRRADIANCE => 8
+       ,MATERIAL_MAP_PREFILTER => 9
+       ,MATERIAL_MAP_BRDF => 10
+     );
 
-   MATERIAL_MAP_ALBEDO : constant MaterialMapIndex := 0; -- Albedo material (same as: MATERIAL_MAP_DIFFUSE)
-   MATERIAL_MAP_METALNESS : constant MaterialMapIndex := 1; -- Metalness material (same as: MATERIAL_MAP_SPECULAR)
-   MATERIAL_MAP_NORMAL : constant MaterialMapIndex := 2; -- Normal material
-   MATERIAL_MAP_ROUGHNESS : constant MaterialMapIndex := 3; -- Roughness material
-   MATERIAL_MAP_OCCLUSION : constant MaterialMapIndex := 4; -- Ambient occlusion material
-   MATERIAL_MAP_EMISSION : constant MaterialMapIndex := 5; -- Emission material
-   MATERIAL_MAP_HEIGHT : constant MaterialMapIndex := 6; -- Heightmap material
-   MATERIAL_MAP_CUBEMAP : constant MaterialMapIndex := 7; -- Cubemap material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
-   MATERIAL_MAP_IRRADIANCE : constant MaterialMapIndex := 8; -- Irradiance material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
-   MATERIAL_MAP_PREFILTER : constant MaterialMapIndex := 9; -- Prefilter material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
-   MATERIAL_MAP_BRDF : constant MaterialMapIndex := 10; -- Brdf material
+   type ShaderLocationIndex is
+     (
+        SHADER_LOC_VERTEX_POSITION -- Shader location: vertex attribute: position
+       ,SHADER_LOC_VERTEX_TEXCOORD01 -- Shader location: vertex attribute: texcoord01
+       ,SHADER_LOC_VERTEX_TEXCOORD02 -- Shader location: vertex attribute: texcoord02
+       ,SHADER_LOC_VERTEX_NORMAL -- Shader location: vertex attribute: normal
+       ,SHADER_LOC_VERTEX_TANGENT -- Shader location: vertex attribute: tangent
+       ,SHADER_LOC_VERTEX_COLOR -- Shader location: vertex attribute: color
+       ,SHADER_LOC_MATRIX_MVP -- Shader location: matrix uniform: model-view-projection
+       ,SHADER_LOC_MATRIX_VIEW -- Shader location: matrix uniform: view (camera transform)
+       ,SHADER_LOC_MATRIX_PROJECTION -- Shader location: matrix uniform: projection
+       ,SHADER_LOC_MATRIX_MODEL -- Shader location: matrix uniform: model (transform)
+       ,SHADER_LOC_MATRIX_NORMAL -- Shader location: matrix uniform: normal
+       ,SHADER_LOC_VECTOR_VIEW -- Shader location: vector uniform: view
+       ,SHADER_LOC_COLOR_DIFFUSE -- Shader location: vector uniform: diffuse color
+       ,SHADER_LOC_COLOR_SPECULAR -- Shader location: vector uniform: specular color
+       ,SHADER_LOC_COLOR_AMBIENT -- Shader location: vector uniform: ambient color
+       ,SHADER_LOC_MAP_ALBEDO -- Shader location: sampler2d texture: albedo (same as: SHADER_LOC_MAP_DIFFUSE)
+       ,SHADER_LOC_MAP_METALNESS -- Shader location: sampler2d texture: metalness (same as: SHADER_LOC_MAP_SPECULAR)
+       ,SHADER_LOC_MAP_NORMAL -- Shader location: sampler2d texture: normal
+       ,SHADER_LOC_MAP_ROUGHNESS -- Shader location: sampler2d texture: roughness
+       ,SHADER_LOC_MAP_OCCLUSION -- Shader location: sampler2d texture: occlusion
+       ,SHADER_LOC_MAP_EMISSION -- Shader location: sampler2d texture: emission
+       ,SHADER_LOC_MAP_HEIGHT -- Shader location: sampler2d texture: height
+       ,SHADER_LOC_MAP_CUBEMAP -- Shader location: samplerCube texture: cubemap
+       ,SHADER_LOC_MAP_IRRADIANCE -- Shader location: samplerCube texture: irradiance
+       ,SHADER_LOC_MAP_PREFILTER -- Shader location: samplerCube texture: prefilter
+       ,SHADER_LOC_MAP_BRDF -- Shader location: sampler2d texture: brdf
+     )
+     with Convention => C;
+   for ShaderLocationIndex use
+     (
+        SHADER_LOC_VERTEX_POSITION => 0
+       ,SHADER_LOC_VERTEX_TEXCOORD01 => 1
+       ,SHADER_LOC_VERTEX_TEXCOORD02 => 2
+       ,SHADER_LOC_VERTEX_NORMAL => 3
+       ,SHADER_LOC_VERTEX_TANGENT => 4
+       ,SHADER_LOC_VERTEX_COLOR => 5
+       ,SHADER_LOC_MATRIX_MVP => 6
+       ,SHADER_LOC_MATRIX_VIEW => 7
+       ,SHADER_LOC_MATRIX_PROJECTION => 8
+       ,SHADER_LOC_MATRIX_MODEL => 9
+       ,SHADER_LOC_MATRIX_NORMAL => 10
+       ,SHADER_LOC_VECTOR_VIEW => 11
+       ,SHADER_LOC_COLOR_DIFFUSE => 12
+       ,SHADER_LOC_COLOR_SPECULAR => 13
+       ,SHADER_LOC_COLOR_AMBIENT => 14
+       ,SHADER_LOC_MAP_ALBEDO => 15
+       ,SHADER_LOC_MAP_METALNESS => 16
+       ,SHADER_LOC_MAP_NORMAL => 17
+       ,SHADER_LOC_MAP_ROUGHNESS => 18
+       ,SHADER_LOC_MAP_OCCLUSION => 19
+       ,SHADER_LOC_MAP_EMISSION => 20
+       ,SHADER_LOC_MAP_HEIGHT => 21
+       ,SHADER_LOC_MAP_CUBEMAP => 22
+       ,SHADER_LOC_MAP_IRRADIANCE => 23
+       ,SHADER_LOC_MAP_PREFILTER => 24
+       ,SHADER_LOC_MAP_BRDF => 25
+     );
 
-   type ShaderLocationIndex is new Interfaces.C.unsigned;
-   --  Shader location index
+   type ShaderUniformDataType is
+     (
+        SHADER_UNIFORM_FLOAT -- Shader uniform type: float
+       ,SHADER_UNIFORM_VEC2 -- Shader uniform type: vec2 (2 float)
+       ,SHADER_UNIFORM_VEC3 -- Shader uniform type: vec3 (3 float)
+       ,SHADER_UNIFORM_VEC4 -- Shader uniform type: vec4 (4 float)
+       ,SHADER_UNIFORM_INT -- Shader uniform type: int
+       ,SHADER_UNIFORM_IVEC2 -- Shader uniform type: ivec2 (2 int)
+       ,SHADER_UNIFORM_IVEC3 -- Shader uniform type: ivec3 (3 int)
+       ,SHADER_UNIFORM_IVEC4 -- Shader uniform type: ivec4 (4 int)
+       ,SHADER_UNIFORM_SAMPLER2D -- Shader uniform type: sampler2d
+     )
+     with Convention => C;
+   for ShaderUniformDataType use
+     (
+        SHADER_UNIFORM_FLOAT => 0
+       ,SHADER_UNIFORM_VEC2 => 1
+       ,SHADER_UNIFORM_VEC3 => 2
+       ,SHADER_UNIFORM_VEC4 => 3
+       ,SHADER_UNIFORM_INT => 4
+       ,SHADER_UNIFORM_IVEC2 => 5
+       ,SHADER_UNIFORM_IVEC3 => 6
+       ,SHADER_UNIFORM_IVEC4 => 7
+       ,SHADER_UNIFORM_SAMPLER2D => 8
+     );
 
-   SHADER_LOC_VERTEX_POSITION : constant ShaderLocationIndex := 0; -- Shader location: vertex attribute: position
-   SHADER_LOC_VERTEX_TEXCOORD01 : constant ShaderLocationIndex := 1; -- Shader location: vertex attribute: texcoord01
-   SHADER_LOC_VERTEX_TEXCOORD02 : constant ShaderLocationIndex := 2; -- Shader location: vertex attribute: texcoord02
-   SHADER_LOC_VERTEX_NORMAL : constant ShaderLocationIndex := 3; -- Shader location: vertex attribute: normal
-   SHADER_LOC_VERTEX_TANGENT : constant ShaderLocationIndex := 4; -- Shader location: vertex attribute: tangent
-   SHADER_LOC_VERTEX_COLOR : constant ShaderLocationIndex := 5; -- Shader location: vertex attribute: color
-   SHADER_LOC_MATRIX_MVP : constant ShaderLocationIndex := 6; -- Shader location: matrix uniform: model-view-projection
-   SHADER_LOC_MATRIX_VIEW : constant ShaderLocationIndex := 7; -- Shader location: matrix uniform: view (camera transform)
-   SHADER_LOC_MATRIX_PROJECTION : constant ShaderLocationIndex := 8; -- Shader location: matrix uniform: projection
-   SHADER_LOC_MATRIX_MODEL : constant ShaderLocationIndex := 9; -- Shader location: matrix uniform: model (transform)
-   SHADER_LOC_MATRIX_NORMAL : constant ShaderLocationIndex := 10; -- Shader location: matrix uniform: normal
-   SHADER_LOC_VECTOR_VIEW : constant ShaderLocationIndex := 11; -- Shader location: vector uniform: view
-   SHADER_LOC_COLOR_DIFFUSE : constant ShaderLocationIndex := 12; -- Shader location: vector uniform: diffuse color
-   SHADER_LOC_COLOR_SPECULAR : constant ShaderLocationIndex := 13; -- Shader location: vector uniform: specular color
-   SHADER_LOC_COLOR_AMBIENT : constant ShaderLocationIndex := 14; -- Shader location: vector uniform: ambient color
-   SHADER_LOC_MAP_ALBEDO : constant ShaderLocationIndex := 15; -- Shader location: sampler2d texture: albedo (same as: SHADER_LOC_MAP_DIFFUSE)
-   SHADER_LOC_MAP_METALNESS : constant ShaderLocationIndex := 16; -- Shader location: sampler2d texture: metalness (same as: SHADER_LOC_MAP_SPECULAR)
-   SHADER_LOC_MAP_NORMAL : constant ShaderLocationIndex := 17; -- Shader location: sampler2d texture: normal
-   SHADER_LOC_MAP_ROUGHNESS : constant ShaderLocationIndex := 18; -- Shader location: sampler2d texture: roughness
-   SHADER_LOC_MAP_OCCLUSION : constant ShaderLocationIndex := 19; -- Shader location: sampler2d texture: occlusion
-   SHADER_LOC_MAP_EMISSION : constant ShaderLocationIndex := 20; -- Shader location: sampler2d texture: emission
-   SHADER_LOC_MAP_HEIGHT : constant ShaderLocationIndex := 21; -- Shader location: sampler2d texture: height
-   SHADER_LOC_MAP_CUBEMAP : constant ShaderLocationIndex := 22; -- Shader location: samplerCube texture: cubemap
-   SHADER_LOC_MAP_IRRADIANCE : constant ShaderLocationIndex := 23; -- Shader location: samplerCube texture: irradiance
-   SHADER_LOC_MAP_PREFILTER : constant ShaderLocationIndex := 24; -- Shader location: samplerCube texture: prefilter
-   SHADER_LOC_MAP_BRDF : constant ShaderLocationIndex := 25; -- Shader location: sampler2d texture: brdf
+   type ShaderAttributeDataType is
+     (
+        SHADER_ATTRIB_FLOAT -- Shader attribute type: float
+       ,SHADER_ATTRIB_VEC2 -- Shader attribute type: vec2 (2 float)
+       ,SHADER_ATTRIB_VEC3 -- Shader attribute type: vec3 (3 float)
+       ,SHADER_ATTRIB_VEC4 -- Shader attribute type: vec4 (4 float)
+     )
+     with Convention => C;
+   for ShaderAttributeDataType use
+     (
+        SHADER_ATTRIB_FLOAT => 0
+       ,SHADER_ATTRIB_VEC2 => 1
+       ,SHADER_ATTRIB_VEC3 => 2
+       ,SHADER_ATTRIB_VEC4 => 3
+     );
 
-   type ShaderUniformDataType is new Interfaces.C.unsigned;
-   --  Shader uniform data type
+   type PixelFormat is
+     (
+        PIXELFORMAT_UNCOMPRESSED_GRAYSCALE -- 8 bit per pixel (no alpha)
+       ,PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA -- 8*2 bpp (2 channels)
+       ,PIXELFORMAT_UNCOMPRESSED_R5G6B5 -- 16 bpp
+       ,PIXELFORMAT_UNCOMPRESSED_R8G8B8 -- 24 bpp
+       ,PIXELFORMAT_UNCOMPRESSED_R5G5B5A1 -- 16 bpp (1 bit alpha)
+       ,PIXELFORMAT_UNCOMPRESSED_R4G4B4A4 -- 16 bpp (4 bit alpha)
+       ,PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 -- 32 bpp
+       ,PIXELFORMAT_UNCOMPRESSED_R32 -- 32 bpp (1 channel - float)
+       ,PIXELFORMAT_UNCOMPRESSED_R32G32B32 -- 32*3 bpp (3 channels - float)
+       ,PIXELFORMAT_UNCOMPRESSED_R32G32B32A32 -- 32*4 bpp (4 channels - float)
+       ,PIXELFORMAT_UNCOMPRESSED_R16 -- 16 bpp (1 channel - half float)
+       ,PIXELFORMAT_UNCOMPRESSED_R16G16B16 -- 16*3 bpp (3 channels - half float)
+       ,PIXELFORMAT_UNCOMPRESSED_R16G16B16A16 -- 16*4 bpp (4 channels - half float)
+       ,PIXELFORMAT_COMPRESSED_DXT1_RGB -- 4 bpp (no alpha)
+       ,PIXELFORMAT_COMPRESSED_DXT1_RGBA -- 4 bpp (1 bit alpha)
+       ,PIXELFORMAT_COMPRESSED_DXT3_RGBA -- 8 bpp
+       ,PIXELFORMAT_COMPRESSED_DXT5_RGBA -- 8 bpp
+       ,PIXELFORMAT_COMPRESSED_ETC1_RGB -- 4 bpp
+       ,PIXELFORMAT_COMPRESSED_ETC2_RGB -- 4 bpp
+       ,PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA -- 8 bpp
+       ,PIXELFORMAT_COMPRESSED_PVRT_RGB -- 4 bpp
+       ,PIXELFORMAT_COMPRESSED_PVRT_RGBA -- 4 bpp
+       ,PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA -- 8 bpp
+       ,PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA -- 2 bpp
+     )
+     with Convention => C;
+   for PixelFormat use
+     (
+        PIXELFORMAT_UNCOMPRESSED_GRAYSCALE => 1
+       ,PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA => 2
+       ,PIXELFORMAT_UNCOMPRESSED_R5G6B5 => 3
+       ,PIXELFORMAT_UNCOMPRESSED_R8G8B8 => 4
+       ,PIXELFORMAT_UNCOMPRESSED_R5G5B5A1 => 5
+       ,PIXELFORMAT_UNCOMPRESSED_R4G4B4A4 => 6
+       ,PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 => 7
+       ,PIXELFORMAT_UNCOMPRESSED_R32 => 8
+       ,PIXELFORMAT_UNCOMPRESSED_R32G32B32 => 9
+       ,PIXELFORMAT_UNCOMPRESSED_R32G32B32A32 => 10
+       ,PIXELFORMAT_UNCOMPRESSED_R16 => 11
+       ,PIXELFORMAT_UNCOMPRESSED_R16G16B16 => 12
+       ,PIXELFORMAT_UNCOMPRESSED_R16G16B16A16 => 13
+       ,PIXELFORMAT_COMPRESSED_DXT1_RGB => 14
+       ,PIXELFORMAT_COMPRESSED_DXT1_RGBA => 15
+       ,PIXELFORMAT_COMPRESSED_DXT3_RGBA => 16
+       ,PIXELFORMAT_COMPRESSED_DXT5_RGBA => 17
+       ,PIXELFORMAT_COMPRESSED_ETC1_RGB => 18
+       ,PIXELFORMAT_COMPRESSED_ETC2_RGB => 19
+       ,PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA => 20
+       ,PIXELFORMAT_COMPRESSED_PVRT_RGB => 21
+       ,PIXELFORMAT_COMPRESSED_PVRT_RGBA => 22
+       ,PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA => 23
+       ,PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA => 24
+     );
 
-   SHADER_UNIFORM_FLOAT : constant ShaderUniformDataType := 0; -- Shader uniform type: float
-   SHADER_UNIFORM_VEC2 : constant ShaderUniformDataType := 1; -- Shader uniform type: vec2 (2 float)
-   SHADER_UNIFORM_VEC3 : constant ShaderUniformDataType := 2; -- Shader uniform type: vec3 (3 float)
-   SHADER_UNIFORM_VEC4 : constant ShaderUniformDataType := 3; -- Shader uniform type: vec4 (4 float)
-   SHADER_UNIFORM_INT : constant ShaderUniformDataType := 4; -- Shader uniform type: int
-   SHADER_UNIFORM_IVEC2 : constant ShaderUniformDataType := 5; -- Shader uniform type: ivec2 (2 int)
-   SHADER_UNIFORM_IVEC3 : constant ShaderUniformDataType := 6; -- Shader uniform type: ivec3 (3 int)
-   SHADER_UNIFORM_IVEC4 : constant ShaderUniformDataType := 7; -- Shader uniform type: ivec4 (4 int)
-   SHADER_UNIFORM_SAMPLER2D : constant ShaderUniformDataType := 8; -- Shader uniform type: sampler2d
+   type TextureFilter is
+     (
+        TEXTURE_FILTER_POINT -- No filter, just pixel approximation
+       ,TEXTURE_FILTER_BILINEAR -- Linear filtering
+       ,TEXTURE_FILTER_TRILINEAR -- Trilinear filtering (linear with mipmaps)
+       ,TEXTURE_FILTER_ANISOTROPIC_4X -- Anisotropic filtering 4x
+       ,TEXTURE_FILTER_ANISOTROPIC_8X -- Anisotropic filtering 8x
+       ,TEXTURE_FILTER_ANISOTROPIC_16X -- Anisotropic filtering 16x
+     )
+     with Convention => C;
+   for TextureFilter use
+     (
+        TEXTURE_FILTER_POINT => 0
+       ,TEXTURE_FILTER_BILINEAR => 1
+       ,TEXTURE_FILTER_TRILINEAR => 2
+       ,TEXTURE_FILTER_ANISOTROPIC_4X => 3
+       ,TEXTURE_FILTER_ANISOTROPIC_8X => 4
+       ,TEXTURE_FILTER_ANISOTROPIC_16X => 5
+     );
 
-   type ShaderAttributeDataType is new Interfaces.C.unsigned;
-   --  Shader attribute data types
+   type TextureWrap is
+     (
+        TEXTURE_WRAP_REPEAT -- Repeats texture in tiled mode
+       ,TEXTURE_WRAP_CLAMP -- Clamps texture to edge pixel in tiled mode
+       ,TEXTURE_WRAP_MIRROR_REPEAT -- Mirrors and repeats the texture in tiled mode
+       ,TEXTURE_WRAP_MIRROR_CLAMP -- Mirrors and clamps to border the texture in tiled mode
+     )
+     with Convention => C;
+   for TextureWrap use
+     (
+        TEXTURE_WRAP_REPEAT => 0
+       ,TEXTURE_WRAP_CLAMP => 1
+       ,TEXTURE_WRAP_MIRROR_REPEAT => 2
+       ,TEXTURE_WRAP_MIRROR_CLAMP => 3
+     );
 
-   SHADER_ATTRIB_FLOAT : constant ShaderAttributeDataType := 0; -- Shader attribute type: float
-   SHADER_ATTRIB_VEC2 : constant ShaderAttributeDataType := 1; -- Shader attribute type: vec2 (2 float)
-   SHADER_ATTRIB_VEC3 : constant ShaderAttributeDataType := 2; -- Shader attribute type: vec3 (3 float)
-   SHADER_ATTRIB_VEC4 : constant ShaderAttributeDataType := 3; -- Shader attribute type: vec4 (4 float)
+   type CubemapLayout is
+     (
+        CUBEMAP_LAYOUT_AUTO_DETECT -- Automatically detect layout type
+       ,CUBEMAP_LAYOUT_LINE_VERTICAL -- Layout is defined by a vertical line with faces
+       ,CUBEMAP_LAYOUT_LINE_HORIZONTAL -- Layout is defined by a horizontal line with faces
+       ,CUBEMAP_LAYOUT_CROSS_THREE_BY_FOUR -- Layout is defined by a 3x4 cross with cubemap faces
+       ,CUBEMAP_LAYOUT_CROSS_FOUR_BY_THREE -- Layout is defined by a 4x3 cross with cubemap faces
+       ,CUBEMAP_LAYOUT_PANORAMA -- Layout is defined by a panorama image (equirrectangular map)
+     )
+     with Convention => C;
+   for CubemapLayout use
+     (
+        CUBEMAP_LAYOUT_AUTO_DETECT => 0
+       ,CUBEMAP_LAYOUT_LINE_VERTICAL => 1
+       ,CUBEMAP_LAYOUT_LINE_HORIZONTAL => 2
+       ,CUBEMAP_LAYOUT_CROSS_THREE_BY_FOUR => 3
+       ,CUBEMAP_LAYOUT_CROSS_FOUR_BY_THREE => 4
+       ,CUBEMAP_LAYOUT_PANORAMA => 5
+     );
 
-   type PixelFormat is new Interfaces.C.unsigned;
-   --  Pixel formats
+   type FontType is
+     (
+        FONT_DEFAULT -- Default font generation, anti-aliased
+       ,FONT_BITMAP -- Bitmap font generation, no anti-aliasing
+       ,FONT_SDF -- SDF font generation, requires external shader
+     )
+     with Convention => C;
+   for FontType use
+     (
+        FONT_DEFAULT => 0
+       ,FONT_BITMAP => 1
+       ,FONT_SDF => 2
+     );
 
-   PIXELFORMAT_UNCOMPRESSED_GRAYSCALE : constant PixelFormat := 1; -- 8 bit per pixel (no alpha)
-   PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA : constant PixelFormat := 2; -- 8*2 bpp (2 channels)
-   PIXELFORMAT_UNCOMPRESSED_R5G6B5 : constant PixelFormat := 3; -- 16 bpp
-   PIXELFORMAT_UNCOMPRESSED_R8G8B8 : constant PixelFormat := 4; -- 24 bpp
-   PIXELFORMAT_UNCOMPRESSED_R5G5B5A1 : constant PixelFormat := 5; -- 16 bpp (1 bit alpha)
-   PIXELFORMAT_UNCOMPRESSED_R4G4B4A4 : constant PixelFormat := 6; -- 16 bpp (4 bit alpha)
-   PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 : constant PixelFormat := 7; -- 32 bpp
-   PIXELFORMAT_UNCOMPRESSED_R32 : constant PixelFormat := 8; -- 32 bpp (1 channel - float)
-   PIXELFORMAT_UNCOMPRESSED_R32G32B32 : constant PixelFormat := 9; -- 32*3 bpp (3 channels - float)
-   PIXELFORMAT_UNCOMPRESSED_R32G32B32A32 : constant PixelFormat := 10; -- 32*4 bpp (4 channels - float)
-   PIXELFORMAT_UNCOMPRESSED_R16 : constant PixelFormat := 11; -- 16 bpp (1 channel - half float)
-   PIXELFORMAT_UNCOMPRESSED_R16G16B16 : constant PixelFormat := 12; -- 16*3 bpp (3 channels - half float)
-   PIXELFORMAT_UNCOMPRESSED_R16G16B16A16 : constant PixelFormat := 13; -- 16*4 bpp (4 channels - half float)
-   PIXELFORMAT_COMPRESSED_DXT1_RGB : constant PixelFormat := 14; -- 4 bpp (no alpha)
-   PIXELFORMAT_COMPRESSED_DXT1_RGBA : constant PixelFormat := 15; -- 4 bpp (1 bit alpha)
-   PIXELFORMAT_COMPRESSED_DXT3_RGBA : constant PixelFormat := 16; -- 8 bpp
-   PIXELFORMAT_COMPRESSED_DXT5_RGBA : constant PixelFormat := 17; -- 8 bpp
-   PIXELFORMAT_COMPRESSED_ETC1_RGB : constant PixelFormat := 18; -- 4 bpp
-   PIXELFORMAT_COMPRESSED_ETC2_RGB : constant PixelFormat := 19; -- 4 bpp
-   PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA : constant PixelFormat := 20; -- 8 bpp
-   PIXELFORMAT_COMPRESSED_PVRT_RGB : constant PixelFormat := 21; -- 4 bpp
-   PIXELFORMAT_COMPRESSED_PVRT_RGBA : constant PixelFormat := 22; -- 4 bpp
-   PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA : constant PixelFormat := 23; -- 8 bpp
-   PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA : constant PixelFormat := 24; -- 2 bpp
-
-   type TextureFilter is new Interfaces.C.unsigned;
-   --  Texture parameters: filter mode
-
-   TEXTURE_FILTER_POINT : constant TextureFilter := 0; -- No filter, just pixel approximation
-   TEXTURE_FILTER_BILINEAR : constant TextureFilter := 1; -- Linear filtering
-   TEXTURE_FILTER_TRILINEAR : constant TextureFilter := 2; -- Trilinear filtering (linear with mipmaps)
-   TEXTURE_FILTER_ANISOTROPIC_4X : constant TextureFilter := 3; -- Anisotropic filtering 4x
-   TEXTURE_FILTER_ANISOTROPIC_8X : constant TextureFilter := 4; -- Anisotropic filtering 8x
-   TEXTURE_FILTER_ANISOTROPIC_16X : constant TextureFilter := 5; -- Anisotropic filtering 16x
-
-   type TextureWrap is new Interfaces.C.unsigned;
-   --  Texture parameters: wrap mode
-
-   TEXTURE_WRAP_REPEAT : constant TextureWrap := 0; -- Repeats texture in tiled mode
-   TEXTURE_WRAP_CLAMP : constant TextureWrap := 1; -- Clamps texture to edge pixel in tiled mode
-   TEXTURE_WRAP_MIRROR_REPEAT : constant TextureWrap := 2; -- Mirrors and repeats the texture in tiled mode
-   TEXTURE_WRAP_MIRROR_CLAMP : constant TextureWrap := 3; -- Mirrors and clamps to border the texture in tiled mode
-
-   type CubemapLayout is new Interfaces.C.unsigned;
-   --  Cubemap layouts
-
-   CUBEMAP_LAYOUT_AUTO_DETECT : constant CubemapLayout := 0; -- Automatically detect layout type
-   CUBEMAP_LAYOUT_LINE_VERTICAL : constant CubemapLayout := 1; -- Layout is defined by a vertical line with faces
-   CUBEMAP_LAYOUT_LINE_HORIZONTAL : constant CubemapLayout := 2; -- Layout is defined by a horizontal line with faces
-   CUBEMAP_LAYOUT_CROSS_THREE_BY_FOUR : constant CubemapLayout := 3; -- Layout is defined by a 3x4 cross with cubemap faces
-   CUBEMAP_LAYOUT_CROSS_FOUR_BY_THREE : constant CubemapLayout := 4; -- Layout is defined by a 4x3 cross with cubemap faces
-   CUBEMAP_LAYOUT_PANORAMA : constant CubemapLayout := 5; -- Layout is defined by a panorama image (equirrectangular map)
-
-   type FontType is new Interfaces.C.unsigned;
-   --  Font type, defines generation method
-
-   FONT_DEFAULT : constant FontType := 0; -- Default font generation, anti-aliased
-   FONT_BITMAP : constant FontType := 1; -- Bitmap font generation, no anti-aliasing
-   FONT_SDF : constant FontType := 2; -- SDF font generation, requires external shader
-
-   type BlendMode is new Interfaces.C.unsigned;
-   --  Color blending modes (pre-defined)
-
-   BLEND_ALPHA : constant BlendMode := 0; -- Blend textures considering alpha (default)
-   BLEND_ADDITIVE : constant BlendMode := 1; -- Blend textures adding colors
-   BLEND_MULTIPLIED : constant BlendMode := 2; -- Blend textures multiplying colors
-   BLEND_ADD_COLORS : constant BlendMode := 3; -- Blend textures adding colors (alternative)
-   BLEND_SUBTRACT_COLORS : constant BlendMode := 4; -- Blend textures subtracting colors (alternative)
-   BLEND_ALPHA_PREMULTIPLY : constant BlendMode := 5; -- Blend premultiplied textures considering alpha
-   BLEND_CUSTOM : constant BlendMode := 6; -- Blend textures using custom src/dst factors (use rlSetBlendFactors())
-   BLEND_CUSTOM_SEPARATE : constant BlendMode := 7; -- Blend textures using custom rgb/alpha separate src/dst factors (use rlSetBlendFactorsSeparate())
+   type BlendMode is
+     (
+        BLEND_ALPHA -- Blend textures considering alpha (default)
+       ,BLEND_ADDITIVE -- Blend textures adding colors
+       ,BLEND_MULTIPLIED -- Blend textures multiplying colors
+       ,BLEND_ADD_COLORS -- Blend textures adding colors (alternative)
+       ,BLEND_SUBTRACT_COLORS -- Blend textures subtracting colors (alternative)
+       ,BLEND_ALPHA_PREMULTIPLY -- Blend premultiplied textures considering alpha
+       ,BLEND_CUSTOM -- Blend textures using custom src/dst factors (use rlSetBlendFactors())
+       ,BLEND_CUSTOM_SEPARATE -- Blend textures using custom rgb/alpha separate src/dst factors (use rlSetBlendFactorsSeparate())
+     )
+     with Convention => C;
+   for BlendMode use
+     (
+        BLEND_ALPHA => 0
+       ,BLEND_ADDITIVE => 1
+       ,BLEND_MULTIPLIED => 2
+       ,BLEND_ADD_COLORS => 3
+       ,BLEND_SUBTRACT_COLORS => 4
+       ,BLEND_ALPHA_PREMULTIPLY => 5
+       ,BLEND_CUSTOM => 6
+       ,BLEND_CUSTOM_SEPARATE => 7
+     );
 
    type Gesture is new Interfaces.C.unsigned;
    --  Gesture
@@ -633,31 +537,325 @@ is
    GESTURE_PINCH_IN : constant Gesture := 256; -- Pinch in gesture
    GESTURE_PINCH_OUT : constant Gesture := 512; -- Pinch out gesture
 
-   type CameraMode is new Interfaces.C.unsigned;
-   --  Camera system modes
+   type CameraMode is
+     (
+        CAMERA_CUSTOM -- Custom camera
+       ,CAMERA_FREE -- Free camera
+       ,CAMERA_ORBITAL -- Orbital camera
+       ,CAMERA_FIRST_PERSON -- First person camera
+       ,CAMERA_THIRD_PERSON -- Third person camera
+     )
+     with Convention => C;
+   for CameraMode use
+     (
+        CAMERA_CUSTOM => 0
+       ,CAMERA_FREE => 1
+       ,CAMERA_ORBITAL => 2
+       ,CAMERA_FIRST_PERSON => 3
+       ,CAMERA_THIRD_PERSON => 4
+     );
 
-   CAMERA_CUSTOM : constant CameraMode := 0; -- Custom camera
-   CAMERA_FREE : constant CameraMode := 1; -- Free camera
-   CAMERA_ORBITAL : constant CameraMode := 2; -- Orbital camera
-   CAMERA_FIRST_PERSON : constant CameraMode := 3; -- First person camera
-   CAMERA_THIRD_PERSON : constant CameraMode := 4; -- Third person camera
+   type CameraProjection is
+     (
+        CAMERA_PERSPECTIVE -- Perspective projection
+       ,CAMERA_ORTHOGRAPHIC -- Orthographic projection
+     )
+     with Convention => C;
+   for CameraProjection use
+     (
+        CAMERA_PERSPECTIVE => 0
+       ,CAMERA_ORTHOGRAPHIC => 1
+     );
 
-   type CameraProjection is new Interfaces.C.unsigned;
-   --  Camera projection
+   type NPatchLayout is
+     (
+        NPATCH_NINE_PATCH -- Npatch layout: 3x3 tiles
+       ,NPATCH_THREE_PATCH_VERTICAL -- Npatch layout: 1x3 tiles
+       ,NPATCH_THREE_PATCH_HORIZONTAL -- Npatch layout: 3x1 tiles
+     )
+     with Convention => C;
+   for NPatchLayout use
+     (
+        NPATCH_NINE_PATCH => 0
+       ,NPATCH_THREE_PATCH_VERTICAL => 1
+       ,NPATCH_THREE_PATCH_HORIZONTAL => 2
+     );
 
-   CAMERA_PERSPECTIVE : constant CameraProjection := 0; -- Perspective projection
-   CAMERA_ORTHOGRAPHIC : constant CameraProjection := 1; -- Orthographic projection
+   type ShaderLocationArray is array (ShaderLocationIndex) of Interfaces.C.int
+     with Convention => C;
 
-   type NPatchLayout is new Interfaces.C.unsigned;
-   --  N-patch layout
+   type Vector2 is record
+      x : Interfaces.C.C_float; -- Vector x component
+      y : Interfaces.C.C_float; -- Vector y component
+   end record
+      with Convention => C_Pass_By_Copy;
 
-   NPATCH_NINE_PATCH : constant NPatchLayout := 0; -- Npatch layout: 3x3 tiles
-   NPATCH_THREE_PATCH_VERTICAL : constant NPatchLayout := 1; -- Npatch layout: 1x3 tiles
-   NPATCH_THREE_PATCH_HORIZONTAL : constant NPatchLayout := 2; -- Npatch layout: 3x1 tiles
+   type Vector3 is record
+      x : Interfaces.C.C_float; -- Vector x component
+      y : Interfaces.C.C_float; -- Vector y component
+      z : Interfaces.C.C_float; -- Vector z component
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type Vector4 is record
+      x : Interfaces.C.C_float; -- Vector x component
+      y : Interfaces.C.C_float; -- Vector y component
+      z : Interfaces.C.C_float; -- Vector z component
+      w : Interfaces.C.C_float; -- Vector w component
+   end record
+      with Convention => C_Pass_By_Copy;
+   subtype Quaternion is Vector4;
+
+   type Matrix is record
+      m0 : Interfaces.C.C_float; -- Matrix first row (4 components)
+      m4 : Interfaces.C.C_float; -- Matrix first row (4 components)
+      m8 : Interfaces.C.C_float; -- Matrix first row (4 components)
+      m12 : Interfaces.C.C_float; -- Matrix first row (4 components)
+      m1 : Interfaces.C.C_float; -- Matrix second row (4 components)
+      m5 : Interfaces.C.C_float; -- Matrix second row (4 components)
+      m9 : Interfaces.C.C_float; -- Matrix second row (4 components)
+      m13 : Interfaces.C.C_float; -- Matrix second row (4 components)
+      m2 : Interfaces.C.C_float; -- Matrix third row (4 components)
+      m6 : Interfaces.C.C_float; -- Matrix third row (4 components)
+      m10 : Interfaces.C.C_float; -- Matrix third row (4 components)
+      m14 : Interfaces.C.C_float; -- Matrix third row (4 components)
+      m3 : Interfaces.C.C_float; -- Matrix fourth row (4 components)
+      m7 : Interfaces.C.C_float; -- Matrix fourth row (4 components)
+      m11 : Interfaces.C.C_float; -- Matrix fourth row (4 components)
+      m15 : Interfaces.C.C_float; -- Matrix fourth row (4 components)
+   end record
+      with Convention => C_Pass_By_Copy;
+   type Matrix4 is array (0 .. 3) of Matrix;
+   type Matrix2 is array (0 .. 1) of Matrix;
+
+   type Color is record
+      r : Interfaces.C.unsigned_char; -- Color red value
+      g : Interfaces.C.unsigned_char; -- Color green value
+      b : Interfaces.C.unsigned_char; -- Color blue value
+      a : Interfaces.C.unsigned_char; -- Color alpha value
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type Rectangle is record
+      x : Interfaces.C.C_float; -- Rectangle top-left corner position x
+      y : Interfaces.C.C_float; -- Rectangle top-left corner position y
+      width : Interfaces.C.C_float; -- Rectangle width
+      height : Interfaces.C.C_float; -- Rectangle height
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type Image is record
+      data : System.Address; -- Image raw data
+      width : Interfaces.C.int; -- Image base width
+      height : Interfaces.C.int; -- Image base height
+      mipmaps : Interfaces.C.int; -- Mipmap levels, 1 by default
+      format : PixelFormat; -- Data format (PixelFormat type)
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type Texture is record
+      id : Interfaces.C.unsigned; -- OpenGL texture id
+      width : Interfaces.C.int; -- Texture base width
+      height : Interfaces.C.int; -- Texture base height
+      mipmaps : Interfaces.C.int; -- Mipmap levels, 1 by default
+      format : Interfaces.C.int; -- Data format (PixelFormat type)
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type RenderTexture is record
+      id : Interfaces.C.unsigned; -- OpenGL framebuffer object id
+      texture_f : Texture; -- Color buffer attachment texture
+      depth : Texture; -- Depth buffer attachment texture
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type NPatchInfo is record
+      source : Rectangle; -- Texture source rectangle
+      left : Interfaces.C.int; -- Left border offset
+      top : Interfaces.C.int; -- Top border offset
+      right : Interfaces.C.int; -- Right border offset
+      bottom : Interfaces.C.int; -- Bottom border offset
+      layout : NPatchLayout; -- Layout of the n-patch: 3x3, 1x3 or 3x1
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type GlyphInfo is record
+      value : Interfaces.C.int; -- Character value (Unicode)
+      offsetX : Interfaces.C.int; -- Character offset X when drawing
+      offsetY : Interfaces.C.int; -- Character offset Y when drawing
+      advanceX : Interfaces.C.int; -- Character advance position X
+      image_f : Image; -- Character image data
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type Font is record
+      baseSize : Interfaces.C.int; -- Base size (default chars height)
+      glyphCount : Interfaces.C.int; -- Number of glyph characters
+      glyphPadding : Interfaces.C.int; -- Padding around the glyph characters
+      texture_f : Texture; -- Texture atlas containing the glyphs
+      recs : access Rectangle; -- Rectangles in texture for the glyphs
+      glyphs : access GlyphInfo; -- Glyphs info data
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type Camera3D is record
+      position : Vector3; -- Camera position
+      target : Vector3; -- Camera target it looks-at
+      up : Vector3; -- Camera up vector (rotation over its axis)
+      fovy : Interfaces.C.C_float; -- Camera field-of-view aperture in Y (degrees) in perspective, used as near plane width in orthographic
+      projection : CameraProjection; -- Camera projection: CAMERA_PERSPECTIVE or CAMERA_ORTHOGRAPHIC
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type Camera2D is record
+      offset : Vector2; -- Camera offset (displacement from target)
+      target : Vector2; -- Camera target (rotation and zoom origin)
+      rotation : Interfaces.C.C_float; -- Camera rotation in degrees
+      zoom : Interfaces.C.C_float; -- Camera zoom (scaling), should be 1.0f by default
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type Mesh is record
+      vertexCount : Interfaces.C.int; -- Number of vertices stored in arrays
+      triangleCount : Interfaces.C.int; -- Number of triangles stored (indexed or not)
+      vertices : access Interfaces.C.C_float; -- Vertex position (XYZ - 3 components per vertex) (shader-location = 0)
+      texcoords : access Interfaces.C.C_float; -- Vertex texture coordinates (UV - 2 components per vertex) (shader-location = 1)
+      texcoords2 : access Interfaces.C.C_float; -- Vertex texture second coordinates (UV - 2 components per vertex) (shader-location = 5)
+      normals : access Interfaces.C.C_float; -- Vertex normals (XYZ - 3 components per vertex) (shader-location = 2)
+      tangents : access Interfaces.C.C_float; -- Vertex tangents (XYZW - 4 components per vertex) (shader-location = 4)
+      colors : access Interfaces.C.char; -- Vertex colors (RGBA - 4 components per vertex) (shader-location = 3)
+      indices : access Interfaces.C.short; -- Vertex indices (in case vertex data comes indexed)
+      animVertices : access Interfaces.C.C_float; -- Animated vertex positions (after bones transformations)
+      animNormals : access Interfaces.C.C_float; -- Animated normals (after bones transformations)
+      boneIds : access Interfaces.C.char; -- Vertex bone ids, max 255 bone ids, up to 4 bones influence by vertex (skinning)
+      boneWeights : access Interfaces.C.C_float; -- Vertex bone weight, up to 4 bones influence by vertex (skinning)
+      vaoId : Interfaces.C.unsigned; -- OpenGL Vertex Array Object id
+      vboId : access Interfaces.C.unsigned; -- OpenGL Vertex Buffer Objects id (default vertex data)
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type Shader is record
+      id : Interfaces.C.unsigned; -- Shader program id
+      locs : access ShaderLocationArray; -- Shader locations array (RL_MAX_SHADER_LOCATIONS)
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type MaterialMap is record
+      texture_f : Texture; -- Material map texture
+      color_f : Color; -- Material map color
+      value : Interfaces.C.C_float; -- Material map value
+   end record
+      with Convention => C_Pass_By_Copy;
+   type MaterialMapArray is array (MaterialMapIndex) of MaterialMap
+     with Convention => C;
+
+   type Material is record
+      shader_f : Shader; -- Material shader
+      maps : access MaterialMapArray; -- Material maps array (MAX_MATERIAL_MAPS)
+      params : Float4; -- Material generic parameters (if required)
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type Transform is record
+      translation : Vector3; -- Translation
+      rotation : Quaternion; -- Rotation
+      scale : Vector3; -- Scale
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type BoneInfo is record
+      name : String32; -- Bone name
+      parent : Interfaces.C.int; -- Bone parent
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type Model is record
+      transform_f : Matrix; -- Local transform matrix
+      meshCount : Interfaces.C.int; -- Number of meshes
+      materialCount : Interfaces.C.int; -- Number of materials
+      meshes : access Mesh; -- Meshes array
+      materials : access Material; -- Materials array
+      meshMaterial : access Interfaces.C.int; -- Mesh material number
+      boneCount : Interfaces.C.int; -- Number of bones
+      bones : access BoneInfo; -- Bones information (skeleton)
+      bindPose : access Transform; -- Bones base transformation (pose)
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type Ray is record
+      position : Vector3; -- Ray position (origin)
+      direction : Vector3; -- Ray direction
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type RayCollision is record
+      hit : Interfaces.C.C_bool; -- Did the ray hit something?
+      distance : Interfaces.C.C_float; -- Distance to the nearest hit
+      point : Vector3; -- Point of the nearest hit
+      normal : Vector3; -- Surface normal of hit
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type BoundingBox is record
+      min : Vector3; -- Minimum vertex box-corner
+      max : Vector3; -- Maximum vertex box-corner
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type Wave is record
+      frameCount : Interfaces.C.unsigned; -- Total number of frames (considering channels)
+      sampleRate : Interfaces.C.unsigned; -- Frequency (samples per second)
+      sampleSize : Interfaces.C.unsigned; -- Bit depth (bits per sample): 8, 16, 32 (24 not supported)
+      channels : Interfaces.C.unsigned; -- Number of channels (1-mono, 2-stereo, ...)
+      data : System.Address; -- Buffer data pointer
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type VrDeviceInfo is record
+      hResolution : Interfaces.C.int; -- Horizontal resolution in pixels
+      vResolution : Interfaces.C.int; -- Vertical resolution in pixels
+      hScreenSize : Interfaces.C.C_float; -- Horizontal size in meters
+      vScreenSize : Interfaces.C.C_float; -- Vertical size in meters
+      eyeToScreenDistance : Interfaces.C.C_float; -- Distance between eye and display in meters
+      lensSeparationDistance : Interfaces.C.C_float; -- Lens separation distance in meters
+      interpupillaryDistance : Interfaces.C.C_float; -- IPD (distance between pupils) in meters
+      lensDistortionValues : Float4; -- Lens distortion constant parameters
+      chromaAbCorrection : Float4; -- Chromatic aberration correction parameters
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type VrStereoConfig is record
+      projection : Matrix2; -- VR projection matrices (per eye)
+      viewOffset : Matrix2; -- VR view offset matrices (per eye)
+      leftLensCenter : Float2; -- VR left lens center
+      rightLensCenter : Float2; -- VR right lens center
+      leftScreenCenter : Float2; -- VR left screen center
+      rightScreenCenter : Float2; -- VR right screen center
+      scale : Float2; -- VR distortion scale
+      scaleIn : Float2; -- VR distortion scale in
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type AutomationEvent is record
+      frame : Interfaces.C.unsigned; -- Event frame
+      type_K : Interfaces.C.unsigned; -- Event type (AutomationEventType)
+      params : Int4; -- Event parameters (if required)
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type AutomationEventList is record
+      capacity : Interfaces.C.unsigned; -- Events max entries (MAX_AUTOMATION_EVENTS)
+      count : Interfaces.C.unsigned; -- Events entries count
+      events : access AutomationEvent; -- Events entries
+   end record
+      with Convention => C_Pass_By_Copy;
 
    procedure InitWindow (width : Interfaces.C.int; height : Interfaces.C.int; title : Interfaces.C.Strings.chars_ptr);
    --  Initialize window and OpenGL context
    pragma Import (C, InitWindow, "InitWindow");
+
+   procedure InitWindow (width : Interfaces.C.int; height : Interfaces.C.int; title : String);
+   --  Initialize window and OpenGL context
 
    procedure CloseWindow;
    --  Close window and unload OpenGL context
@@ -738,6 +936,9 @@ is
    procedure SetWindowTitle (title : Interfaces.C.Strings.chars_ptr);
    --  Set title for window (only PLATFORM_DESKTOP and PLATFORM_WEB)
    pragma Import (C, SetWindowTitle, "SetWindowTitle");
+
+   procedure SetWindowTitle (title : String);
+   --  Set title for window (only PLATFORM_DESKTOP and PLATFORM_WEB)
 
    procedure SetWindowPosition (x : Interfaces.C.int; y : Interfaces.C.int);
    --  Set window position on screen (only PLATFORM_DESKTOP)
@@ -831,13 +1032,22 @@ is
    --  Get the human-readable, UTF-8 encoded name of the specified monitor
    pragma Import (C, GetMonitorName, "GetMonitorName");
 
+   function GetMonitorName (monitor : Interfaces.C.int) return String;
+   --  Get the human-readable, UTF-8 encoded name of the specified monitor
+
    procedure SetClipboardText (text : Interfaces.C.Strings.chars_ptr);
    --  Set clipboard text content
    pragma Import (C, SetClipboardText, "SetClipboardText");
 
+   procedure SetClipboardText (text : String);
+   --  Set clipboard text content
+
    function GetClipboardText return Interfaces.C.Strings.chars_ptr;
    --  Get clipboard text content
    pragma Import (C, GetClipboardText, "GetClipboardText");
+
+   function GetClipboardText return String;
+   --  Get clipboard text content
 
    procedure EnableEventWaiting;
    --  Enable waiting for events on EndDrawing(), no automatic event polling
@@ -915,7 +1125,7 @@ is
    --  End custom shader drawing (use default shader)
    pragma Import (C, EndShaderMode, "EndShaderMode");
 
-   procedure BeginBlendMode (mode : Interfaces.C.int);
+   procedure BeginBlendMode (mode : BlendMode);
    --  Begin blending mode (alpha, additive, multiplied, subtract, custom)
    pragma Import (C, BeginBlendMode, "BeginBlendMode");
 
@@ -951,9 +1161,15 @@ is
    --  Load shader from files and bind default locations
    pragma Import (C, LoadShader, "LoadShader");
 
+   function LoadShader (vsFileName : String; fsFileName : String) return Shader;
+   --  Load shader from files and bind default locations
+
    function LoadShaderFromMemory (vsCode : Interfaces.C.Strings.chars_ptr; fsCode : Interfaces.C.Strings.chars_ptr) return Shader;
    --  Load shader from code strings and bind default locations
    pragma Import (C, LoadShaderFromMemory, "LoadShaderFromMemory");
+
+   function LoadShaderFromMemory (vsCode : String; fsCode : String) return Shader;
+   --  Load shader from code strings and bind default locations
 
    function IsShaderReady (shader_p : Shader) return Interfaces.C.C_bool;
    --  Check if a shader is ready
@@ -963,15 +1179,21 @@ is
    --  Get shader uniform location
    pragma Import (C, GetShaderLocation, "GetShaderLocation");
 
+   function GetShaderLocation (shader_p : Shader; uniformName : String) return Interfaces.C.int;
+   --  Get shader uniform location
+
    function GetShaderLocationAttrib (shader_p : Shader; attribName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
    --  Get shader attribute location
    pragma Import (C, GetShaderLocationAttrib, "GetShaderLocationAttrib");
 
-   procedure SetShaderValue (shader_p : Shader; locIndex : Interfaces.C.int; value : System.Address; uniformType : Interfaces.C.int);
+   function GetShaderLocationAttrib (shader_p : Shader; attribName : String) return Interfaces.C.int;
+   --  Get shader attribute location
+
+   procedure SetShaderValue (shader_p : Shader; locIndex : Interfaces.C.int; value : System.Address; uniformType : ShaderUniformDataType);
    --  Set shader uniform value
    pragma Import (C, SetShaderValue, "SetShaderValue");
 
-   procedure SetShaderValueV (shader_p : Shader; locIndex : Interfaces.C.int; value : System.Address; uniformType : Interfaces.C.int; count : Interfaces.C.int);
+   procedure SetShaderValueV (shader_p : Shader; locIndex : Interfaces.C.int; value : System.Address; uniformType : ShaderUniformDataType; count : Interfaces.C.int);
    --  Set shader uniform value vector
    pragma Import (C, SetShaderValueV, "SetShaderValueV");
 
@@ -1067,6 +1289,9 @@ is
    --  Takes a screenshot of current screen (filename extension defines format)
    pragma Import (C, TakeScreenshot, "TakeScreenshot");
 
+   procedure TakeScreenshot (fileName : String);
+   --  Takes a screenshot of current screen (filename extension defines format)
+
    procedure SetConfigFlags (flags : Interfaces.C.unsigned);
    --  Setup init configuration flags (view FLAGS)
    pragma Import (C, SetConfigFlags, "SetConfigFlags");
@@ -1074,6 +1299,9 @@ is
    procedure OpenURL (url : Interfaces.C.Strings.chars_ptr);
    --  Open URL with default system browser (if available)
    pragma Import (C, OpenURL, "OpenURL");
+
+   procedure OpenURL (url : String);
+   --  Open URL with default system browser (if available)
 
    procedure SetTraceLogLevel (logLevel : Interfaces.C.int);
    --  Set the current threshold (minimum) log level
@@ -1095,6 +1323,9 @@ is
    --  Load file data as byte array (read)
    pragma Import (C, LoadFileData, "LoadFileData");
 
+   function LoadFileData (fileName : String; dataSize : access Interfaces.C.int) return access Interfaces.C.char;
+   --  Load file data as byte array (read)
+
    procedure UnloadFileData (data : access Interfaces.C.char);
    --  Unload file data allocated by LoadFileData()
    pragma Import (C, UnloadFileData, "UnloadFileData");
@@ -1103,73 +1334,127 @@ is
    --  Save data to file from byte array (write), returns true on success
    pragma Import (C, SaveFileData, "SaveFileData");
 
+   function SaveFileData (fileName : String; data : System.Address; dataSize : Interfaces.C.int) return Interfaces.C.C_bool;
+   --  Save data to file from byte array (write), returns true on success
+
    function ExportDataAsCode (data : System.Address; dataSize : Interfaces.C.int; fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
    --  Export data to code (.h), returns true on success
    pragma Import (C, ExportDataAsCode, "ExportDataAsCode");
+
+   function ExportDataAsCode (data : System.Address; dataSize : Interfaces.C.int; fileName : String) return Interfaces.C.C_bool;
+   --  Export data to code (.h), returns true on success
 
    function LoadFileText (fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
    --  Load text data from file (read), returns a '\0' terminated string
    pragma Import (C, LoadFileText, "LoadFileText");
 
+   function LoadFileText (fileName : String) return String;
+   --  Load text data from file (read), returns a '\0' terminated string
+
    procedure UnloadFileText (text : Interfaces.C.Strings.chars_ptr);
    --  Unload file text data allocated by LoadFileText()
    pragma Import (C, UnloadFileText, "UnloadFileText");
+
+   procedure UnloadFileText (text : String);
+   --  Unload file text data allocated by LoadFileText()
 
    function SaveFileText (fileName : Interfaces.C.Strings.chars_ptr; text : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
    --  Save text data to file (write), string must be '\0' terminated, returns true on success
    pragma Import (C, SaveFileText, "SaveFileText");
 
+   function SaveFileText (fileName : String; text : String) return Interfaces.C.C_bool;
+   --  Save text data to file (write), string must be '\0' terminated, returns true on success
+
    function FileExists (fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
    --  Check if file exists
    pragma Import (C, FileExists, "FileExists");
+
+   function FileExists (fileName : String) return Interfaces.C.C_bool;
+   --  Check if file exists
 
    function DirectoryExists (dirPath : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
    --  Check if a directory path exists
    pragma Import (C, DirectoryExists, "DirectoryExists");
 
+   function DirectoryExists (dirPath : String) return Interfaces.C.C_bool;
+   --  Check if a directory path exists
+
    function IsFileExtension (fileName : Interfaces.C.Strings.chars_ptr; ext : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
    --  Check file extension (including point: .png, .wav)
    pragma Import (C, IsFileExtension, "IsFileExtension");
+
+   function IsFileExtension (fileName : String; ext : String) return Interfaces.C.C_bool;
+   --  Check file extension (including point: .png, .wav)
 
    function GetFileLength (fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
    --  Get file length in bytes (NOTE: GetFileSize() conflicts with windows.h)
    pragma Import (C, GetFileLength, "GetFileLength");
 
+   function GetFileLength (fileName : String) return Interfaces.C.int;
+   --  Get file length in bytes (NOTE: GetFileSize() conflicts with windows.h)
+
    function GetFileExtension (fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
    --  Get pointer to extension for a filename string (includes dot: '.png')
    pragma Import (C, GetFileExtension, "GetFileExtension");
+
+   function GetFileExtension (fileName : String) return String;
+   --  Get pointer to extension for a filename string (includes dot: '.png')
 
    function GetFileName (filePath : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
    --  Get pointer to filename for a path string
    pragma Import (C, GetFileName, "GetFileName");
 
+   function GetFileName (filePath : String) return String;
+   --  Get pointer to filename for a path string
+
    function GetFileNameWithoutExt (filePath : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
    --  Get filename string without extension (uses static string)
    pragma Import (C, GetFileNameWithoutExt, "GetFileNameWithoutExt");
+
+   function GetFileNameWithoutExt (filePath : String) return String;
+   --  Get filename string without extension (uses static string)
 
    function GetDirectoryPath (filePath : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
    --  Get full path for a given fileName with path (uses static string)
    pragma Import (C, GetDirectoryPath, "GetDirectoryPath");
 
+   function GetDirectoryPath (filePath : String) return String;
+   --  Get full path for a given fileName with path (uses static string)
+
    function GetPrevDirectoryPath (dirPath : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
    --  Get previous directory path for a given path (uses static string)
    pragma Import (C, GetPrevDirectoryPath, "GetPrevDirectoryPath");
+
+   function GetPrevDirectoryPath (dirPath : String) return String;
+   --  Get previous directory path for a given path (uses static string)
 
    function GetWorkingDirectory return Interfaces.C.Strings.chars_ptr;
    --  Get current working directory (uses static string)
    pragma Import (C, GetWorkingDirectory, "GetWorkingDirectory");
 
+   function GetWorkingDirectory return String;
+   --  Get current working directory (uses static string)
+
    function GetApplicationDirectory return Interfaces.C.Strings.chars_ptr;
    --  Get the directory of the running application (uses static string)
    pragma Import (C, GetApplicationDirectory, "GetApplicationDirectory");
+
+   function GetApplicationDirectory return String;
+   --  Get the directory of the running application (uses static string)
 
    function ChangeDirectory (dir : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
    --  Change working directory, return true on success
    pragma Import (C, ChangeDirectory, "ChangeDirectory");
 
+   function ChangeDirectory (dir : String) return Interfaces.C.C_bool;
+   --  Change working directory, return true on success
+
    function IsPathFile (path : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
    --  Check if a given path is a file or a directory
    pragma Import (C, IsPathFile, "IsPathFile");
+
+   function IsPathFile (path : String) return Interfaces.C.C_bool;
+   --  Check if a given path is a file or a directory
 
    function IsFileDropped return Interfaces.C.C_bool;
    --  Check if a file has been dropped into window
@@ -1178,6 +1463,9 @@ is
    function GetFileModTime (fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.long;
    --  Get file modification time (last write time)
    pragma Import (C, GetFileModTime, "GetFileModTime");
+
+   function GetFileModTime (fileName : String) return Interfaces.C.long;
+   --  Get file modification time (last write time)
 
    function CompressData (data : System.Address; dataSize : Interfaces.C.int; compDataSize : access Interfaces.C.int) return access Interfaces.C.char;
    --  Compress data (DEFLATE algorithm), memory must be MemFree()
@@ -1190,6 +1478,9 @@ is
    function EncodeDataBase64 (data : System.Address; dataSize : Interfaces.C.int; outputSize : access Interfaces.C.int) return Interfaces.C.Strings.chars_ptr;
    --  Encode data to Base64 string, memory must be MemFree()
    pragma Import (C, EncodeDataBase64, "EncodeDataBase64");
+
+   function EncodeDataBase64 (data : System.Address; dataSize : Interfaces.C.int; outputSize : access Interfaces.C.int) return String;
+   --  Encode data to Base64 string, memory must be MemFree()
 
    function DecodeDataBase64 (data : System.Address; outputSize : access Interfaces.C.int) return access Interfaces.C.char;
    --  Decode Base64 string data, memory must be MemFree()
@@ -1211,23 +1502,23 @@ is
    --  Play a recorded automation event
    pragma Import (C, PlayAutomationEvent, "PlayAutomationEvent");
 
-   function IsKeyPressed (key : Interfaces.C.int) return Interfaces.C.C_bool;
+   function IsKeyPressed (key : KeyboardKey) return Interfaces.C.C_bool;
    --  Check if a key has been pressed once
    pragma Import (C, IsKeyPressed, "IsKeyPressed");
 
-   function IsKeyPressedRepeat (key : Interfaces.C.int) return Interfaces.C.C_bool;
+   function IsKeyPressedRepeat (key : KeyboardKey) return Interfaces.C.C_bool;
    --  Check if a key has been pressed again (Only PLATFORM_DESKTOP)
    pragma Import (C, IsKeyPressedRepeat, "IsKeyPressedRepeat");
 
-   function IsKeyDown (key : Interfaces.C.int) return Interfaces.C.C_bool;
+   function IsKeyDown (key : KeyboardKey) return Interfaces.C.C_bool;
    --  Check if a key is being pressed
    pragma Import (C, IsKeyDown, "IsKeyDown");
 
-   function IsKeyReleased (key : Interfaces.C.int) return Interfaces.C.C_bool;
+   function IsKeyReleased (key : KeyboardKey) return Interfaces.C.C_bool;
    --  Check if a key has been released once
    pragma Import (C, IsKeyReleased, "IsKeyReleased");
 
-   function IsKeyUp (key : Interfaces.C.int) return Interfaces.C.C_bool;
+   function IsKeyUp (key : KeyboardKey) return Interfaces.C.C_bool;
    --  Check if a key is NOT being pressed
    pragma Import (C, IsKeyUp, "IsKeyUp");
 
@@ -1239,7 +1530,7 @@ is
    --  Get char pressed (unicode), call it multiple times for chars queued, returns 0 when the queue is empty
    pragma Import (C, GetCharPressed, "GetCharPressed");
 
-   procedure SetExitKey (key : Interfaces.C.int);
+   procedure SetExitKey (key : KeyboardKey);
    --  Set a custom key to exit program (default is ESC)
    pragma Import (C, SetExitKey, "SetExitKey");
 
@@ -1251,19 +1542,22 @@ is
    --  Get gamepad internal name id
    pragma Import (C, GetGamepadName, "GetGamepadName");
 
-   function IsGamepadButtonPressed (gamepad : Interfaces.C.int; button : Interfaces.C.int) return Interfaces.C.C_bool;
+   function GetGamepadName (gamepad : Interfaces.C.int) return String;
+   --  Get gamepad internal name id
+
+   function IsGamepadButtonPressed (gamepad : Interfaces.C.int; button : GamepadButton) return Interfaces.C.C_bool;
    --  Check if a gamepad button has been pressed once
    pragma Import (C, IsGamepadButtonPressed, "IsGamepadButtonPressed");
 
-   function IsGamepadButtonDown (gamepad : Interfaces.C.int; button : Interfaces.C.int) return Interfaces.C.C_bool;
+   function IsGamepadButtonDown (gamepad : Interfaces.C.int; button : GamepadButton) return Interfaces.C.C_bool;
    --  Check if a gamepad button is being pressed
    pragma Import (C, IsGamepadButtonDown, "IsGamepadButtonDown");
 
-   function IsGamepadButtonReleased (gamepad : Interfaces.C.int; button : Interfaces.C.int) return Interfaces.C.C_bool;
+   function IsGamepadButtonReleased (gamepad : Interfaces.C.int; button : GamepadButton) return Interfaces.C.C_bool;
    --  Check if a gamepad button has been released once
    pragma Import (C, IsGamepadButtonReleased, "IsGamepadButtonReleased");
 
-   function IsGamepadButtonUp (gamepad : Interfaces.C.int; button : Interfaces.C.int) return Interfaces.C.C_bool;
+   function IsGamepadButtonUp (gamepad : Interfaces.C.int; button : GamepadButton) return Interfaces.C.C_bool;
    --  Check if a gamepad button is NOT being pressed
    pragma Import (C, IsGamepadButtonUp, "IsGamepadButtonUp");
 
@@ -1275,7 +1569,7 @@ is
    --  Get gamepad axis count for a gamepad
    pragma Import (C, GetGamepadAxisCount, "GetGamepadAxisCount");
 
-   function GetGamepadAxisMovement (gamepad : Interfaces.C.int; axis : Interfaces.C.int) return Interfaces.C.C_float;
+   function GetGamepadAxisMovement (gamepad : Interfaces.C.int; axis : GamepadAxis) return Interfaces.C.C_float;
    --  Get axis movement value for a gamepad axis
    pragma Import (C, GetGamepadAxisMovement, "GetGamepadAxisMovement");
 
@@ -1283,23 +1577,26 @@ is
    --  Set internal gamepad mappings (SDL_GameControllerDB)
    pragma Import (C, SetGamepadMappings, "SetGamepadMappings");
 
+   function SetGamepadMappings (mappings : String) return Interfaces.C.int;
+   --  Set internal gamepad mappings (SDL_GameControllerDB)
+
    procedure SetGamepadVibration (gamepad : Interfaces.C.int; leftMotor : Interfaces.C.C_float; rightMotor : Interfaces.C.C_float);
    --  Set gamepad vibration for both motors
    pragma Import (C, SetGamepadVibration, "SetGamepadVibration");
 
-   function IsMouseButtonPressed (button : Interfaces.C.int) return Interfaces.C.C_bool;
+   function IsMouseButtonPressed (button : MouseButton) return Interfaces.C.C_bool;
    --  Check if a mouse button has been pressed once
    pragma Import (C, IsMouseButtonPressed, "IsMouseButtonPressed");
 
-   function IsMouseButtonDown (button : Interfaces.C.int) return Interfaces.C.C_bool;
+   function IsMouseButtonDown (button : MouseButton) return Interfaces.C.C_bool;
    --  Check if a mouse button is being pressed
    pragma Import (C, IsMouseButtonDown, "IsMouseButtonDown");
 
-   function IsMouseButtonReleased (button : Interfaces.C.int) return Interfaces.C.C_bool;
+   function IsMouseButtonReleased (button : MouseButton) return Interfaces.C.C_bool;
    --  Check if a mouse button has been released once
    pragma Import (C, IsMouseButtonReleased, "IsMouseButtonReleased");
 
-   function IsMouseButtonUp (button : Interfaces.C.int) return Interfaces.C.C_bool;
+   function IsMouseButtonUp (button : MouseButton) return Interfaces.C.C_bool;
    --  Check if a mouse button is NOT being pressed
    pragma Import (C, IsMouseButtonUp, "IsMouseButtonUp");
 
@@ -1395,7 +1692,7 @@ is
    --  Get gesture pinch angle
    pragma Import (C, GetGesturePinchAngle, "GetGesturePinchAngle");
 
-   procedure UpdateCamera (camera_p : access Camera3D; mode : Interfaces.C.int);
+   procedure UpdateCamera (camera_p : access Camera3D; mode : CameraMode);
    --  Update camera position for selected mode
    pragma Import (C, UpdateCamera, "UpdateCamera");
 
@@ -1663,25 +1960,43 @@ is
    --  Load image from file into CPU memory (RAM)
    pragma Import (C, LoadImage, "LoadImage");
 
-   function LoadImageRaw (fileName : Interfaces.C.Strings.chars_ptr; width : Interfaces.C.int; height : Interfaces.C.int; format : Interfaces.C.int; headerSize : Interfaces.C.int) return Image;
+   function LoadImage (fileName : String) return Image;
+   --  Load image from file into CPU memory (RAM)
+
+   function LoadImageRaw (fileName : Interfaces.C.Strings.chars_ptr; width : Interfaces.C.int; height : Interfaces.C.int; format : PixelFormat; headerSize : Interfaces.C.int) return Image;
    --  Load image from RAW file data
    pragma Import (C, LoadImageRaw, "LoadImageRaw");
+
+   function LoadImageRaw (fileName : String; width : Interfaces.C.int; height : Interfaces.C.int; format : PixelFormat; headerSize : Interfaces.C.int) return Image;
+   --  Load image from RAW file data
 
    function LoadImageSvg (fileNameOrString : Interfaces.C.Strings.chars_ptr; width : Interfaces.C.int; height : Interfaces.C.int) return Image;
    --  Load image from SVG file data or string with specified size
    pragma Import (C, LoadImageSvg, "LoadImageSvg");
 
+   function LoadImageSvg (fileNameOrString : String; width : Interfaces.C.int; height : Interfaces.C.int) return Image;
+   --  Load image from SVG file data or string with specified size
+
    function LoadImageAnim (fileName : Interfaces.C.Strings.chars_ptr; frames : access Interfaces.C.int) return Image;
    --  Load image sequence from file (frames appended to image.data)
    pragma Import (C, LoadImageAnim, "LoadImageAnim");
+
+   function LoadImageAnim (fileName : String; frames : access Interfaces.C.int) return Image;
+   --  Load image sequence from file (frames appended to image.data)
 
    function LoadImageAnimFromMemory (fileType : Interfaces.C.Strings.chars_ptr; fileData : System.Address; dataSize : Interfaces.C.int; frames : access Interfaces.C.int) return Image;
    --  Load image sequence from memory buffer
    pragma Import (C, LoadImageAnimFromMemory, "LoadImageAnimFromMemory");
 
+   function LoadImageAnimFromMemory (fileType : String; fileData : System.Address; dataSize : Interfaces.C.int; frames : access Interfaces.C.int) return Image;
+   --  Load image sequence from memory buffer
+
    function LoadImageFromMemory (fileType : Interfaces.C.Strings.chars_ptr; fileData : System.Address; dataSize : Interfaces.C.int) return Image;
    --  Load image from memory buffer, fileType refers to extension: i.e. '.png'
    pragma Import (C, LoadImageFromMemory, "LoadImageFromMemory");
+
+   function LoadImageFromMemory (fileType : String; fileData : System.Address; dataSize : Interfaces.C.int) return Image;
+   --  Load image from memory buffer, fileType refers to extension: i.e. '.png'
 
    function LoadImageFromTexture (texture_p : Texture) return Image;
    --  Load image from GPU texture data
@@ -1703,13 +2018,22 @@ is
    --  Export image data to file, returns true on success
    pragma Import (C, ExportImage, "ExportImage");
 
+   function ExportImage (image_p : Image; fileName : String) return Interfaces.C.C_bool;
+   --  Export image data to file, returns true on success
+
    function ExportImageToMemory (image_p : Image; fileType : Interfaces.C.Strings.chars_ptr; fileSize : access Interfaces.C.int) return access Interfaces.C.char;
    --  Export image to memory buffer
    pragma Import (C, ExportImageToMemory, "ExportImageToMemory");
 
+   function ExportImageToMemory (image_p : Image; fileType : String; fileSize : access Interfaces.C.int) return access Interfaces.C.char;
+   --  Export image to memory buffer
+
    function ExportImageAsCode (image_p : Image; fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
    --  Export image as code file defining an array of bytes, returns true on success
    pragma Import (C, ExportImageAsCode, "ExportImageAsCode");
+
+   function ExportImageAsCode (image_p : Image; fileName : String) return Interfaces.C.C_bool;
+   --  Export image as code file defining an array of bytes, returns true on success
 
    function GenImageColor (width : Interfaces.C.int; height : Interfaces.C.int; color_p : Color) return Image;
    --  Generate image: plain color
@@ -1747,6 +2071,9 @@ is
    --  Generate image: grayscale image from text data
    pragma Import (C, GenImageText, "GenImageText");
 
+   function GenImageText (width : Interfaces.C.int; height : Interfaces.C.int; text : String) return Image;
+   --  Generate image: grayscale image from text data
+
    function ImageCopy (image_p : Image) return Image;
    --  Create an image duplicate (useful for transformations)
    pragma Import (C, ImageCopy, "ImageCopy");
@@ -1759,9 +2086,15 @@ is
    --  Create an image from text (default font)
    pragma Import (C, ImageText, "ImageText");
 
+   function ImageText (text : String; fontSize : Interfaces.C.int; color_p : Color) return Image;
+   --  Create an image from text (default font)
+
    function ImageTextEx (font_p : Font; text : Interfaces.C.Strings.chars_ptr; fontSize : Interfaces.C.C_float; spacing : Interfaces.C.C_float; tint : Color) return Image;
    --  Create an image from text (custom sprite font)
    pragma Import (C, ImageTextEx, "ImageTextEx");
+
+   function ImageTextEx (font_p : Font; text : String; fontSize : Interfaces.C.C_float; spacing : Interfaces.C.C_float; tint : Color) return Image;
+   --  Create an image from text (custom sprite font)
 
    procedure ImageFormat (image_p : access Image; newFormat : Interfaces.C.int);
    --  Convert image data to desired format
@@ -1947,19 +2280,28 @@ is
    --  Draw text (using default font) within an image (destination)
    pragma Import (C, ImageDrawText, "ImageDrawText");
 
+   procedure ImageDrawText (dst : access Image; text : String; posX : Interfaces.C.int; posY : Interfaces.C.int; fontSize : Interfaces.C.int; color_p : Color);
+   --  Draw text (using default font) within an image (destination)
+
    procedure ImageDrawTextEx (dst : access Image; font_p : Font; text : Interfaces.C.Strings.chars_ptr; position : Vector2; fontSize : Interfaces.C.C_float; spacing : Interfaces.C.C_float; tint : Color);
    --  Draw text (custom sprite font) within an image (destination)
    pragma Import (C, ImageDrawTextEx, "ImageDrawTextEx");
+
+   procedure ImageDrawTextEx (dst : access Image; font_p : Font; text : String; position : Vector2; fontSize : Interfaces.C.C_float; spacing : Interfaces.C.C_float; tint : Color);
+   --  Draw text (custom sprite font) within an image (destination)
 
    function LoadTexture (fileName : Interfaces.C.Strings.chars_ptr) return Texture;
    --  Load texture from file into GPU memory (VRAM)
    pragma Import (C, LoadTexture, "LoadTexture");
 
+   function LoadTexture (fileName : String) return Texture;
+   --  Load texture from file into GPU memory (VRAM)
+
    function LoadTextureFromImage (image_p : Image) return Texture;
    --  Load texture from image data
    pragma Import (C, LoadTextureFromImage, "LoadTextureFromImage");
 
-   function LoadTextureCubemap (image_p : Image; layout : Interfaces.C.int) return Texture;
+   function LoadTextureCubemap (image_p : Image; layout : CubemapLayout) return Texture;
    --  Load cubemap from image, multiple image cubemap layouts supported
    pragma Import (C, LoadTextureCubemap, "LoadTextureCubemap");
 
@@ -1995,11 +2337,11 @@ is
    --  Generate GPU mipmaps for a texture
    pragma Import (C, GenTextureMipmaps, "GenTextureMipmaps");
 
-   procedure SetTextureFilter (texture_p : Texture; filter : Interfaces.C.int);
+   procedure SetTextureFilter (texture_p : Texture; filter : TextureFilter);
    --  Set texture scaling filter mode
    pragma Import (C, SetTextureFilter, "SetTextureFilter");
 
-   procedure SetTextureWrap (texture_p : Texture; wrap : Interfaces.C.int);
+   procedure SetTextureWrap (texture_p : Texture; wrap : TextureWrap);
    --  Set texture wrapping mode
    pragma Import (C, SetTextureWrap, "SetTextureWrap");
 
@@ -2079,15 +2421,15 @@ is
    --  Get Color structure from hexadecimal value
    pragma Import (C, GetColor, "GetColor");
 
-   function GetPixelColor (srcPtr : System.Address; format : Interfaces.C.int) return Color;
+   function GetPixelColor (srcPtr : System.Address; format : PixelFormat) return Color;
    --  Get Color from a source pixel pointer of certain format
    pragma Import (C, GetPixelColor, "GetPixelColor");
 
-   procedure SetPixelColor (dstPtr : System.Address; color_p : Color; format : Interfaces.C.int);
+   procedure SetPixelColor (dstPtr : System.Address; color_p : Color; format : PixelFormat);
    --  Set color formatted into destination pixel pointer
    pragma Import (C, SetPixelColor, "SetPixelColor");
 
-   function GetPixelDataSize (width : Interfaces.C.int; height : Interfaces.C.int; format : Interfaces.C.int) return Interfaces.C.int;
+   function GetPixelDataSize (width : Interfaces.C.int; height : Interfaces.C.int; format : PixelFormat) return Interfaces.C.int;
    --  Get pixel data size in bytes for certain format
    pragma Import (C, GetPixelDataSize, "GetPixelDataSize");
 
@@ -2099,9 +2441,15 @@ is
    --  Load font from file into GPU memory (VRAM)
    pragma Import (C, LoadFont, "LoadFont");
 
+   function LoadFont (fileName : String) return Font;
+   --  Load font from file into GPU memory (VRAM)
+
    function LoadFontEx (fileName : Interfaces.C.Strings.chars_ptr; fontSize : Interfaces.C.int; codepoints : access Interfaces.C.int; codepointCount : Interfaces.C.int) return Font;
    --  Load font from file with extended parameters, use NULL for codepoints and 0 for codepointCount to load the default character setFont
    pragma Import (C, LoadFontEx, "LoadFontEx");
+
+   function LoadFontEx (fileName : String; fontSize : Interfaces.C.int; codepoints : access Interfaces.C.int; codepointCount : Interfaces.C.int) return Font;
+   --  Load font from file with extended parameters, use NULL for codepoints and 0 for codepointCount to load the default character setFont
 
    function LoadFontFromImage (image_p : Image; key : Color; firstChar : Interfaces.C.int) return Font;
    --  Load font from Image (XNA style)
@@ -2111,11 +2459,14 @@ is
    --  Load font from memory buffer, fileType refers to extension: i.e. '.ttf'
    pragma Import (C, LoadFontFromMemory, "LoadFontFromMemory");
 
+   function LoadFontFromMemory (fileType : String; fileData : System.Address; dataSize : Interfaces.C.int; fontSize : Interfaces.C.int; codepoints : access Interfaces.C.int; codepointCount : Interfaces.C.int) return Font;
+   --  Load font from memory buffer, fileType refers to extension: i.e. '.ttf'
+
    function IsFontReady (font_p : Font) return Interfaces.C.C_bool;
    --  Check if a font is ready
    pragma Import (C, IsFontReady, "IsFontReady");
 
-   function LoadFontData (fileData : System.Address; dataSize : Interfaces.C.int; fontSize : Interfaces.C.int; codepoints : access Interfaces.C.int; codepointCount : Interfaces.C.int; type_p : Interfaces.C.int) return access GlyphInfo;
+   function LoadFontData (fileData : System.Address; dataSize : Interfaces.C.int; fontSize : Interfaces.C.int; codepoints : access Interfaces.C.int; codepointCount : Interfaces.C.int; type_p : FontType) return access GlyphInfo;
    --  Load font data for further use
    pragma Import (C, LoadFontData, "LoadFontData");
 
@@ -2131,6 +2482,9 @@ is
    --  Export font as code file, returns true on success
    pragma Import (C, ExportFontAsCode, "ExportFontAsCode");
 
+   function ExportFontAsCode (font_p : Font; fileName : String) return Interfaces.C.C_bool;
+   --  Export font as code file, returns true on success
+
    procedure DrawFPS (posX : Interfaces.C.int; posY : Interfaces.C.int);
    --  Draw current FPS
    pragma Import (C, DrawFPS, "DrawFPS");
@@ -2139,13 +2493,22 @@ is
    --  Draw text (using default font)
    pragma Import (C, DrawText, "DrawText");
 
+   procedure DrawText (text : String; posX : Interfaces.C.int; posY : Interfaces.C.int; fontSize : Interfaces.C.int; color_p : Color);
+   --  Draw text (using default font)
+
    procedure DrawTextEx (font_p : Font; text : Interfaces.C.Strings.chars_ptr; position : Vector2; fontSize : Interfaces.C.C_float; spacing : Interfaces.C.C_float; tint : Color);
    --  Draw text using font and additional parameters
    pragma Import (C, DrawTextEx, "DrawTextEx");
 
+   procedure DrawTextEx (font_p : Font; text : String; position : Vector2; fontSize : Interfaces.C.C_float; spacing : Interfaces.C.C_float; tint : Color);
+   --  Draw text using font and additional parameters
+
    procedure DrawTextPro (font_p : Font; text : Interfaces.C.Strings.chars_ptr; position : Vector2; origin : Vector2; rotation : Interfaces.C.C_float; fontSize : Interfaces.C.C_float; spacing : Interfaces.C.C_float; tint : Color);
    --  Draw text using Font and pro parameters (rotation)
    pragma Import (C, DrawTextPro, "DrawTextPro");
+
+   procedure DrawTextPro (font_p : Font; text : String; position : Vector2; origin : Vector2; rotation : Interfaces.C.C_float; fontSize : Interfaces.C.C_float; spacing : Interfaces.C.C_float; tint : Color);
+   --  Draw text using Font and pro parameters (rotation)
 
    procedure DrawTextCodepoint (font_p : Font; codepoint : Interfaces.C.int; position : Vector2; fontSize : Interfaces.C.C_float; tint : Color);
    --  Draw one character (codepoint)
@@ -2163,9 +2526,15 @@ is
    --  Measure string width for default font
    pragma Import (C, MeasureText, "MeasureText");
 
+   function MeasureText (text : String; fontSize : Interfaces.C.int) return Interfaces.C.int;
+   --  Measure string width for default font
+
    function MeasureTextEx (font_p : Font; text : Interfaces.C.Strings.chars_ptr; fontSize : Interfaces.C.C_float; spacing : Interfaces.C.C_float) return Vector2;
    --  Measure string size for Font
    pragma Import (C, MeasureTextEx, "MeasureTextEx");
+
+   function MeasureTextEx (font_p : Font; text : String; fontSize : Interfaces.C.C_float; spacing : Interfaces.C.C_float) return Vector2;
+   --  Measure string size for Font
 
    function GetGlyphIndex (font_p : Font; codepoint : Interfaces.C.int) return Interfaces.C.int;
    --  Get glyph index position in font for a codepoint (unicode character), fallback to '?' if not found
@@ -2183,13 +2552,22 @@ is
    --  Load UTF-8 text encoded from codepoints array
    pragma Import (C, LoadUTF8, "LoadUTF8");
 
+   function LoadUTF8 (codepoints : access constant Interfaces.C.int; length : Interfaces.C.int) return String;
+   --  Load UTF-8 text encoded from codepoints array
+
    procedure UnloadUTF8 (text : Interfaces.C.Strings.chars_ptr);
    --  Unload UTF-8 text encoded from codepoints array
    pragma Import (C, UnloadUTF8, "UnloadUTF8");
 
+   procedure UnloadUTF8 (text : String);
+   --  Unload UTF-8 text encoded from codepoints array
+
    function LoadCodepoints (text : Interfaces.C.Strings.chars_ptr; count : access Interfaces.C.int) return access Interfaces.C.int;
    --  Load all codepoints from a UTF-8 text string, codepoints count returned by parameter
    pragma Import (C, LoadCodepoints, "LoadCodepoints");
+
+   function LoadCodepoints (text : String; count : access Interfaces.C.int) return access Interfaces.C.int;
+   --  Load all codepoints from a UTF-8 text string, codepoints count returned by parameter
 
    procedure UnloadCodepoints (codepoints : access Interfaces.C.int);
    --  Unload codepoints data from memory
@@ -2199,81 +2577,141 @@ is
    --  Get total number of codepoints in a UTF-8 encoded string
    pragma Import (C, GetCodepointCount, "GetCodepointCount");
 
+   function GetCodepointCount (text : String) return Interfaces.C.int;
+   --  Get total number of codepoints in a UTF-8 encoded string
+
    function GetCodepoint (text : Interfaces.C.Strings.chars_ptr; codepointSize : access Interfaces.C.int) return Interfaces.C.int;
    --  Get next codepoint in a UTF-8 encoded string, 0x3f('?') is returned on failure
    pragma Import (C, GetCodepoint, "GetCodepoint");
+
+   function GetCodepoint (text : String; codepointSize : access Interfaces.C.int) return Interfaces.C.int;
+   --  Get next codepoint in a UTF-8 encoded string, 0x3f('?') is returned on failure
 
    function GetCodepointNext (text : Interfaces.C.Strings.chars_ptr; codepointSize : access Interfaces.C.int) return Interfaces.C.int;
    --  Get next codepoint in a UTF-8 encoded string, 0x3f('?') is returned on failure
    pragma Import (C, GetCodepointNext, "GetCodepointNext");
 
+   function GetCodepointNext (text : String; codepointSize : access Interfaces.C.int) return Interfaces.C.int;
+   --  Get next codepoint in a UTF-8 encoded string, 0x3f('?') is returned on failure
+
    function GetCodepointPrevious (text : Interfaces.C.Strings.chars_ptr; codepointSize : access Interfaces.C.int) return Interfaces.C.int;
    --  Get previous codepoint in a UTF-8 encoded string, 0x3f('?') is returned on failure
    pragma Import (C, GetCodepointPrevious, "GetCodepointPrevious");
+
+   function GetCodepointPrevious (text : String; codepointSize : access Interfaces.C.int) return Interfaces.C.int;
+   --  Get previous codepoint in a UTF-8 encoded string, 0x3f('?') is returned on failure
 
    function CodepointToUTF8 (codepoint : Interfaces.C.int; utf8Size : access Interfaces.C.int) return Interfaces.C.Strings.chars_ptr;
    --  Encode one codepoint into UTF-8 byte array (array length returned as parameter)
    pragma Import (C, CodepointToUTF8, "CodepointToUTF8");
 
+   function CodepointToUTF8 (codepoint : Interfaces.C.int; utf8Size : access Interfaces.C.int) return String;
+   --  Encode one codepoint into UTF-8 byte array (array length returned as parameter)
+
    function TextCopy (dst : Interfaces.C.Strings.chars_ptr; src : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
    --  Copy one string to another, returns bytes copied
    pragma Import (C, TextCopy, "TextCopy");
+
+   function TextCopy (dst : String; src : String) return Interfaces.C.int;
+   --  Copy one string to another, returns bytes copied
 
    function TextIsEqual (text1 : Interfaces.C.Strings.chars_ptr; text2 : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
    --  Check if two text string are equal
    pragma Import (C, TextIsEqual, "TextIsEqual");
 
+   function TextIsEqual (text1 : String; text2 : String) return Interfaces.C.C_bool;
+   --  Check if two text string are equal
+
    function TextLength (text : Interfaces.C.Strings.chars_ptr) return Interfaces.C.unsigned;
    --  Get text length, checks for '\0' ending
    pragma Import (C, TextLength, "TextLength");
+
+   function TextLength (text : String) return Interfaces.C.unsigned;
+   --  Get text length, checks for '\0' ending
 
    function TextSubtext (text : Interfaces.C.Strings.chars_ptr; position : Interfaces.C.int; length : Interfaces.C.int) return Interfaces.C.Strings.chars_ptr;
    --  Get a piece of a text string
    pragma Import (C, TextSubtext, "TextSubtext");
 
+   function TextSubtext (text : String; position : Interfaces.C.int; length : Interfaces.C.int) return String;
+   --  Get a piece of a text string
+
    function TextReplace (text : Interfaces.C.Strings.chars_ptr; replace : Interfaces.C.Strings.chars_ptr; by : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
    --  Replace text string (WARNING: memory must be freed!)
    pragma Import (C, TextReplace, "TextReplace");
+
+   function TextReplace (text : String; replace : String; by : String) return String;
+   --  Replace text string (WARNING: memory must be freed!)
 
    function TextInsert (text : Interfaces.C.Strings.chars_ptr; insert : Interfaces.C.Strings.chars_ptr; position : Interfaces.C.int) return Interfaces.C.Strings.chars_ptr;
    --  Insert text in a position (WARNING: memory must be freed!)
    pragma Import (C, TextInsert, "TextInsert");
 
+   function TextInsert (text : String; insert : String; position : Interfaces.C.int) return String;
+   --  Insert text in a position (WARNING: memory must be freed!)
+
    function TextJoin (textList : access Interfaces.C.Strings.chars_ptr; count : Interfaces.C.int; delimiter : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
    --  Join text strings with delimiter
    pragma Import (C, TextJoin, "TextJoin");
+
+   function TextJoin (textList : access Interfaces.C.Strings.chars_ptr; count : Interfaces.C.int; delimiter : String) return String;
+   --  Join text strings with delimiter
 
    function TextSplit (text : Interfaces.C.Strings.chars_ptr; delimiter : Interfaces.C.char; count : access Interfaces.C.int) return access Interfaces.C.Strings.chars_ptr;
    --  Split text into multiple strings
    pragma Import (C, TextSplit, "TextSplit");
 
+   function TextSplit (text : String; delimiter : Interfaces.C.char; count : access Interfaces.C.int) return access Interfaces.C.Strings.chars_ptr;
+   --  Split text into multiple strings
+
    procedure TextAppend (text : Interfaces.C.Strings.chars_ptr; append : Interfaces.C.Strings.chars_ptr; position : access Interfaces.C.int);
    --  Append text at specific position and move cursor!
    pragma Import (C, TextAppend, "TextAppend");
+
+   procedure TextAppend (text : String; append : String; position : access Interfaces.C.int);
+   --  Append text at specific position and move cursor!
 
    function TextFindIndex (text : Interfaces.C.Strings.chars_ptr; find : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
    --  Find first text occurrence within a string
    pragma Import (C, TextFindIndex, "TextFindIndex");
 
+   function TextFindIndex (text : String; find : String) return Interfaces.C.int;
+   --  Find first text occurrence within a string
+
    function TextToUpper (text : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
    --  Get upper case version of provided string
    pragma Import (C, TextToUpper, "TextToUpper");
+
+   function TextToUpper (text : String) return String;
+   --  Get upper case version of provided string
 
    function TextToLower (text : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
    --  Get lower case version of provided string
    pragma Import (C, TextToLower, "TextToLower");
 
+   function TextToLower (text : String) return String;
+   --  Get lower case version of provided string
+
    function TextToPascal (text : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
    --  Get Pascal case notation version of provided string
    pragma Import (C, TextToPascal, "TextToPascal");
+
+   function TextToPascal (text : String) return String;
+   --  Get Pascal case notation version of provided string
 
    function TextToInteger (text : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
    --  Get integer value from text (negative values not supported)
    pragma Import (C, TextToInteger, "TextToInteger");
 
+   function TextToInteger (text : String) return Interfaces.C.int;
+   --  Get integer value from text (negative values not supported)
+
    function TextToFloat (text : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_float;
    --  Get float value from text (negative values not supported)
    pragma Import (C, TextToFloat, "TextToFloat");
+
+   function TextToFloat (text : String) return Interfaces.C.C_float;
+   --  Get float value from text (negative values not supported)
 
    procedure DrawLine3D (startPos : Vector3; endPos : Vector3; color_p : Color);
    --  Draw a line in 3D world space
@@ -2363,6 +2801,9 @@ is
    --  Load model from files (meshes and materials)
    pragma Import (C, LoadModel, "LoadModel");
 
+   function LoadModel (fileName : String) return Model;
+   --  Load model from files (meshes and materials)
+
    function LoadModelFromMesh (mesh_p : Mesh) return Model;
    --  Load model from generated mesh (default material)
    pragma Import (C, LoadModelFromMesh, "LoadModelFromMesh");
@@ -2443,9 +2884,15 @@ is
    --  Export mesh data to file, returns true on success
    pragma Import (C, ExportMesh, "ExportMesh");
 
+   function ExportMesh (mesh_p : Mesh; fileName : String) return Interfaces.C.C_bool;
+   --  Export mesh data to file, returns true on success
+
    function ExportMeshAsCode (mesh_p : Mesh; fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
    --  Export mesh as code file (.h) defining multiple arrays of vertex attributes
    pragma Import (C, ExportMeshAsCode, "ExportMeshAsCode");
+
+   function ExportMeshAsCode (mesh_p : Mesh; fileName : String) return Interfaces.C.C_bool;
+   --  Export mesh as code file (.h) defining multiple arrays of vertex attributes
 
    function GenMeshPoly (sides : Interfaces.C.int; radius : Interfaces.C.C_float) return Mesh;
    --  Generate polygonal mesh
@@ -2494,6 +2941,9 @@ is
    function LoadMaterials (fileName : Interfaces.C.Strings.chars_ptr; materialCount : access Interfaces.C.int) return access Material;
    --  Load materials from model file
    pragma Import (C, LoadMaterials, "LoadMaterials");
+
+   function LoadMaterials (fileName : String; materialCount : access Interfaces.C.int) return access Material;
+   --  Load materials from model file
 
    function LoadMaterialDefault return Material;
    --  Load default material (Supports: DIFFUSE, SPECULAR, NORMAL maps)
@@ -2571,9 +3021,15 @@ is
    --  Load wave data from file
    pragma Import (C, LoadWave, "LoadWave");
 
+   function LoadWave (fileName : String) return Wave;
+   --  Load wave data from file
+
    function LoadWaveFromMemory (fileType : Interfaces.C.Strings.chars_ptr; fileData : System.Address; dataSize : Interfaces.C.int) return Wave;
    --  Load wave from memory buffer, fileType refers to extension: i.e. '.wav'
    pragma Import (C, LoadWaveFromMemory, "LoadWaveFromMemory");
+
+   function LoadWaveFromMemory (fileType : String; fileData : System.Address; dataSize : Interfaces.C.int) return Wave;
+   --  Load wave from memory buffer, fileType refers to extension: i.e. '.wav'
 
    function IsWaveReady (wave_p : Wave) return Interfaces.C.C_bool;
    --  Checks if wave data is ready
@@ -2587,9 +3043,15 @@ is
    --  Export wave data to file, returns true on success
    pragma Import (C, ExportWave, "ExportWave");
 
+   function ExportWave (wave_p : Wave; fileName : String) return Interfaces.C.C_bool;
+   --  Export wave data to file, returns true on success
+
    function ExportWaveAsCode (wave_p : Wave; fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
    --  Export wave sample data to code (.h), returns true on success
    pragma Import (C, ExportWaveAsCode, "ExportWaveAsCode");
+
+   function ExportWaveAsCode (wave_p : Wave; fileName : String) return Interfaces.C.C_bool;
+   --  Export wave sample data to code (.h), returns true on success
 
    function WaveCopy (wave_p : Wave) return Wave;
    --  Copy a wave to a new wave
@@ -2611,6 +3073,11 @@ is
    --  Unload samples data loaded with LoadWaveSamples()
    pragma Import (C, UnloadWaveSamples, "UnloadWaveSamples");
 
+   RAYLIB_VERSION_MAJOR : constant := 5;
+   RAYLIB_VERSION_MINOR : constant := 1;
+   RAYLIB_VERSION_PATCH : constant := 0;
+   RAYLIB_VERSION : constant String := "5.1-dev";
+   PI : constant := 3.141592653589793;
    LIGHTGRAY : constant Color := (200, 200, 200, 255);
    GRAY : constant Color := (130, 130, 130, 255);
    DARKGRAY : constant Color := (80, 80, 80, 255);
