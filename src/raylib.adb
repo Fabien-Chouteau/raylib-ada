@@ -17,13 +17,6 @@ package body Raylib is
       Free (C_title);
    end SetWindowTitle;
 
-   function GetMonitorName (monitor : Interfaces.C.int) return String is
-      use Interfaces.C.Strings;
-      Result : constant String := Value (GetMonitorName (monitor));
-   begin
-      return Result;
-   end GetMonitorName;
-
    procedure SetClipboardText (text : String) is
       use Interfaces.C.Strings;
       C_text : Interfaces.C.Strings.chars_ptr := New_String (text);
@@ -294,20 +287,6 @@ package body Raylib is
       return Result;
    end GetFileModTime;
 
-   function EncodeDataBase64 (data : System.Address; dataSize : Interfaces.C.int; outputSize : access Interfaces.C.int) return String is
-      use Interfaces.C.Strings;
-      Result : constant String := Value (EncodeDataBase64 (data, dataSize, outputSize));
-   begin
-      return Result;
-   end EncodeDataBase64;
-
-   function GetGamepadName (gamepad : Interfaces.C.int) return String is
-      use Interfaces.C.Strings;
-      Result : constant String := Value (GetGamepadName (gamepad));
-   begin
-      return Result;
-   end GetGamepadName;
-
    function SetGamepadMappings (mappings : String) return Interfaces.C.int is
       use Interfaces.C.Strings;
       C_mappings : Interfaces.C.Strings.chars_ptr := New_String (mappings);
@@ -528,13 +507,6 @@ package body Raylib is
       return Result;
    end MeasureTextEx;
 
-   function LoadUTF8 (codepoints : access constant Interfaces.C.int; length : Interfaces.C.int) return String is
-      use Interfaces.C.Strings;
-      Result : constant String := Value (LoadUTF8 (codepoints, length));
-   begin
-      return Result;
-   end LoadUTF8;
-
    procedure UnloadUTF8 (text : String) is
       use Interfaces.C.Strings;
       C_text : Interfaces.C.Strings.chars_ptr := New_String (text);
@@ -587,13 +559,6 @@ package body Raylib is
       Free (C_text);
       return Result;
    end GetCodepointPrevious;
-
-   function CodepointToUTF8 (codepoint : Interfaces.C.int; utf8Size : access Interfaces.C.int) return String is
-      use Interfaces.C.Strings;
-      Result : constant String := Value (CodepointToUTF8 (codepoint, utf8Size));
-   begin
-      return Result;
-   end CodepointToUTF8;
 
    function TextCopy (dst : String; src : String) return Interfaces.C.int is
       use Interfaces.C.Strings;

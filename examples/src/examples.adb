@@ -1,9 +1,7 @@
-with Ada.Text_IO;
 with Raylib;
 with Resources;
 with Examples_Config;
 with Interfaces.C; use Interfaces.C;
-with Interfaces.C.Strings; use Interfaces.C.Strings;
 
 procedure Examples is
 
@@ -26,7 +24,6 @@ procedure Examples is
    Music : Raylib.Music;
    Sound : Raylib.Sound;
 begin
-
    Raylib.InitWindow (screenWidth, screenHeight, "Example window");
 
    Raylib.InitAudioDevice;

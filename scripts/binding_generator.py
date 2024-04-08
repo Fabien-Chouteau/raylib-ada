@@ -140,6 +140,7 @@ def to_ada_type(c_type, name=None, parent=None):
     elif c_type.endswith("*"):
         return "access " + to_ada_type(c_type[:-1].strip())
     else:
+        print(TYPE_IDENTITY)
         raise Exception(f"unknown type: '{c_type}'")
 
 
@@ -236,7 +237,7 @@ def gen_enum(enum):
     print()
 
 
-def function_decl(function, spec=True):
+def function_decl(function, spec=True, callback=False):
     out = ""
     param_decls = []
     if function["params"] is not None:
@@ -248,12 +249,16 @@ def function_decl(function, spec=True):
     else:
         params_str = ""
 
-    term = ";" if spec else " is"
+    if callback:
+        out += f"   type {function['name']} is access "
+        function["name"] = ""
+
+    term = (";" if not callback else "") if spec else " is"
     if function["returnType"] is None:
         out += f"   procedure {function['name']}{params_str}{term}\n"
     else:
         out += f"   function {function['name']}{params_str} return {function['returnType']}{term}\n"
-    if spec:
+    if spec and not callback:
         out += f"   --  {function['description']}"
     return out
 
@@ -300,6 +305,18 @@ def gen_string_function_body(function):
     body += out
 
 
+def process_params(params, function_name):
+    C_STRING_TYPE = "Interfaces.C.Strings.chars_ptr"
+    has_string = False
+    for p in params:
+        if p["name"] in ADA_KEYWORD or is_type_name(p["name"]):
+            p["name"] = p["name"] + "_p"
+        p["type"] = to_ada_type(p["type"], p["name"], function_name)
+        if p["type"] == C_STRING_TYPE:
+            has_string = True
+    return params, has_string
+
+
 def gen_function(function):
     C_STRING_TYPE = "Interfaces.C.Strings.chars_ptr"
 
@@ -307,12 +324,9 @@ def gen_function(function):
 
     has_string = function["returnType"] == C_STRING_TYPE
     if "params" in function:
-        for p in function["params"]:
-            if p["name"] in ADA_KEYWORD or is_type_name(p["name"]):
-                p["name"] = p["name"] + "_p"
-            p["type"] = to_ada_type(p["type"], p["name"], function["name"])
-            if p["type"] == C_STRING_TYPE:
-                has_string = True
+        function["params"], has_string = process_params(
+            function["params"], function["name"]
+        )
     else:
         function["params"] = None
 
@@ -348,6 +362,20 @@ def gen_define(define):
         print(f"   {define['name']} : constant := {define['value']};")
 
 
+def gen_callback(callback):
+    global TYPE_IDENTITY
+    TYPE_IDENTITY.append(callback["name"])
+
+    callback["returnType"] = to_ada_type(callback["returnType"], "RETURNTYPE")
+    callback["params"], _ = process_params(callback["params"], callback["name"])
+    print(
+        function_decl(callback, spec=True, callback=True) + "     with Convention => C;"
+    )
+    if callback["description"]:
+        print(f"   --  {callback['description']}")
+    print()
+
+
 print("with System;")
 print("with Interfaces.C;")
 print("with Interfaces.C.Strings;")
@@ -369,32 +397,30 @@ print("   type ShaderLocationArray is array (ShaderLocationIndex) of Interfaces.
 print("     with Convention => C;")
 print()
 
+SKIP_CALLBACKS = ["TraceLogCallback"]
+for callback in data["callbacks"]:
+    if callback["name"] not in SKIP_CALLBACKS:
+        gen_callback(callback)
+
 SKIP_STRUCTS = ["ModelAnimation" "Music"]
 for struct in data["structs"]:
     if struct["name"] not in SKIP_STRUCTS:
         gen_struct(struct)
 
-# for callback in data["callbacks"]:
-#     print(callback)
 
 SKIP_FUNCTIONS = [
-    "TraceLog",
     "LoadAutomationEventList",
     "UnloadAutomationEventList",
     "ExportAutomationEventList",
     "SetAutomationEventList",
     "TextFormat",
-    "AttachAudioStreamProcessor",
-    "DetachAudioStreamProcessor",
-    "AttachAudioMixedProcessor",
-    "DetachAudioMixedProcessor",
     "GenImageFontAtlas",
 ]
 
 for function in data["functions"]:
     if (
         "VrSteree" not in function["name"]
-        and "Callback" not in function["name"]
+        and "TraceLog" not in function["name"]
         and "ModelAnimation" not in function["name"]
         and function["name"] not in SKIP_FUNCTIONS
     ):
@@ -405,4 +431,4 @@ for define in data["defines"]:
 
 print("end Raylib;")
 
-print(body)
+# print(body)

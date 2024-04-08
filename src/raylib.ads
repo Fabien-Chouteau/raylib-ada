@@ -584,6 +584,25 @@ is
    type ShaderLocationArray is array (ShaderLocationIndex) of Interfaces.C.int
      with Convention => C;
 
+   type LoadFileDataCallback is access    function  (fileName : Interfaces.C.Strings.chars_ptr; dataSize : access Interfaces.C.int) return access Interfaces.C.char
+     with Convention => C;
+   --  FileIO: Load binary data
+
+   type SaveFileDataCallback is access    function  (fileName : Interfaces.C.Strings.chars_ptr; data : System.Address; dataSize : Interfaces.C.int) return Interfaces.C.C_bool
+     with Convention => C;
+   --  FileIO: Save binary data
+
+   type LoadFileTextCallback is access    function  (fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr
+     with Convention => C;
+   --  FileIO: Load text data
+
+   type SaveFileTextCallback is access    function  (fileName : Interfaces.C.Strings.chars_ptr; text : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool
+     with Convention => C;
+   --  FileIO: Save text data
+
+   type AudioCallback is access    procedure  (bufferData : System.Address; frames : Interfaces.C.unsigned)
+     with Convention => C;
+
    type Vector2 is record
       x : Interfaces.C.C_float; -- Vector x component
       y : Interfaces.C.C_float; -- Vector y component
@@ -1074,9 +1093,6 @@ is
    --  Get the human-readable, UTF-8 encoded name of the specified monitor
    pragma Import (C, GetMonitorName, "GetMonitorName");
 
-   function GetMonitorName (monitor : Interfaces.C.int) return String;
-   --  Get the human-readable, UTF-8 encoded name of the specified monitor
-
    procedure SetClipboardText (text : Interfaces.C.Strings.chars_ptr);
    --  Set clipboard text content
    pragma Import (C, SetClipboardText, "SetClipboardText");
@@ -1345,10 +1361,6 @@ is
    procedure OpenURL (url : String);
    --  Open URL with default system browser (if available)
 
-   procedure SetTraceLogLevel (logLevel : Interfaces.C.int);
-   --  Set the current threshold (minimum) log level
-   pragma Import (C, SetTraceLogLevel, "SetTraceLogLevel");
-
    function MemAlloc (size : Interfaces.C.unsigned) return System.Address;
    --  Internal memory allocator
    pragma Import (C, MemAlloc, "MemAlloc");
@@ -1360,6 +1372,22 @@ is
    procedure MemFree (ptr : System.Address);
    --  Internal memory free
    pragma Import (C, MemFree, "MemFree");
+
+   procedure SetLoadFileDataCallback (callback : LoadFileDataCallback);
+   --  Set custom file binary data loader
+   pragma Import (C, SetLoadFileDataCallback, "SetLoadFileDataCallback");
+
+   procedure SetSaveFileDataCallback (callback : SaveFileDataCallback);
+   --  Set custom file binary data saver
+   pragma Import (C, SetSaveFileDataCallback, "SetSaveFileDataCallback");
+
+   procedure SetLoadFileTextCallback (callback : LoadFileTextCallback);
+   --  Set custom file text data loader
+   pragma Import (C, SetLoadFileTextCallback, "SetLoadFileTextCallback");
+
+   procedure SetSaveFileTextCallback (callback : SaveFileTextCallback);
+   --  Set custom file text data saver
+   pragma Import (C, SetSaveFileTextCallback, "SetSaveFileTextCallback");
 
    function LoadFileData (fileName : Interfaces.C.Strings.chars_ptr; dataSize : access Interfaces.C.int) return access Interfaces.C.char;
    --  Load file data as byte array (read)
@@ -1547,9 +1575,6 @@ is
    --  Encode data to Base64 string, memory must be MemFree()
    pragma Import (C, EncodeDataBase64, "EncodeDataBase64");
 
-   function EncodeDataBase64 (data : System.Address; dataSize : Interfaces.C.int; outputSize : access Interfaces.C.int) return String;
-   --  Encode data to Base64 string, memory must be MemFree()
-
    function DecodeDataBase64 (data : System.Address; outputSize : access Interfaces.C.int) return access Interfaces.C.char;
    --  Decode Base64 string data, memory must be MemFree()
    pragma Import (C, DecodeDataBase64, "DecodeDataBase64");
@@ -1609,9 +1634,6 @@ is
    function GetGamepadName (gamepad : Interfaces.C.int) return Interfaces.C.Strings.chars_ptr;
    --  Get gamepad internal name id
    pragma Import (C, GetGamepadName, "GetGamepadName");
-
-   function GetGamepadName (gamepad : Interfaces.C.int) return String;
-   --  Get gamepad internal name id
 
    function IsGamepadButtonPressed (gamepad : Interfaces.C.int; button : GamepadButton) return Interfaces.C.C_bool;
    --  Check if a gamepad button has been pressed once
@@ -2620,9 +2642,6 @@ is
    --  Load UTF-8 text encoded from codepoints array
    pragma Import (C, LoadUTF8, "LoadUTF8");
 
-   function LoadUTF8 (codepoints : access constant Interfaces.C.int; length : Interfaces.C.int) return String;
-   --  Load UTF-8 text encoded from codepoints array
-
    procedure UnloadUTF8 (text : Interfaces.C.Strings.chars_ptr);
    --  Unload UTF-8 text encoded from codepoints array
    pragma Import (C, UnloadUTF8, "UnloadUTF8");
@@ -2672,9 +2691,6 @@ is
    function CodepointToUTF8 (codepoint : Interfaces.C.int; utf8Size : access Interfaces.C.int) return Interfaces.C.Strings.chars_ptr;
    --  Encode one codepoint into UTF-8 byte array (array length returned as parameter)
    pragma Import (C, CodepointToUTF8, "CodepointToUTF8");
-
-   function CodepointToUTF8 (codepoint : Interfaces.C.int; utf8Size : access Interfaces.C.int) return String;
-   --  Encode one codepoint into UTF-8 byte array (array length returned as parameter)
 
    function TextCopy (dst : Interfaces.C.Strings.chars_ptr; src : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
    --  Copy one string to another, returns bytes copied
@@ -3329,6 +3345,26 @@ is
    procedure SetAudioStreamBufferSizeDefault (size : Interfaces.C.int);
    --  Default size for new audio streams
    pragma Import (C, SetAudioStreamBufferSizeDefault, "SetAudioStreamBufferSizeDefault");
+
+   procedure SetAudioStreamCallback (stream : AudioStream; callback : AudioCallback);
+   --  Audio thread callback to request new data
+   pragma Import (C, SetAudioStreamCallback, "SetAudioStreamCallback");
+
+   procedure AttachAudioStreamProcessor (stream : AudioStream; processor : AudioCallback);
+   --  Attach audio stream processor to stream, receives the samples as <float>s
+   pragma Import (C, AttachAudioStreamProcessor, "AttachAudioStreamProcessor");
+
+   procedure DetachAudioStreamProcessor (stream : AudioStream; processor : AudioCallback);
+   --  Detach audio stream processor from stream
+   pragma Import (C, DetachAudioStreamProcessor, "DetachAudioStreamProcessor");
+
+   procedure AttachAudioMixedProcessor (processor : AudioCallback);
+   --  Attach audio stream processor to the entire audio pipeline, receives the samples as <float>s
+   pragma Import (C, AttachAudioMixedProcessor, "AttachAudioMixedProcessor");
+
+   procedure DetachAudioMixedProcessor (processor : AudioCallback);
+   --  Detach audio stream processor from the entire audio pipeline
+   pragma Import (C, DetachAudioMixedProcessor, "DetachAudioMixedProcessor");
 
    RAYLIB_VERSION_MAJOR : constant := 5;
    RAYLIB_VERSION_MINOR : constant := 1;
