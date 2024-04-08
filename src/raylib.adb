@@ -287,6 +287,24 @@ package body Raylib is
       return Result;
    end GetFileModTime;
 
+   function LoadAutomationEventList (fileName : String) return AutomationEventList is
+      use Interfaces.C.Strings;
+      C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
+      Result : constant AutomationEventList := LoadAutomationEventList (C_fileName);
+   begin
+      Free (C_fileName);
+      return Result;
+   end LoadAutomationEventList;
+
+   function ExportAutomationEventList (list : AutomationEventList; fileName : String) return Interfaces.C.C_bool is
+      use Interfaces.C.Strings;
+      C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
+      Result : constant Interfaces.C.C_bool := ExportAutomationEventList (list, C_fileName);
+   begin
+      Free (C_fileName);
+      return Result;
+   end ExportAutomationEventList;
+
    function SetGamepadMappings (mappings : String) return Interfaces.C.int is
       use Interfaces.C.Strings;
       C_mappings : Interfaces.C.Strings.chars_ptr := New_String (mappings);
@@ -743,6 +761,15 @@ package body Raylib is
       Free (C_fileName);
       return Result;
    end LoadMaterials;
+
+   function LoadModelAnimations (fileName : String; animCount : access Interfaces.C.int) return access ModelAnimation_Array is
+      use Interfaces.C.Strings;
+      C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
+      Result : constant access ModelAnimation_Array := LoadModelAnimations (C_fileName, animCount);
+   begin
+      Free (C_fileName);
+      return Result;
+   end LoadModelAnimations;
 
    function LoadWave (fileName : String) return Wave is
       use Interfaces.C.Strings;

@@ -781,7 +781,7 @@ is
       scale : Vector3; -- Scale
    end record
       with Convention => C_Pass_By_Copy;
-   type Tranform_Array is array (Interfaces.C.int range <>) of Transform
+   type Tranform_Array is array (Interfaces.C.int) of Transform
      with Convention => C;
 
    type BoneInfo is record
@@ -811,6 +811,8 @@ is
       name : String32; -- Animation name
    end record
       with Convention => C_Pass_By_Copy;
+   type ModelAnimation_Array is array (Interfaces.C.unsigned) of ModelAnimation
+     with Convention => C;
 
    type Ray is record
       position : Vector3; -- Ray position (origin)
@@ -903,11 +905,13 @@ is
       params : Int4; -- Event parameters (if required)
    end record
       with Convention => C_Pass_By_Copy;
+   type AutomationEvent_Array is array (Interfaces.C.unsigned) of AutomationEvent
+     with Convention => C;
 
    type AutomationEventList is record
       capacity : Interfaces.C.unsigned; -- Events max entries (MAX_AUTOMATION_EVENTS)
       count : Interfaces.C.unsigned; -- Events entries count
-      events : access AutomationEvent; -- Events entries
+      events : access AutomationEvent_Array; -- Events entries
    end record
       with Convention => C_Pass_By_Copy;
 
@@ -1578,6 +1582,28 @@ is
    function DecodeDataBase64 (data : System.Address; outputSize : access Interfaces.C.int) return access Interfaces.C.char;
    --  Decode Base64 string data, memory must be MemFree()
    pragma Import (C, DecodeDataBase64, "DecodeDataBase64");
+
+   function LoadAutomationEventList (fileName : Interfaces.C.Strings.chars_ptr) return AutomationEventList;
+   --  Load automation events list from file, NULL for empty list, capacity = MAX_AUTOMATION_EVENTS
+   pragma Import (C, LoadAutomationEventList, "LoadAutomationEventList");
+
+   function LoadAutomationEventList (fileName : String) return AutomationEventList;
+   --  Load automation events list from file, NULL for empty list, capacity = MAX_AUTOMATION_EVENTS
+
+   procedure UnloadAutomationEventList (list : AutomationEventList);
+   --  Unload automation events list from file
+   pragma Import (C, UnloadAutomationEventList, "UnloadAutomationEventList");
+
+   function ExportAutomationEventList (list : AutomationEventList; fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
+   --  Export automation events list as text file
+   pragma Import (C, ExportAutomationEventList, "ExportAutomationEventList");
+
+   function ExportAutomationEventList (list : AutomationEventList; fileName : String) return Interfaces.C.C_bool;
+   --  Export automation events list as text file
+
+   procedure SetAutomationEventList (list : access AutomationEventList);
+   --  Set automation event list to record to
+   pragma Import (C, SetAutomationEventList, "SetAutomationEventList");
 
    procedure SetAutomationEventBaseFrame (frame : Interfaces.C.int);
    --  Set automation event internal base frame to start recording
@@ -3048,6 +3074,29 @@ is
    procedure SetModelMeshMaterial (model_p : access Model; meshId : Interfaces.C.int; materialId : Interfaces.C.int);
    --  Set material for a mesh
    pragma Import (C, SetModelMeshMaterial, "SetModelMeshMaterial");
+
+   function LoadModelAnimations (fileName : Interfaces.C.Strings.chars_ptr; animCount : access Interfaces.C.int) return access ModelAnimation_Array;
+   --  Load model animations from file
+   pragma Import (C, LoadModelAnimations, "LoadModelAnimations");
+
+   function LoadModelAnimations (fileName : String; animCount : access Interfaces.C.int) return access ModelAnimation_Array;
+   --  Load model animations from file
+
+   procedure UpdateModelAnimation (model_p : Model; anim : ModelAnimation; frame : Interfaces.C.int);
+   --  Update model animation pose
+   pragma Import (C, UpdateModelAnimation, "UpdateModelAnimation");
+
+   procedure UnloadModelAnimation (anim : ModelAnimation);
+   --  Unload animation data
+   pragma Import (C, UnloadModelAnimation, "UnloadModelAnimation");
+
+   procedure UnloadModelAnimations (animations : access ModelAnimation_Array; animCount : Interfaces.C.int);
+   --  Unload animation array data
+   pragma Import (C, UnloadModelAnimations, "UnloadModelAnimations");
+
+   function IsModelAnimationValid (model_p : Model; anim : ModelAnimation) return Interfaces.C.C_bool;
+   --  Check model animation skeleton match
+   pragma Import (C, IsModelAnimationValid, "IsModelAnimationValid");
 
    function CheckCollisionSpheres (center1 : Vector3; radius1 : Interfaces.C.C_float; center2 : Vector3; radius2 : Interfaces.C.C_float) return Interfaces.C.C_bool;
    --  Check collision between two spheres

@@ -132,6 +132,10 @@ def to_ada_type(c_type, name=None, parent=None):
         return "Interfaces.C.size_t"
     elif c_type == "Transform **" and name == "framePoses":
         return "access Tranform_Array"
+    elif c_type == "AutomationEvent *" and name == "events":
+        return "access AutomationEvent_Array"
+    elif c_type == "ModelAnimation *" and name in ["animations", "RETURNTYPE"]:
+        return "access ModelAnimation_Array"
 
     if c_type in TYPE_IDENTITY:
         return c_type
@@ -178,8 +182,16 @@ def gen_struct(struct):
         print("   type MaterialMapArray is array (MaterialMapIndex) of MaterialMap")
         print("     with Convention => C;")
     elif struct["name"] == "Transform":
+        print("   type Tranform_Array is array (Interfaces.C.int) of Transform")
+        print("     with Convention => C;")
+    elif struct["name"] == "AutomationEvent":
         print(
-            "   type Tranform_Array is array (Interfaces.C.int range <>) of Transform"
+            "   type AutomationEvent_Array is array (Interfaces.C.unsigned) of AutomationEvent"
+        )
+        print("     with Convention => C;")
+    elif struct["name"] == "ModelAnimation":
+        print(
+            "   type ModelAnimation_Array is array (Interfaces.C.unsigned) of ModelAnimation"
         )
         print("     with Convention => C;")
 
@@ -402,26 +414,19 @@ for callback in data["callbacks"]:
     if callback["name"] not in SKIP_CALLBACKS:
         gen_callback(callback)
 
-SKIP_STRUCTS = ["ModelAnimation" "Music"]
+SKIP_STRUCTS = []
 for struct in data["structs"]:
     if struct["name"] not in SKIP_STRUCTS:
         gen_struct(struct)
 
 
 SKIP_FUNCTIONS = [
-    "LoadAutomationEventList",
-    "UnloadAutomationEventList",
-    "ExportAutomationEventList",
-    "SetAutomationEventList",
-    "TextFormat",
+    "TextFormat",  # Var args...
     "GenImageFontAtlas",
 ]
-
 for function in data["functions"]:
     if (
-        "VrSteree" not in function["name"]
-        and "TraceLog" not in function["name"]
-        and "ModelAnimation" not in function["name"]
+        "TraceLog" not in function["name"]  # Var args...
         and function["name"] not in SKIP_FUNCTIONS
     ):
         gen_function(function)
@@ -431,4 +436,4 @@ for define in data["defines"]:
 
 print("end Raylib;")
 
-# print(body)
+print(body)
