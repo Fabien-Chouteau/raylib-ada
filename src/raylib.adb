@@ -1,4 +1,6 @@
 package body Raylib is
+   pragma Style_Checks ("M1000");
+
    procedure InitWindow (width : Interfaces.C.int; height : Interfaces.C.int; title : String) is
       use Interfaces.C.Strings;
       C_title : Interfaces.C.Strings.chars_ptr := New_String (title);
@@ -262,6 +264,26 @@ package body Raylib is
       Free (C_path);
       return Result;
    end IsPathFile;
+
+   function LoadDirectoryFiles (dirPath : String) return FilePathList is
+      use Interfaces.C.Strings;
+      C_dirPath : Interfaces.C.Strings.chars_ptr := New_String (dirPath);
+      Result : constant FilePathList := LoadDirectoryFiles (C_dirPath);
+   begin
+      Free (C_dirPath);
+      return Result;
+   end LoadDirectoryFiles;
+
+   function LoadDirectoryFilesEx (basePath : String; filter : String; scanSubdirs : Interfaces.C.C_bool) return FilePathList is
+      use Interfaces.C.Strings;
+      C_basePath : Interfaces.C.Strings.chars_ptr := New_String (basePath);
+      C_filter : Interfaces.C.Strings.chars_ptr := New_String (filter);
+      Result : constant FilePathList := LoadDirectoryFilesEx (C_basePath, C_filter, scanSubdirs);
+   begin
+      Free (C_basePath);
+      Free (C_filter);
+      return Result;
+   end LoadDirectoryFilesEx;
 
    function GetFileModTime (fileName : String) return Interfaces.C.long is
       use Interfaces.C.Strings;
@@ -775,6 +797,15 @@ package body Raylib is
       return Result;
    end LoadWaveFromMemory;
 
+   function LoadSound (fileName : String) return Sound is
+      use Interfaces.C.Strings;
+      C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
+      Result : constant Sound := LoadSound (C_fileName);
+   begin
+      Free (C_fileName);
+      return Result;
+   end LoadSound;
+
    function ExportWave (wave_p : Wave; fileName : String) return Interfaces.C.C_bool is
       use Interfaces.C.Strings;
       C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
@@ -792,5 +823,23 @@ package body Raylib is
       Free (C_fileName);
       return Result;
    end ExportWaveAsCode;
+
+   function LoadMusicStream (fileName : String) return Music is
+      use Interfaces.C.Strings;
+      C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
+      Result : constant Music := LoadMusicStream (C_fileName);
+   begin
+      Free (C_fileName);
+      return Result;
+   end LoadMusicStream;
+
+   function LoadMusicStreamFromMemory (fileType : String; data : System.Address; dataSize : Interfaces.C.int) return Music is
+      use Interfaces.C.Strings;
+      C_fileType : Interfaces.C.Strings.chars_ptr := New_String (fileType);
+      Result : constant Music := LoadMusicStreamFromMemory (C_fileType, data, dataSize);
+   begin
+      Free (C_fileType);
+      return Result;
+   end LoadMusicStreamFromMemory;
 
 end Raylib;

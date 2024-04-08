@@ -1,7 +1,9 @@
+with Ada.Text_IO;
 with Raylib;
 with Resources;
 with Examples_Config;
 with Interfaces.C; use Interfaces.C;
+with Interfaces.C.Strings; use Interfaces.C.Strings;
 
 procedure Examples is
 
@@ -21,13 +23,24 @@ procedure Examples is
 
    Model : Raylib.Model;
    Texture : Raylib.Texture;
+   Music : Raylib.Music;
+   Sound : Raylib.Sound;
 begin
 
    Raylib.InitWindow (screenWidth, screenHeight, "Example window");
 
+   Raylib.InitAudioDevice;
+
    Model := Raylib.LoadModel (Resource_Path & "/castle.obj");
    Texture := Raylib.LoadTexture (Resource_Path & "/castle_diffuse.png");
    Model.materials.maps (Raylib.MATERIAL_MAP_ALBEDO).texture_f := Texture;
+
+   Music := Raylib.LoadMusicStream
+     (Resource_Path & "/S31-The Gears of Progress.ogg");
+   Raylib.SetMusicVolume (Music, 0.1);
+   Raylib.PlayMusicStream (Music);
+
+   Sound := Raylib.LoadSound (Resource_Path & "/sd_0.wav");
 
    Cam.position := (10.0, 10.0, 10.0);
    Cam.target := (0.0, 0.0, 0.0);
@@ -38,6 +51,8 @@ begin
    Raylib.DisableCursor;
    Raylib.SetTargetFPS (60);
    while not Raylib.WindowShouldClose loop
+
+      Raylib.UpdateMusicStream (Music);
 
       if Raylib.IsCursorHidden then
          Raylib.UpdateCamera (Cam'Access, Raylib.CAMERA_FIRST_PERSON);
@@ -52,6 +67,7 @@ begin
       end if;
 
       if Raylib.IsMouseButtonPressed (Raylib.MOUSE_BUTTON_LEFT) then
+         Raylib.PlaySound (Sound);
          if not Collision.hit then
             Ray := Raylib.GetScreenToWorldRay (Raylib.GetMousePosition, Cam);
             Collision := Raylib.GetRayCollisionBox
@@ -122,6 +138,9 @@ begin
       Raylib.DrawFPS (10, 10);
       Raylib.EndDrawing;
    end loop;
+
+   Raylib.UnloadMusicStream (Music);
+   Raylib.UnloadSound (Sound);
 
    Raylib.CloseWindow;
 end Examples;

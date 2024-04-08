@@ -47,6 +47,8 @@ TYPE_CONVERSION = {
     "const GlyphInfo": "GlyphInfo",
     "const Matrix": "Matrix",
     "void": None,
+    "rAudioBuffer *": "System.Address",
+    "rAudioProcessor *": "System.Address",
 }
 
 TYPE_IDENTITY = [
@@ -124,6 +126,12 @@ def to_ada_type(c_type, name=None, parent=None):
         return "access ShaderLocationArray"
     elif c_type == "MaterialMap *" and name == "maps":
         return "access MaterialMapArray"
+    elif c_type == "char **" and name == "paths":
+        return "access constant Interfaces.C.Strings.chars_ptr_array"
+    elif c_type == "unsigned int" and parent == "FilePathList":
+        return "Interfaces.C.size_t"
+    elif c_type == "Transform **" and name == "framePoses":
+        return "access Tranform_Array"
 
     if c_type in TYPE_IDENTITY:
         return c_type
@@ -168,6 +176,11 @@ def gen_struct(struct):
     elif struct["name"] == "MaterialMap":
         print("   type MaterialMapArray is array (MaterialMapIndex) of MaterialMap")
         print("     with Convention => C;")
+    elif struct["name"] == "Transform":
+        print(
+            "   type Tranform_Array is array (Interfaces.C.int range <>) of Transform"
+        )
+        print("     with Convention => C;")
 
     print()
 
@@ -207,7 +220,7 @@ def gen_enum(enum):
         sorted_value = sorted(enum["values"], key=lambda d: d["value"])
         first = True
         for value in sorted_value:
-            coma = " " if first else ","
+            coma = "  " if first else ", "
             print(f"       {coma}{value['name']} -- {value['description']}")
             first = False
         print("     )")
@@ -216,7 +229,7 @@ def gen_enum(enum):
         print("     (")
         first = True
         for value in sorted_value:
-            coma = " " if first else ","
+            coma = "  " if first else ", "
             print(f"       {coma}{value['name']} => {value['value']}")
             first = False
         print("     );")
@@ -356,7 +369,7 @@ print("   type ShaderLocationArray is array (ShaderLocationIndex) of Interfaces.
 print("     with Convention => C;")
 print()
 
-SKIP_STRUCTS = ["ModelAnimation", "FilePathList", "AudioStream", "Music", "Sound"]
+SKIP_STRUCTS = ["ModelAnimation" "Music"]
 for struct in data["structs"]:
     if struct["name"] not in SKIP_STRUCTS:
         gen_struct(struct)
@@ -366,11 +379,6 @@ for struct in data["structs"]:
 
 SKIP_FUNCTIONS = [
     "TraceLog",
-    "LoadDirectoryFiles",
-    "LoadDirectoryFilesEx",
-    "UnloadDirectoryFiles",
-    "LoadDroppedFiles",
-    "UnloadDroppedFiles",
     "LoadAutomationEventList",
     "UnloadAutomationEventList",
     "ExportAutomationEventList",
@@ -386,11 +394,8 @@ SKIP_FUNCTIONS = [
 for function in data["functions"]:
     if (
         "VrSteree" not in function["name"]
-        and "Sound" not in function["name"]
-        and "Music" not in function["name"]
         and "Callback" not in function["name"]
         and "ModelAnimation" not in function["name"]
-        and "AudioStream" not in function["name"]
         and function["name"] not in SKIP_FUNCTIONS
     ):
         gen_function(function)

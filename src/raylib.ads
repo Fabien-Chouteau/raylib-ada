@@ -31,26 +31,26 @@ is
 
    type TraceLogLevel is
      (
-        LOG_ALL -- Display all logs
-       ,LOG_TRACE -- Trace logging, intended for internal use only
-       ,LOG_DEBUG -- Debug logging, used for internal debugging, it should be disabled on release builds
-       ,LOG_INFO -- Info logging, used for program execution info
-       ,LOG_WARNING -- Warning logging, used on recoverable failures
-       ,LOG_ERROR -- Error logging, used on unrecoverable failures
-       ,LOG_FATAL -- Fatal logging, used to abort program: exit(EXIT_FAILURE)
-       ,LOG_NONE -- Disable logging
+         LOG_ALL -- Display all logs
+       , LOG_TRACE -- Trace logging, intended for internal use only
+       , LOG_DEBUG -- Debug logging, used for internal debugging, it should be disabled on release builds
+       , LOG_INFO -- Info logging, used for program execution info
+       , LOG_WARNING -- Warning logging, used on recoverable failures
+       , LOG_ERROR -- Error logging, used on unrecoverable failures
+       , LOG_FATAL -- Fatal logging, used to abort program: exit(EXIT_FAILURE)
+       , LOG_NONE -- Disable logging
      )
      with Convention => C;
    for TraceLogLevel use
      (
-        LOG_ALL => 0
-       ,LOG_TRACE => 1
-       ,LOG_DEBUG => 2
-       ,LOG_INFO => 3
-       ,LOG_WARNING => 4
-       ,LOG_ERROR => 5
-       ,LOG_FATAL => 6
-       ,LOG_NONE => 7
+         LOG_ALL => 0
+       , LOG_TRACE => 1
+       , LOG_DEBUG => 2
+       , LOG_INFO => 3
+       , LOG_WARNING => 4
+       , LOG_ERROR => 5
+       , LOG_FATAL => 6
+       , LOG_NONE => 7
      );
 
    type KeyboardKey is new Interfaces.C.int;
@@ -180,32 +180,32 @@ is
 
    type MouseCursor is
      (
-        MOUSE_CURSOR_DEFAULT -- Default pointer shape
-       ,MOUSE_CURSOR_ARROW -- Arrow shape
-       ,MOUSE_CURSOR_IBEAM -- Text writing cursor shape
-       ,MOUSE_CURSOR_CROSSHAIR -- Cross shape
-       ,MOUSE_CURSOR_POINTING_HAND -- Pointing hand cursor
-       ,MOUSE_CURSOR_RESIZE_EW -- Horizontal resize/move arrow shape
-       ,MOUSE_CURSOR_RESIZE_NS -- Vertical resize/move arrow shape
-       ,MOUSE_CURSOR_RESIZE_NWSE -- Top-left to bottom-right diagonal resize/move arrow shape
-       ,MOUSE_CURSOR_RESIZE_NESW -- The top-right to bottom-left diagonal resize/move arrow shape
-       ,MOUSE_CURSOR_RESIZE_ALL -- The omnidirectional resize/move cursor shape
-       ,MOUSE_CURSOR_NOT_ALLOWED -- The operation-not-allowed shape
+         MOUSE_CURSOR_DEFAULT -- Default pointer shape
+       , MOUSE_CURSOR_ARROW -- Arrow shape
+       , MOUSE_CURSOR_IBEAM -- Text writing cursor shape
+       , MOUSE_CURSOR_CROSSHAIR -- Cross shape
+       , MOUSE_CURSOR_POINTING_HAND -- Pointing hand cursor
+       , MOUSE_CURSOR_RESIZE_EW -- Horizontal resize/move arrow shape
+       , MOUSE_CURSOR_RESIZE_NS -- Vertical resize/move arrow shape
+       , MOUSE_CURSOR_RESIZE_NWSE -- Top-left to bottom-right diagonal resize/move arrow shape
+       , MOUSE_CURSOR_RESIZE_NESW -- The top-right to bottom-left diagonal resize/move arrow shape
+       , MOUSE_CURSOR_RESIZE_ALL -- The omnidirectional resize/move cursor shape
+       , MOUSE_CURSOR_NOT_ALLOWED -- The operation-not-allowed shape
      )
      with Convention => C;
    for MouseCursor use
      (
-        MOUSE_CURSOR_DEFAULT => 0
-       ,MOUSE_CURSOR_ARROW => 1
-       ,MOUSE_CURSOR_IBEAM => 2
-       ,MOUSE_CURSOR_CROSSHAIR => 3
-       ,MOUSE_CURSOR_POINTING_HAND => 4
-       ,MOUSE_CURSOR_RESIZE_EW => 5
-       ,MOUSE_CURSOR_RESIZE_NS => 6
-       ,MOUSE_CURSOR_RESIZE_NWSE => 7
-       ,MOUSE_CURSOR_RESIZE_NESW => 8
-       ,MOUSE_CURSOR_RESIZE_ALL => 9
-       ,MOUSE_CURSOR_NOT_ALLOWED => 10
+         MOUSE_CURSOR_DEFAULT => 0
+       , MOUSE_CURSOR_ARROW => 1
+       , MOUSE_CURSOR_IBEAM => 2
+       , MOUSE_CURSOR_CROSSHAIR => 3
+       , MOUSE_CURSOR_POINTING_HAND => 4
+       , MOUSE_CURSOR_RESIZE_EW => 5
+       , MOUSE_CURSOR_RESIZE_NS => 6
+       , MOUSE_CURSOR_RESIZE_NWSE => 7
+       , MOUSE_CURSOR_RESIZE_NESW => 8
+       , MOUSE_CURSOR_RESIZE_ALL => 9
+       , MOUSE_CURSOR_NOT_ALLOWED => 10
      );
 
    type GamepadButton is new Interfaces.C.int;
@@ -242,284 +242,284 @@ is
 
    type MaterialMapIndex is
      (
-        MATERIAL_MAP_ALBEDO -- Albedo material (same as: MATERIAL_MAP_DIFFUSE)
-       ,MATERIAL_MAP_METALNESS -- Metalness material (same as: MATERIAL_MAP_SPECULAR)
-       ,MATERIAL_MAP_NORMAL -- Normal material
-       ,MATERIAL_MAP_ROUGHNESS -- Roughness material
-       ,MATERIAL_MAP_OCCLUSION -- Ambient occlusion material
-       ,MATERIAL_MAP_EMISSION -- Emission material
-       ,MATERIAL_MAP_HEIGHT -- Heightmap material
-       ,MATERIAL_MAP_CUBEMAP -- Cubemap material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
-       ,MATERIAL_MAP_IRRADIANCE -- Irradiance material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
-       ,MATERIAL_MAP_PREFILTER -- Prefilter material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
-       ,MATERIAL_MAP_BRDF -- Brdf material
+         MATERIAL_MAP_ALBEDO -- Albedo material (same as: MATERIAL_MAP_DIFFUSE)
+       , MATERIAL_MAP_METALNESS -- Metalness material (same as: MATERIAL_MAP_SPECULAR)
+       , MATERIAL_MAP_NORMAL -- Normal material
+       , MATERIAL_MAP_ROUGHNESS -- Roughness material
+       , MATERIAL_MAP_OCCLUSION -- Ambient occlusion material
+       , MATERIAL_MAP_EMISSION -- Emission material
+       , MATERIAL_MAP_HEIGHT -- Heightmap material
+       , MATERIAL_MAP_CUBEMAP -- Cubemap material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
+       , MATERIAL_MAP_IRRADIANCE -- Irradiance material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
+       , MATERIAL_MAP_PREFILTER -- Prefilter material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
+       , MATERIAL_MAP_BRDF -- Brdf material
      )
      with Convention => C;
    for MaterialMapIndex use
      (
-        MATERIAL_MAP_ALBEDO => 0
-       ,MATERIAL_MAP_METALNESS => 1
-       ,MATERIAL_MAP_NORMAL => 2
-       ,MATERIAL_MAP_ROUGHNESS => 3
-       ,MATERIAL_MAP_OCCLUSION => 4
-       ,MATERIAL_MAP_EMISSION => 5
-       ,MATERIAL_MAP_HEIGHT => 6
-       ,MATERIAL_MAP_CUBEMAP => 7
-       ,MATERIAL_MAP_IRRADIANCE => 8
-       ,MATERIAL_MAP_PREFILTER => 9
-       ,MATERIAL_MAP_BRDF => 10
+         MATERIAL_MAP_ALBEDO => 0
+       , MATERIAL_MAP_METALNESS => 1
+       , MATERIAL_MAP_NORMAL => 2
+       , MATERIAL_MAP_ROUGHNESS => 3
+       , MATERIAL_MAP_OCCLUSION => 4
+       , MATERIAL_MAP_EMISSION => 5
+       , MATERIAL_MAP_HEIGHT => 6
+       , MATERIAL_MAP_CUBEMAP => 7
+       , MATERIAL_MAP_IRRADIANCE => 8
+       , MATERIAL_MAP_PREFILTER => 9
+       , MATERIAL_MAP_BRDF => 10
      );
 
    type ShaderLocationIndex is
      (
-        SHADER_LOC_VERTEX_POSITION -- Shader location: vertex attribute: position
-       ,SHADER_LOC_VERTEX_TEXCOORD01 -- Shader location: vertex attribute: texcoord01
-       ,SHADER_LOC_VERTEX_TEXCOORD02 -- Shader location: vertex attribute: texcoord02
-       ,SHADER_LOC_VERTEX_NORMAL -- Shader location: vertex attribute: normal
-       ,SHADER_LOC_VERTEX_TANGENT -- Shader location: vertex attribute: tangent
-       ,SHADER_LOC_VERTEX_COLOR -- Shader location: vertex attribute: color
-       ,SHADER_LOC_MATRIX_MVP -- Shader location: matrix uniform: model-view-projection
-       ,SHADER_LOC_MATRIX_VIEW -- Shader location: matrix uniform: view (camera transform)
-       ,SHADER_LOC_MATRIX_PROJECTION -- Shader location: matrix uniform: projection
-       ,SHADER_LOC_MATRIX_MODEL -- Shader location: matrix uniform: model (transform)
-       ,SHADER_LOC_MATRIX_NORMAL -- Shader location: matrix uniform: normal
-       ,SHADER_LOC_VECTOR_VIEW -- Shader location: vector uniform: view
-       ,SHADER_LOC_COLOR_DIFFUSE -- Shader location: vector uniform: diffuse color
-       ,SHADER_LOC_COLOR_SPECULAR -- Shader location: vector uniform: specular color
-       ,SHADER_LOC_COLOR_AMBIENT -- Shader location: vector uniform: ambient color
-       ,SHADER_LOC_MAP_ALBEDO -- Shader location: sampler2d texture: albedo (same as: SHADER_LOC_MAP_DIFFUSE)
-       ,SHADER_LOC_MAP_METALNESS -- Shader location: sampler2d texture: metalness (same as: SHADER_LOC_MAP_SPECULAR)
-       ,SHADER_LOC_MAP_NORMAL -- Shader location: sampler2d texture: normal
-       ,SHADER_LOC_MAP_ROUGHNESS -- Shader location: sampler2d texture: roughness
-       ,SHADER_LOC_MAP_OCCLUSION -- Shader location: sampler2d texture: occlusion
-       ,SHADER_LOC_MAP_EMISSION -- Shader location: sampler2d texture: emission
-       ,SHADER_LOC_MAP_HEIGHT -- Shader location: sampler2d texture: height
-       ,SHADER_LOC_MAP_CUBEMAP -- Shader location: samplerCube texture: cubemap
-       ,SHADER_LOC_MAP_IRRADIANCE -- Shader location: samplerCube texture: irradiance
-       ,SHADER_LOC_MAP_PREFILTER -- Shader location: samplerCube texture: prefilter
-       ,SHADER_LOC_MAP_BRDF -- Shader location: sampler2d texture: brdf
+         SHADER_LOC_VERTEX_POSITION -- Shader location: vertex attribute: position
+       , SHADER_LOC_VERTEX_TEXCOORD01 -- Shader location: vertex attribute: texcoord01
+       , SHADER_LOC_VERTEX_TEXCOORD02 -- Shader location: vertex attribute: texcoord02
+       , SHADER_LOC_VERTEX_NORMAL -- Shader location: vertex attribute: normal
+       , SHADER_LOC_VERTEX_TANGENT -- Shader location: vertex attribute: tangent
+       , SHADER_LOC_VERTEX_COLOR -- Shader location: vertex attribute: color
+       , SHADER_LOC_MATRIX_MVP -- Shader location: matrix uniform: model-view-projection
+       , SHADER_LOC_MATRIX_VIEW -- Shader location: matrix uniform: view (camera transform)
+       , SHADER_LOC_MATRIX_PROJECTION -- Shader location: matrix uniform: projection
+       , SHADER_LOC_MATRIX_MODEL -- Shader location: matrix uniform: model (transform)
+       , SHADER_LOC_MATRIX_NORMAL -- Shader location: matrix uniform: normal
+       , SHADER_LOC_VECTOR_VIEW -- Shader location: vector uniform: view
+       , SHADER_LOC_COLOR_DIFFUSE -- Shader location: vector uniform: diffuse color
+       , SHADER_LOC_COLOR_SPECULAR -- Shader location: vector uniform: specular color
+       , SHADER_LOC_COLOR_AMBIENT -- Shader location: vector uniform: ambient color
+       , SHADER_LOC_MAP_ALBEDO -- Shader location: sampler2d texture: albedo (same as: SHADER_LOC_MAP_DIFFUSE)
+       , SHADER_LOC_MAP_METALNESS -- Shader location: sampler2d texture: metalness (same as: SHADER_LOC_MAP_SPECULAR)
+       , SHADER_LOC_MAP_NORMAL -- Shader location: sampler2d texture: normal
+       , SHADER_LOC_MAP_ROUGHNESS -- Shader location: sampler2d texture: roughness
+       , SHADER_LOC_MAP_OCCLUSION -- Shader location: sampler2d texture: occlusion
+       , SHADER_LOC_MAP_EMISSION -- Shader location: sampler2d texture: emission
+       , SHADER_LOC_MAP_HEIGHT -- Shader location: sampler2d texture: height
+       , SHADER_LOC_MAP_CUBEMAP -- Shader location: samplerCube texture: cubemap
+       , SHADER_LOC_MAP_IRRADIANCE -- Shader location: samplerCube texture: irradiance
+       , SHADER_LOC_MAP_PREFILTER -- Shader location: samplerCube texture: prefilter
+       , SHADER_LOC_MAP_BRDF -- Shader location: sampler2d texture: brdf
      )
      with Convention => C;
    for ShaderLocationIndex use
      (
-        SHADER_LOC_VERTEX_POSITION => 0
-       ,SHADER_LOC_VERTEX_TEXCOORD01 => 1
-       ,SHADER_LOC_VERTEX_TEXCOORD02 => 2
-       ,SHADER_LOC_VERTEX_NORMAL => 3
-       ,SHADER_LOC_VERTEX_TANGENT => 4
-       ,SHADER_LOC_VERTEX_COLOR => 5
-       ,SHADER_LOC_MATRIX_MVP => 6
-       ,SHADER_LOC_MATRIX_VIEW => 7
-       ,SHADER_LOC_MATRIX_PROJECTION => 8
-       ,SHADER_LOC_MATRIX_MODEL => 9
-       ,SHADER_LOC_MATRIX_NORMAL => 10
-       ,SHADER_LOC_VECTOR_VIEW => 11
-       ,SHADER_LOC_COLOR_DIFFUSE => 12
-       ,SHADER_LOC_COLOR_SPECULAR => 13
-       ,SHADER_LOC_COLOR_AMBIENT => 14
-       ,SHADER_LOC_MAP_ALBEDO => 15
-       ,SHADER_LOC_MAP_METALNESS => 16
-       ,SHADER_LOC_MAP_NORMAL => 17
-       ,SHADER_LOC_MAP_ROUGHNESS => 18
-       ,SHADER_LOC_MAP_OCCLUSION => 19
-       ,SHADER_LOC_MAP_EMISSION => 20
-       ,SHADER_LOC_MAP_HEIGHT => 21
-       ,SHADER_LOC_MAP_CUBEMAP => 22
-       ,SHADER_LOC_MAP_IRRADIANCE => 23
-       ,SHADER_LOC_MAP_PREFILTER => 24
-       ,SHADER_LOC_MAP_BRDF => 25
+         SHADER_LOC_VERTEX_POSITION => 0
+       , SHADER_LOC_VERTEX_TEXCOORD01 => 1
+       , SHADER_LOC_VERTEX_TEXCOORD02 => 2
+       , SHADER_LOC_VERTEX_NORMAL => 3
+       , SHADER_LOC_VERTEX_TANGENT => 4
+       , SHADER_LOC_VERTEX_COLOR => 5
+       , SHADER_LOC_MATRIX_MVP => 6
+       , SHADER_LOC_MATRIX_VIEW => 7
+       , SHADER_LOC_MATRIX_PROJECTION => 8
+       , SHADER_LOC_MATRIX_MODEL => 9
+       , SHADER_LOC_MATRIX_NORMAL => 10
+       , SHADER_LOC_VECTOR_VIEW => 11
+       , SHADER_LOC_COLOR_DIFFUSE => 12
+       , SHADER_LOC_COLOR_SPECULAR => 13
+       , SHADER_LOC_COLOR_AMBIENT => 14
+       , SHADER_LOC_MAP_ALBEDO => 15
+       , SHADER_LOC_MAP_METALNESS => 16
+       , SHADER_LOC_MAP_NORMAL => 17
+       , SHADER_LOC_MAP_ROUGHNESS => 18
+       , SHADER_LOC_MAP_OCCLUSION => 19
+       , SHADER_LOC_MAP_EMISSION => 20
+       , SHADER_LOC_MAP_HEIGHT => 21
+       , SHADER_LOC_MAP_CUBEMAP => 22
+       , SHADER_LOC_MAP_IRRADIANCE => 23
+       , SHADER_LOC_MAP_PREFILTER => 24
+       , SHADER_LOC_MAP_BRDF => 25
      );
 
    type ShaderUniformDataType is
      (
-        SHADER_UNIFORM_FLOAT -- Shader uniform type: float
-       ,SHADER_UNIFORM_VEC2 -- Shader uniform type: vec2 (2 float)
-       ,SHADER_UNIFORM_VEC3 -- Shader uniform type: vec3 (3 float)
-       ,SHADER_UNIFORM_VEC4 -- Shader uniform type: vec4 (4 float)
-       ,SHADER_UNIFORM_INT -- Shader uniform type: int
-       ,SHADER_UNIFORM_IVEC2 -- Shader uniform type: ivec2 (2 int)
-       ,SHADER_UNIFORM_IVEC3 -- Shader uniform type: ivec3 (3 int)
-       ,SHADER_UNIFORM_IVEC4 -- Shader uniform type: ivec4 (4 int)
-       ,SHADER_UNIFORM_SAMPLER2D -- Shader uniform type: sampler2d
+         SHADER_UNIFORM_FLOAT -- Shader uniform type: float
+       , SHADER_UNIFORM_VEC2 -- Shader uniform type: vec2 (2 float)
+       , SHADER_UNIFORM_VEC3 -- Shader uniform type: vec3 (3 float)
+       , SHADER_UNIFORM_VEC4 -- Shader uniform type: vec4 (4 float)
+       , SHADER_UNIFORM_INT -- Shader uniform type: int
+       , SHADER_UNIFORM_IVEC2 -- Shader uniform type: ivec2 (2 int)
+       , SHADER_UNIFORM_IVEC3 -- Shader uniform type: ivec3 (3 int)
+       , SHADER_UNIFORM_IVEC4 -- Shader uniform type: ivec4 (4 int)
+       , SHADER_UNIFORM_SAMPLER2D -- Shader uniform type: sampler2d
      )
      with Convention => C;
    for ShaderUniformDataType use
      (
-        SHADER_UNIFORM_FLOAT => 0
-       ,SHADER_UNIFORM_VEC2 => 1
-       ,SHADER_UNIFORM_VEC3 => 2
-       ,SHADER_UNIFORM_VEC4 => 3
-       ,SHADER_UNIFORM_INT => 4
-       ,SHADER_UNIFORM_IVEC2 => 5
-       ,SHADER_UNIFORM_IVEC3 => 6
-       ,SHADER_UNIFORM_IVEC4 => 7
-       ,SHADER_UNIFORM_SAMPLER2D => 8
+         SHADER_UNIFORM_FLOAT => 0
+       , SHADER_UNIFORM_VEC2 => 1
+       , SHADER_UNIFORM_VEC3 => 2
+       , SHADER_UNIFORM_VEC4 => 3
+       , SHADER_UNIFORM_INT => 4
+       , SHADER_UNIFORM_IVEC2 => 5
+       , SHADER_UNIFORM_IVEC3 => 6
+       , SHADER_UNIFORM_IVEC4 => 7
+       , SHADER_UNIFORM_SAMPLER2D => 8
      );
 
    type ShaderAttributeDataType is
      (
-        SHADER_ATTRIB_FLOAT -- Shader attribute type: float
-       ,SHADER_ATTRIB_VEC2 -- Shader attribute type: vec2 (2 float)
-       ,SHADER_ATTRIB_VEC3 -- Shader attribute type: vec3 (3 float)
-       ,SHADER_ATTRIB_VEC4 -- Shader attribute type: vec4 (4 float)
+         SHADER_ATTRIB_FLOAT -- Shader attribute type: float
+       , SHADER_ATTRIB_VEC2 -- Shader attribute type: vec2 (2 float)
+       , SHADER_ATTRIB_VEC3 -- Shader attribute type: vec3 (3 float)
+       , SHADER_ATTRIB_VEC4 -- Shader attribute type: vec4 (4 float)
      )
      with Convention => C;
    for ShaderAttributeDataType use
      (
-        SHADER_ATTRIB_FLOAT => 0
-       ,SHADER_ATTRIB_VEC2 => 1
-       ,SHADER_ATTRIB_VEC3 => 2
-       ,SHADER_ATTRIB_VEC4 => 3
+         SHADER_ATTRIB_FLOAT => 0
+       , SHADER_ATTRIB_VEC2 => 1
+       , SHADER_ATTRIB_VEC3 => 2
+       , SHADER_ATTRIB_VEC4 => 3
      );
 
    type PixelFormat is
      (
-        PIXELFORMAT_UNCOMPRESSED_GRAYSCALE -- 8 bit per pixel (no alpha)
-       ,PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA -- 8*2 bpp (2 channels)
-       ,PIXELFORMAT_UNCOMPRESSED_R5G6B5 -- 16 bpp
-       ,PIXELFORMAT_UNCOMPRESSED_R8G8B8 -- 24 bpp
-       ,PIXELFORMAT_UNCOMPRESSED_R5G5B5A1 -- 16 bpp (1 bit alpha)
-       ,PIXELFORMAT_UNCOMPRESSED_R4G4B4A4 -- 16 bpp (4 bit alpha)
-       ,PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 -- 32 bpp
-       ,PIXELFORMAT_UNCOMPRESSED_R32 -- 32 bpp (1 channel - float)
-       ,PIXELFORMAT_UNCOMPRESSED_R32G32B32 -- 32*3 bpp (3 channels - float)
-       ,PIXELFORMAT_UNCOMPRESSED_R32G32B32A32 -- 32*4 bpp (4 channels - float)
-       ,PIXELFORMAT_UNCOMPRESSED_R16 -- 16 bpp (1 channel - half float)
-       ,PIXELFORMAT_UNCOMPRESSED_R16G16B16 -- 16*3 bpp (3 channels - half float)
-       ,PIXELFORMAT_UNCOMPRESSED_R16G16B16A16 -- 16*4 bpp (4 channels - half float)
-       ,PIXELFORMAT_COMPRESSED_DXT1_RGB -- 4 bpp (no alpha)
-       ,PIXELFORMAT_COMPRESSED_DXT1_RGBA -- 4 bpp (1 bit alpha)
-       ,PIXELFORMAT_COMPRESSED_DXT3_RGBA -- 8 bpp
-       ,PIXELFORMAT_COMPRESSED_DXT5_RGBA -- 8 bpp
-       ,PIXELFORMAT_COMPRESSED_ETC1_RGB -- 4 bpp
-       ,PIXELFORMAT_COMPRESSED_ETC2_RGB -- 4 bpp
-       ,PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA -- 8 bpp
-       ,PIXELFORMAT_COMPRESSED_PVRT_RGB -- 4 bpp
-       ,PIXELFORMAT_COMPRESSED_PVRT_RGBA -- 4 bpp
-       ,PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA -- 8 bpp
-       ,PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA -- 2 bpp
+         PIXELFORMAT_UNCOMPRESSED_GRAYSCALE -- 8 bit per pixel (no alpha)
+       , PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA -- 8*2 bpp (2 channels)
+       , PIXELFORMAT_UNCOMPRESSED_R5G6B5 -- 16 bpp
+       , PIXELFORMAT_UNCOMPRESSED_R8G8B8 -- 24 bpp
+       , PIXELFORMAT_UNCOMPRESSED_R5G5B5A1 -- 16 bpp (1 bit alpha)
+       , PIXELFORMAT_UNCOMPRESSED_R4G4B4A4 -- 16 bpp (4 bit alpha)
+       , PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 -- 32 bpp
+       , PIXELFORMAT_UNCOMPRESSED_R32 -- 32 bpp (1 channel - float)
+       , PIXELFORMAT_UNCOMPRESSED_R32G32B32 -- 32*3 bpp (3 channels - float)
+       , PIXELFORMAT_UNCOMPRESSED_R32G32B32A32 -- 32*4 bpp (4 channels - float)
+       , PIXELFORMAT_UNCOMPRESSED_R16 -- 16 bpp (1 channel - half float)
+       , PIXELFORMAT_UNCOMPRESSED_R16G16B16 -- 16*3 bpp (3 channels - half float)
+       , PIXELFORMAT_UNCOMPRESSED_R16G16B16A16 -- 16*4 bpp (4 channels - half float)
+       , PIXELFORMAT_COMPRESSED_DXT1_RGB -- 4 bpp (no alpha)
+       , PIXELFORMAT_COMPRESSED_DXT1_RGBA -- 4 bpp (1 bit alpha)
+       , PIXELFORMAT_COMPRESSED_DXT3_RGBA -- 8 bpp
+       , PIXELFORMAT_COMPRESSED_DXT5_RGBA -- 8 bpp
+       , PIXELFORMAT_COMPRESSED_ETC1_RGB -- 4 bpp
+       , PIXELFORMAT_COMPRESSED_ETC2_RGB -- 4 bpp
+       , PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA -- 8 bpp
+       , PIXELFORMAT_COMPRESSED_PVRT_RGB -- 4 bpp
+       , PIXELFORMAT_COMPRESSED_PVRT_RGBA -- 4 bpp
+       , PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA -- 8 bpp
+       , PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA -- 2 bpp
      )
      with Convention => C;
    for PixelFormat use
      (
-        PIXELFORMAT_UNCOMPRESSED_GRAYSCALE => 1
-       ,PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA => 2
-       ,PIXELFORMAT_UNCOMPRESSED_R5G6B5 => 3
-       ,PIXELFORMAT_UNCOMPRESSED_R8G8B8 => 4
-       ,PIXELFORMAT_UNCOMPRESSED_R5G5B5A1 => 5
-       ,PIXELFORMAT_UNCOMPRESSED_R4G4B4A4 => 6
-       ,PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 => 7
-       ,PIXELFORMAT_UNCOMPRESSED_R32 => 8
-       ,PIXELFORMAT_UNCOMPRESSED_R32G32B32 => 9
-       ,PIXELFORMAT_UNCOMPRESSED_R32G32B32A32 => 10
-       ,PIXELFORMAT_UNCOMPRESSED_R16 => 11
-       ,PIXELFORMAT_UNCOMPRESSED_R16G16B16 => 12
-       ,PIXELFORMAT_UNCOMPRESSED_R16G16B16A16 => 13
-       ,PIXELFORMAT_COMPRESSED_DXT1_RGB => 14
-       ,PIXELFORMAT_COMPRESSED_DXT1_RGBA => 15
-       ,PIXELFORMAT_COMPRESSED_DXT3_RGBA => 16
-       ,PIXELFORMAT_COMPRESSED_DXT5_RGBA => 17
-       ,PIXELFORMAT_COMPRESSED_ETC1_RGB => 18
-       ,PIXELFORMAT_COMPRESSED_ETC2_RGB => 19
-       ,PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA => 20
-       ,PIXELFORMAT_COMPRESSED_PVRT_RGB => 21
-       ,PIXELFORMAT_COMPRESSED_PVRT_RGBA => 22
-       ,PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA => 23
-       ,PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA => 24
+         PIXELFORMAT_UNCOMPRESSED_GRAYSCALE => 1
+       , PIXELFORMAT_UNCOMPRESSED_GRAY_ALPHA => 2
+       , PIXELFORMAT_UNCOMPRESSED_R5G6B5 => 3
+       , PIXELFORMAT_UNCOMPRESSED_R8G8B8 => 4
+       , PIXELFORMAT_UNCOMPRESSED_R5G5B5A1 => 5
+       , PIXELFORMAT_UNCOMPRESSED_R4G4B4A4 => 6
+       , PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 => 7
+       , PIXELFORMAT_UNCOMPRESSED_R32 => 8
+       , PIXELFORMAT_UNCOMPRESSED_R32G32B32 => 9
+       , PIXELFORMAT_UNCOMPRESSED_R32G32B32A32 => 10
+       , PIXELFORMAT_UNCOMPRESSED_R16 => 11
+       , PIXELFORMAT_UNCOMPRESSED_R16G16B16 => 12
+       , PIXELFORMAT_UNCOMPRESSED_R16G16B16A16 => 13
+       , PIXELFORMAT_COMPRESSED_DXT1_RGB => 14
+       , PIXELFORMAT_COMPRESSED_DXT1_RGBA => 15
+       , PIXELFORMAT_COMPRESSED_DXT3_RGBA => 16
+       , PIXELFORMAT_COMPRESSED_DXT5_RGBA => 17
+       , PIXELFORMAT_COMPRESSED_ETC1_RGB => 18
+       , PIXELFORMAT_COMPRESSED_ETC2_RGB => 19
+       , PIXELFORMAT_COMPRESSED_ETC2_EAC_RGBA => 20
+       , PIXELFORMAT_COMPRESSED_PVRT_RGB => 21
+       , PIXELFORMAT_COMPRESSED_PVRT_RGBA => 22
+       , PIXELFORMAT_COMPRESSED_ASTC_4x4_RGBA => 23
+       , PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA => 24
      );
 
    type TextureFilter is
      (
-        TEXTURE_FILTER_POINT -- No filter, just pixel approximation
-       ,TEXTURE_FILTER_BILINEAR -- Linear filtering
-       ,TEXTURE_FILTER_TRILINEAR -- Trilinear filtering (linear with mipmaps)
-       ,TEXTURE_FILTER_ANISOTROPIC_4X -- Anisotropic filtering 4x
-       ,TEXTURE_FILTER_ANISOTROPIC_8X -- Anisotropic filtering 8x
-       ,TEXTURE_FILTER_ANISOTROPIC_16X -- Anisotropic filtering 16x
+         TEXTURE_FILTER_POINT -- No filter, just pixel approximation
+       , TEXTURE_FILTER_BILINEAR -- Linear filtering
+       , TEXTURE_FILTER_TRILINEAR -- Trilinear filtering (linear with mipmaps)
+       , TEXTURE_FILTER_ANISOTROPIC_4X -- Anisotropic filtering 4x
+       , TEXTURE_FILTER_ANISOTROPIC_8X -- Anisotropic filtering 8x
+       , TEXTURE_FILTER_ANISOTROPIC_16X -- Anisotropic filtering 16x
      )
      with Convention => C;
    for TextureFilter use
      (
-        TEXTURE_FILTER_POINT => 0
-       ,TEXTURE_FILTER_BILINEAR => 1
-       ,TEXTURE_FILTER_TRILINEAR => 2
-       ,TEXTURE_FILTER_ANISOTROPIC_4X => 3
-       ,TEXTURE_FILTER_ANISOTROPIC_8X => 4
-       ,TEXTURE_FILTER_ANISOTROPIC_16X => 5
+         TEXTURE_FILTER_POINT => 0
+       , TEXTURE_FILTER_BILINEAR => 1
+       , TEXTURE_FILTER_TRILINEAR => 2
+       , TEXTURE_FILTER_ANISOTROPIC_4X => 3
+       , TEXTURE_FILTER_ANISOTROPIC_8X => 4
+       , TEXTURE_FILTER_ANISOTROPIC_16X => 5
      );
 
    type TextureWrap is
      (
-        TEXTURE_WRAP_REPEAT -- Repeats texture in tiled mode
-       ,TEXTURE_WRAP_CLAMP -- Clamps texture to edge pixel in tiled mode
-       ,TEXTURE_WRAP_MIRROR_REPEAT -- Mirrors and repeats the texture in tiled mode
-       ,TEXTURE_WRAP_MIRROR_CLAMP -- Mirrors and clamps to border the texture in tiled mode
+         TEXTURE_WRAP_REPEAT -- Repeats texture in tiled mode
+       , TEXTURE_WRAP_CLAMP -- Clamps texture to edge pixel in tiled mode
+       , TEXTURE_WRAP_MIRROR_REPEAT -- Mirrors and repeats the texture in tiled mode
+       , TEXTURE_WRAP_MIRROR_CLAMP -- Mirrors and clamps to border the texture in tiled mode
      )
      with Convention => C;
    for TextureWrap use
      (
-        TEXTURE_WRAP_REPEAT => 0
-       ,TEXTURE_WRAP_CLAMP => 1
-       ,TEXTURE_WRAP_MIRROR_REPEAT => 2
-       ,TEXTURE_WRAP_MIRROR_CLAMP => 3
+         TEXTURE_WRAP_REPEAT => 0
+       , TEXTURE_WRAP_CLAMP => 1
+       , TEXTURE_WRAP_MIRROR_REPEAT => 2
+       , TEXTURE_WRAP_MIRROR_CLAMP => 3
      );
 
    type CubemapLayout is
      (
-        CUBEMAP_LAYOUT_AUTO_DETECT -- Automatically detect layout type
-       ,CUBEMAP_LAYOUT_LINE_VERTICAL -- Layout is defined by a vertical line with faces
-       ,CUBEMAP_LAYOUT_LINE_HORIZONTAL -- Layout is defined by a horizontal line with faces
-       ,CUBEMAP_LAYOUT_CROSS_THREE_BY_FOUR -- Layout is defined by a 3x4 cross with cubemap faces
-       ,CUBEMAP_LAYOUT_CROSS_FOUR_BY_THREE -- Layout is defined by a 4x3 cross with cubemap faces
-       ,CUBEMAP_LAYOUT_PANORAMA -- Layout is defined by a panorama image (equirrectangular map)
+         CUBEMAP_LAYOUT_AUTO_DETECT -- Automatically detect layout type
+       , CUBEMAP_LAYOUT_LINE_VERTICAL -- Layout is defined by a vertical line with faces
+       , CUBEMAP_LAYOUT_LINE_HORIZONTAL -- Layout is defined by a horizontal line with faces
+       , CUBEMAP_LAYOUT_CROSS_THREE_BY_FOUR -- Layout is defined by a 3x4 cross with cubemap faces
+       , CUBEMAP_LAYOUT_CROSS_FOUR_BY_THREE -- Layout is defined by a 4x3 cross with cubemap faces
+       , CUBEMAP_LAYOUT_PANORAMA -- Layout is defined by a panorama image (equirrectangular map)
      )
      with Convention => C;
    for CubemapLayout use
      (
-        CUBEMAP_LAYOUT_AUTO_DETECT => 0
-       ,CUBEMAP_LAYOUT_LINE_VERTICAL => 1
-       ,CUBEMAP_LAYOUT_LINE_HORIZONTAL => 2
-       ,CUBEMAP_LAYOUT_CROSS_THREE_BY_FOUR => 3
-       ,CUBEMAP_LAYOUT_CROSS_FOUR_BY_THREE => 4
-       ,CUBEMAP_LAYOUT_PANORAMA => 5
+         CUBEMAP_LAYOUT_AUTO_DETECT => 0
+       , CUBEMAP_LAYOUT_LINE_VERTICAL => 1
+       , CUBEMAP_LAYOUT_LINE_HORIZONTAL => 2
+       , CUBEMAP_LAYOUT_CROSS_THREE_BY_FOUR => 3
+       , CUBEMAP_LAYOUT_CROSS_FOUR_BY_THREE => 4
+       , CUBEMAP_LAYOUT_PANORAMA => 5
      );
 
    type FontType is
      (
-        FONT_DEFAULT -- Default font generation, anti-aliased
-       ,FONT_BITMAP -- Bitmap font generation, no anti-aliasing
-       ,FONT_SDF -- SDF font generation, requires external shader
+         FONT_DEFAULT -- Default font generation, anti-aliased
+       , FONT_BITMAP -- Bitmap font generation, no anti-aliasing
+       , FONT_SDF -- SDF font generation, requires external shader
      )
      with Convention => C;
    for FontType use
      (
-        FONT_DEFAULT => 0
-       ,FONT_BITMAP => 1
-       ,FONT_SDF => 2
+         FONT_DEFAULT => 0
+       , FONT_BITMAP => 1
+       , FONT_SDF => 2
      );
 
    type BlendMode is
      (
-        BLEND_ALPHA -- Blend textures considering alpha (default)
-       ,BLEND_ADDITIVE -- Blend textures adding colors
-       ,BLEND_MULTIPLIED -- Blend textures multiplying colors
-       ,BLEND_ADD_COLORS -- Blend textures adding colors (alternative)
-       ,BLEND_SUBTRACT_COLORS -- Blend textures subtracting colors (alternative)
-       ,BLEND_ALPHA_PREMULTIPLY -- Blend premultiplied textures considering alpha
-       ,BLEND_CUSTOM -- Blend textures using custom src/dst factors (use rlSetBlendFactors())
-       ,BLEND_CUSTOM_SEPARATE -- Blend textures using custom rgb/alpha separate src/dst factors (use rlSetBlendFactorsSeparate())
+         BLEND_ALPHA -- Blend textures considering alpha (default)
+       , BLEND_ADDITIVE -- Blend textures adding colors
+       , BLEND_MULTIPLIED -- Blend textures multiplying colors
+       , BLEND_ADD_COLORS -- Blend textures adding colors (alternative)
+       , BLEND_SUBTRACT_COLORS -- Blend textures subtracting colors (alternative)
+       , BLEND_ALPHA_PREMULTIPLY -- Blend premultiplied textures considering alpha
+       , BLEND_CUSTOM -- Blend textures using custom src/dst factors (use rlSetBlendFactors())
+       , BLEND_CUSTOM_SEPARATE -- Blend textures using custom rgb/alpha separate src/dst factors (use rlSetBlendFactorsSeparate())
      )
      with Convention => C;
    for BlendMode use
      (
-        BLEND_ALPHA => 0
-       ,BLEND_ADDITIVE => 1
-       ,BLEND_MULTIPLIED => 2
-       ,BLEND_ADD_COLORS => 3
-       ,BLEND_SUBTRACT_COLORS => 4
-       ,BLEND_ALPHA_PREMULTIPLY => 5
-       ,BLEND_CUSTOM => 6
-       ,BLEND_CUSTOM_SEPARATE => 7
+         BLEND_ALPHA => 0
+       , BLEND_ADDITIVE => 1
+       , BLEND_MULTIPLIED => 2
+       , BLEND_ADD_COLORS => 3
+       , BLEND_SUBTRACT_COLORS => 4
+       , BLEND_ALPHA_PREMULTIPLY => 5
+       , BLEND_CUSTOM => 6
+       , BLEND_CUSTOM_SEPARATE => 7
      );
 
    type Gesture is new Interfaces.C.unsigned;
@@ -539,46 +539,46 @@ is
 
    type CameraMode is
      (
-        CAMERA_CUSTOM -- Custom camera
-       ,CAMERA_FREE -- Free camera
-       ,CAMERA_ORBITAL -- Orbital camera
-       ,CAMERA_FIRST_PERSON -- First person camera
-       ,CAMERA_THIRD_PERSON -- Third person camera
+         CAMERA_CUSTOM -- Custom camera
+       , CAMERA_FREE -- Free camera
+       , CAMERA_ORBITAL -- Orbital camera
+       , CAMERA_FIRST_PERSON -- First person camera
+       , CAMERA_THIRD_PERSON -- Third person camera
      )
      with Convention => C;
    for CameraMode use
      (
-        CAMERA_CUSTOM => 0
-       ,CAMERA_FREE => 1
-       ,CAMERA_ORBITAL => 2
-       ,CAMERA_FIRST_PERSON => 3
-       ,CAMERA_THIRD_PERSON => 4
+         CAMERA_CUSTOM => 0
+       , CAMERA_FREE => 1
+       , CAMERA_ORBITAL => 2
+       , CAMERA_FIRST_PERSON => 3
+       , CAMERA_THIRD_PERSON => 4
      );
 
    type CameraProjection is
      (
-        CAMERA_PERSPECTIVE -- Perspective projection
-       ,CAMERA_ORTHOGRAPHIC -- Orthographic projection
+         CAMERA_PERSPECTIVE -- Perspective projection
+       , CAMERA_ORTHOGRAPHIC -- Orthographic projection
      )
      with Convention => C;
    for CameraProjection use
      (
-        CAMERA_PERSPECTIVE => 0
-       ,CAMERA_ORTHOGRAPHIC => 1
+         CAMERA_PERSPECTIVE => 0
+       , CAMERA_ORTHOGRAPHIC => 1
      );
 
    type NPatchLayout is
      (
-        NPATCH_NINE_PATCH -- Npatch layout: 3x3 tiles
-       ,NPATCH_THREE_PATCH_VERTICAL -- Npatch layout: 1x3 tiles
-       ,NPATCH_THREE_PATCH_HORIZONTAL -- Npatch layout: 3x1 tiles
+         NPATCH_NINE_PATCH -- Npatch layout: 3x3 tiles
+       , NPATCH_THREE_PATCH_VERTICAL -- Npatch layout: 1x3 tiles
+       , NPATCH_THREE_PATCH_HORIZONTAL -- Npatch layout: 3x1 tiles
      )
      with Convention => C;
    for NPatchLayout use
      (
-        NPATCH_NINE_PATCH => 0
-       ,NPATCH_THREE_PATCH_VERTICAL => 1
-       ,NPATCH_THREE_PATCH_HORIZONTAL => 2
+         NPATCH_NINE_PATCH => 0
+       , NPATCH_THREE_PATCH_VERTICAL => 1
+       , NPATCH_THREE_PATCH_HORIZONTAL => 2
      );
 
    type ShaderLocationArray is array (ShaderLocationIndex) of Interfaces.C.int
@@ -762,6 +762,8 @@ is
       scale : Vector3; -- Scale
    end record
       with Convention => C_Pass_By_Copy;
+   type Tranform_Array is array (Interfaces.C.int range <>) of Transform
+     with Convention => C;
 
    type BoneInfo is record
       name : String32; -- Bone name
@@ -779,6 +781,15 @@ is
       boneCount : Interfaces.C.int; -- Number of bones
       bones : access BoneInfo; -- Bones information (skeleton)
       bindPose : access Transform; -- Bones base transformation (pose)
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type ModelAnimation is record
+      boneCount : Interfaces.C.int; -- Number of bones
+      frameCount : Interfaces.C.int; -- Number of animation frames
+      bones : access BoneInfo; -- Bones information (skeleton)
+      framePoses : access Tranform_Array; -- Poses array by frame
+      name : String32; -- Animation name
    end record
       with Convention => C_Pass_By_Copy;
 
@@ -811,6 +822,30 @@ is
    end record
       with Convention => C_Pass_By_Copy;
 
+   type AudioStream is record
+      buffer : System.Address; -- Pointer to internal data used by the audio system
+      processor : System.Address; -- Pointer to internal data processor, useful for audio effects
+      sampleRate : Interfaces.C.unsigned; -- Frequency (samples per second)
+      sampleSize : Interfaces.C.unsigned; -- Bit depth (bits per sample): 8, 16, 32 (24 not supported)
+      channels : Interfaces.C.unsigned; -- Number of channels (1-mono, 2-stereo, ...)
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type Sound is record
+      stream : AudioStream; -- Audio stream
+      frameCount : Interfaces.C.unsigned; -- Total number of frames (considering channels)
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type Music is record
+      stream : AudioStream; -- Audio stream
+      frameCount : Interfaces.C.unsigned; -- Total number of frames (considering channels)
+      looping : Interfaces.C.C_bool; -- Music looping enable
+      ctxType : Interfaces.C.int; -- Type of music context (audio filetype)
+      ctxData : System.Address; -- Audio context data, depends on type
+   end record
+      with Convention => C_Pass_By_Copy;
+
    type VrDeviceInfo is record
       hResolution : Interfaces.C.int; -- Horizontal resolution in pixels
       vResolution : Interfaces.C.int; -- Vertical resolution in pixels
@@ -833,6 +868,13 @@ is
       rightScreenCenter : Float2; -- VR right screen center
       scale : Float2; -- VR distortion scale
       scaleIn : Float2; -- VR distortion scale in
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type FilePathList is record
+      capacity : Interfaces.C.size_t; -- Filepaths max entries
+      count : Interfaces.C.size_t; -- Filepaths entries count
+      paths : access constant Interfaces.C.Strings.chars_ptr_array; -- Filepaths entries
    end record
       with Convention => C_Pass_By_Copy;
 
@@ -1456,9 +1498,35 @@ is
    function IsPathFile (path : String) return Interfaces.C.C_bool;
    --  Check if a given path is a file or a directory
 
+   function LoadDirectoryFiles (dirPath : Interfaces.C.Strings.chars_ptr) return FilePathList;
+   --  Load directory filepaths
+   pragma Import (C, LoadDirectoryFiles, "LoadDirectoryFiles");
+
+   function LoadDirectoryFiles (dirPath : String) return FilePathList;
+   --  Load directory filepaths
+
+   function LoadDirectoryFilesEx (basePath : Interfaces.C.Strings.chars_ptr; filter : Interfaces.C.Strings.chars_ptr; scanSubdirs : Interfaces.C.C_bool) return FilePathList;
+   --  Load directory filepaths with extension filtering and recursive directory scan
+   pragma Import (C, LoadDirectoryFilesEx, "LoadDirectoryFilesEx");
+
+   function LoadDirectoryFilesEx (basePath : String; filter : String; scanSubdirs : Interfaces.C.C_bool) return FilePathList;
+   --  Load directory filepaths with extension filtering and recursive directory scan
+
+   procedure UnloadDirectoryFiles (files : FilePathList);
+   --  Unload filepaths
+   pragma Import (C, UnloadDirectoryFiles, "UnloadDirectoryFiles");
+
    function IsFileDropped return Interfaces.C.C_bool;
    --  Check if a file has been dropped into window
    pragma Import (C, IsFileDropped, "IsFileDropped");
+
+   function LoadDroppedFiles return FilePathList;
+   --  Load dropped filepaths
+   pragma Import (C, LoadDroppedFiles, "LoadDroppedFiles");
+
+   procedure UnloadDroppedFiles (files : FilePathList);
+   --  Unload dropped filepaths
+   pragma Import (C, UnloadDroppedFiles, "UnloadDroppedFiles");
 
    function GetFileModTime (fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.long;
    --  Get file modification time (last write time)
@@ -3035,9 +3103,40 @@ is
    --  Checks if wave data is ready
    pragma Import (C, IsWaveReady, "IsWaveReady");
 
+   function LoadSound (fileName : Interfaces.C.Strings.chars_ptr) return Sound;
+   --  Load sound from file
+   pragma Import (C, LoadSound, "LoadSound");
+
+   function LoadSound (fileName : String) return Sound;
+   --  Load sound from file
+
+   function LoadSoundFromWave (wave_p : Wave) return Sound;
+   --  Load sound from wave data
+   pragma Import (C, LoadSoundFromWave, "LoadSoundFromWave");
+
+   function LoadSoundAlias (source : Sound) return Sound;
+   --  Create a new sound that shares the same sample data as the source sound, does not own the sound data
+   pragma Import (C, LoadSoundAlias, "LoadSoundAlias");
+
+   function IsSoundReady (sound_p : Sound) return Interfaces.C.C_bool;
+   --  Checks if a sound is ready
+   pragma Import (C, IsSoundReady, "IsSoundReady");
+
+   procedure UpdateSound (sound_p : Sound; data : System.Address; sampleCount : Interfaces.C.int);
+   --  Update sound buffer with new data
+   pragma Import (C, UpdateSound, "UpdateSound");
+
    procedure UnloadWave (wave_p : Wave);
    --  Unload wave data
    pragma Import (C, UnloadWave, "UnloadWave");
+
+   procedure UnloadSound (sound_p : Sound);
+   --  Unload sound
+   pragma Import (C, UnloadSound, "UnloadSound");
+
+   procedure UnloadSoundAlias (alias : Sound);
+   --  Unload a sound alias (does not deallocate sample data)
+   pragma Import (C, UnloadSoundAlias, "UnloadSoundAlias");
 
    function ExportWave (wave_p : Wave; fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
    --  Export wave data to file, returns true on success
@@ -3052,6 +3151,38 @@ is
 
    function ExportWaveAsCode (wave_p : Wave; fileName : String) return Interfaces.C.C_bool;
    --  Export wave sample data to code (.h), returns true on success
+
+   procedure PlaySound (sound_p : Sound);
+   --  Play a sound
+   pragma Import (C, PlaySound, "PlaySound");
+
+   procedure StopSound (sound_p : Sound);
+   --  Stop playing a sound
+   pragma Import (C, StopSound, "StopSound");
+
+   procedure PauseSound (sound_p : Sound);
+   --  Pause a sound
+   pragma Import (C, PauseSound, "PauseSound");
+
+   procedure ResumeSound (sound_p : Sound);
+   --  Resume a paused sound
+   pragma Import (C, ResumeSound, "ResumeSound");
+
+   function IsSoundPlaying (sound_p : Sound) return Interfaces.C.C_bool;
+   --  Check if a sound is currently playing
+   pragma Import (C, IsSoundPlaying, "IsSoundPlaying");
+
+   procedure SetSoundVolume (sound_p : Sound; volume : Interfaces.C.C_float);
+   --  Set volume for a sound (1.0 is max level)
+   pragma Import (C, SetSoundVolume, "SetSoundVolume");
+
+   procedure SetSoundPitch (sound_p : Sound; pitch : Interfaces.C.C_float);
+   --  Set pitch for a sound (1.0 is base level)
+   pragma Import (C, SetSoundPitch, "SetSoundPitch");
+
+   procedure SetSoundPan (sound_p : Sound; pan : Interfaces.C.C_float);
+   --  Set pan for a sound (0.5 is center)
+   pragma Import (C, SetSoundPan, "SetSoundPan");
 
    function WaveCopy (wave_p : Wave) return Wave;
    --  Copy a wave to a new wave
@@ -3072,6 +3203,132 @@ is
    procedure UnloadWaveSamples (samples : access Interfaces.C.C_float);
    --  Unload samples data loaded with LoadWaveSamples()
    pragma Import (C, UnloadWaveSamples, "UnloadWaveSamples");
+
+   function LoadMusicStream (fileName : Interfaces.C.Strings.chars_ptr) return Music;
+   --  Load music stream from file
+   pragma Import (C, LoadMusicStream, "LoadMusicStream");
+
+   function LoadMusicStream (fileName : String) return Music;
+   --  Load music stream from file
+
+   function LoadMusicStreamFromMemory (fileType : Interfaces.C.Strings.chars_ptr; data : System.Address; dataSize : Interfaces.C.int) return Music;
+   --  Load music stream from data
+   pragma Import (C, LoadMusicStreamFromMemory, "LoadMusicStreamFromMemory");
+
+   function LoadMusicStreamFromMemory (fileType : String; data : System.Address; dataSize : Interfaces.C.int) return Music;
+   --  Load music stream from data
+
+   function IsMusicReady (music_p : Music) return Interfaces.C.C_bool;
+   --  Checks if a music stream is ready
+   pragma Import (C, IsMusicReady, "IsMusicReady");
+
+   procedure UnloadMusicStream (music_p : Music);
+   --  Unload music stream
+   pragma Import (C, UnloadMusicStream, "UnloadMusicStream");
+
+   procedure PlayMusicStream (music_p : Music);
+   --  Start music playing
+   pragma Import (C, PlayMusicStream, "PlayMusicStream");
+
+   function IsMusicStreamPlaying (music_p : Music) return Interfaces.C.C_bool;
+   --  Check if music is playing
+   pragma Import (C, IsMusicStreamPlaying, "IsMusicStreamPlaying");
+
+   procedure UpdateMusicStream (music_p : Music);
+   --  Updates buffers for music streaming
+   pragma Import (C, UpdateMusicStream, "UpdateMusicStream");
+
+   procedure StopMusicStream (music_p : Music);
+   --  Stop music playing
+   pragma Import (C, StopMusicStream, "StopMusicStream");
+
+   procedure PauseMusicStream (music_p : Music);
+   --  Pause music playing
+   pragma Import (C, PauseMusicStream, "PauseMusicStream");
+
+   procedure ResumeMusicStream (music_p : Music);
+   --  Resume playing paused music
+   pragma Import (C, ResumeMusicStream, "ResumeMusicStream");
+
+   procedure SeekMusicStream (music_p : Music; position : Interfaces.C.C_float);
+   --  Seek music to a position (in seconds)
+   pragma Import (C, SeekMusicStream, "SeekMusicStream");
+
+   procedure SetMusicVolume (music_p : Music; volume : Interfaces.C.C_float);
+   --  Set volume for music (1.0 is max level)
+   pragma Import (C, SetMusicVolume, "SetMusicVolume");
+
+   procedure SetMusicPitch (music_p : Music; pitch : Interfaces.C.C_float);
+   --  Set pitch for a music (1.0 is base level)
+   pragma Import (C, SetMusicPitch, "SetMusicPitch");
+
+   procedure SetMusicPan (music_p : Music; pan : Interfaces.C.C_float);
+   --  Set pan for a music (0.5 is center)
+   pragma Import (C, SetMusicPan, "SetMusicPan");
+
+   function GetMusicTimeLength (music_p : Music) return Interfaces.C.C_float;
+   --  Get music time length (in seconds)
+   pragma Import (C, GetMusicTimeLength, "GetMusicTimeLength");
+
+   function GetMusicTimePlayed (music_p : Music) return Interfaces.C.C_float;
+   --  Get current music time played (in seconds)
+   pragma Import (C, GetMusicTimePlayed, "GetMusicTimePlayed");
+
+   function LoadAudioStream (sampleRate : Interfaces.C.unsigned; sampleSize : Interfaces.C.unsigned; channels : Interfaces.C.unsigned) return AudioStream;
+   --  Load audio stream (to stream raw audio pcm data)
+   pragma Import (C, LoadAudioStream, "LoadAudioStream");
+
+   function IsAudioStreamReady (stream : AudioStream) return Interfaces.C.C_bool;
+   --  Checks if an audio stream is ready
+   pragma Import (C, IsAudioStreamReady, "IsAudioStreamReady");
+
+   procedure UnloadAudioStream (stream : AudioStream);
+   --  Unload audio stream and free memory
+   pragma Import (C, UnloadAudioStream, "UnloadAudioStream");
+
+   procedure UpdateAudioStream (stream : AudioStream; data : System.Address; frameCount : Interfaces.C.int);
+   --  Update audio stream buffers with data
+   pragma Import (C, UpdateAudioStream, "UpdateAudioStream");
+
+   function IsAudioStreamProcessed (stream : AudioStream) return Interfaces.C.C_bool;
+   --  Check if any audio stream buffers requires refill
+   pragma Import (C, IsAudioStreamProcessed, "IsAudioStreamProcessed");
+
+   procedure PlayAudioStream (stream : AudioStream);
+   --  Play audio stream
+   pragma Import (C, PlayAudioStream, "PlayAudioStream");
+
+   procedure PauseAudioStream (stream : AudioStream);
+   --  Pause audio stream
+   pragma Import (C, PauseAudioStream, "PauseAudioStream");
+
+   procedure ResumeAudioStream (stream : AudioStream);
+   --  Resume audio stream
+   pragma Import (C, ResumeAudioStream, "ResumeAudioStream");
+
+   function IsAudioStreamPlaying (stream : AudioStream) return Interfaces.C.C_bool;
+   --  Check if audio stream is playing
+   pragma Import (C, IsAudioStreamPlaying, "IsAudioStreamPlaying");
+
+   procedure StopAudioStream (stream : AudioStream);
+   --  Stop audio stream
+   pragma Import (C, StopAudioStream, "StopAudioStream");
+
+   procedure SetAudioStreamVolume (stream : AudioStream; volume : Interfaces.C.C_float);
+   --  Set volume for audio stream (1.0 is max level)
+   pragma Import (C, SetAudioStreamVolume, "SetAudioStreamVolume");
+
+   procedure SetAudioStreamPitch (stream : AudioStream; pitch : Interfaces.C.C_float);
+   --  Set pitch for audio stream (1.0 is base level)
+   pragma Import (C, SetAudioStreamPitch, "SetAudioStreamPitch");
+
+   procedure SetAudioStreamPan (stream : AudioStream; pan : Interfaces.C.C_float);
+   --  Set pan for audio stream (0.5 is centered)
+   pragma Import (C, SetAudioStreamPan, "SetAudioStreamPan");
+
+   procedure SetAudioStreamBufferSizeDefault (size : Interfaces.C.int);
+   --  Default size for new audio streams
+   pragma Import (C, SetAudioStreamBufferSizeDefault, "SetAudioStreamBufferSizeDefault");
 
    RAYLIB_VERSION_MAJOR : constant := 5;
    RAYLIB_VERSION_MINOR : constant := 1;
