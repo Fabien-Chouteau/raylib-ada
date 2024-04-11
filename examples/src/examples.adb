@@ -51,10 +51,6 @@ begin
 
       Raylib.UpdateMusicStream (Music);
 
-      if Raylib.IsCursorHidden then
-         Raylib.UpdateCamera (Cam'Access, Raylib.CAMERA_FIRST_PERSON);
-      end if;
-
       if Raylib.IsMouseButtonPressed (Raylib.MOUSE_BUTTON_RIGHT) then
          if Raylib.IsCursorHidden then
             Raylib.EnableCursor;
@@ -63,20 +59,24 @@ begin
          end if;
       end if;
 
-      if Raylib.IsMouseButtonPressed (Raylib.MOUSE_BUTTON_LEFT) then
-         Raylib.PlaySound (Sound);
-         if not Collision.hit then
-            Ray := Raylib.GetScreenToWorldRay (Raylib.GetMousePosition, Cam);
-            Collision := Raylib.GetRayCollisionBox
-              (Ray,
-               ((Cube_Position.x - Cube_Size.x / 2.0,
-                 Cube_Position.y - Cube_Size.y / 2.0,
-                 Cube_Position.z - Cube_Size.z / 2.0),
-                (Cube_Position.x + Cube_Size.x / 2.0,
-                 Cube_Position.y + Cube_Size.y / 2.0,
-                 Cube_Position.z + Cube_Size.z / 2.0)));
-         else
-            Collision.hit := False;
+      if Raylib.IsCursorHidden then
+         Raylib.UpdateCamera (Cam'Access, Raylib.CAMERA_FIRST_PERSON);
+      else
+         if Raylib.IsMouseButtonPressed (Raylib.MOUSE_BUTTON_LEFT) then
+            Raylib.PlaySound (Sound);
+            if not Collision.hit then
+               Ray := Raylib.GetMouseRay (Raylib.GetMousePosition, Cam);
+               Collision := Raylib.GetRayCollisionBox
+                 (Ray,
+                  ((Cube_Position.x - Cube_Size.x / 2.0,
+                   Cube_Position.y - Cube_Size.y / 2.0,
+                   Cube_Position.z - Cube_Size.z / 2.0),
+                   (Cube_Position.x + Cube_Size.x / 2.0,
+                    Cube_Position.y + Cube_Size.y / 2.0,
+                    Cube_Position.z + Cube_Size.z / 2.0)));
+            else
+               Collision.hit := False;
+            end if;
          end if;
       end if;
 

@@ -2,13 +2,13 @@
 
 import json
 import re
+import os
 
-with open(
-    "/home/chouteau/src/github/raylib-ada/raylib/parser/output/raylib_api.json"
-) as file:
-    data = json.load(file)
+import os
 
-body = ""
+CRATE_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+HEADER = os.path.join(CRATE_ROOT, "raylib", "src", "raylib.h")
+JSON_FILE = os.path.join(CRATE_ROOT, "scripts", "raylib_api.json")
 
 ADA_KEYWORD = ["end", "type"]
 
@@ -159,7 +159,7 @@ def is_type_name(name):
 
 
 def gen_struct(struct):
-    print(f"   type {struct['name']} is record")
+    out = f"   type {struct['name']} is record\n"
     for field in struct["fields"]:
         if field["name"] == "type":
             field["name"] = "type_K"
@@ -167,50 +167,47 @@ def gen_struct(struct):
         if is_type_name(field["name"]):
             field["name"] = field["name"] + "_f"
         # print(field)
-        print(
-            f"      {field['name']} : {to_ada_type(field['type'], field['name'], struct['name'])}; -- {field['description']}"
-        )
-    print("   end record")
-    print("      with Convention => C_Pass_By_Copy;")
+        out += f"      {field['name']} : {to_ada_type(field['type'], field['name'], struct['name'])}; -- {field['description']}\n"
+    out += "   end record\n"
+    out += "      with Convention => C_Pass_By_Copy;\n"
 
     if struct["name"] == "Matrix":
-        print("   type Matrix4 is array (0 .. 3) of Matrix;")
-        print("   type Matrix2 is array (0 .. 1) of Matrix;")
+        out += "   type Matrix4 is array (0 .. 3) of Matrix;\n"
+        out += "   type Matrix2 is array (0 .. 1) of Matrix;\n"
     elif struct["name"] == "Vector4":
-        print("   subtype Quaternion is Vector4;")
+        out += "   subtype Quaternion is Vector4;\n"
     elif struct["name"] == "MaterialMap":
-        print("   type MaterialMapArray is array (MaterialMapIndex) of MaterialMap")
-        print("     with Convention => C;")
+        out += "   type MaterialMapArray is array (MaterialMapIndex) of MaterialMap\n"
+        out += "     with Convention => C;\n"
     elif struct["name"] == "Transform":
-        print("   type Tranform_Array is array (Interfaces.C.int) of Transform")
-        print("     with Convention => C;")
+        out += "   type Tranform_Array is array (Interfaces.C.int) of Transform\n"
+        out += "     with Convention => C;\n"
     elif struct["name"] == "AutomationEvent":
-        print(
-            "   type AutomationEvent_Array is array (Interfaces.C.unsigned) of AutomationEvent"
-        )
-        print("     with Convention => C;")
-    elif struct["name"] == "ModelAnimation":
-        print(
-            "   type ModelAnimation_Array is array (Interfaces.C.unsigned) of ModelAnimation"
-        )
-        print("     with Convention => C;")
+        out += "   type AutomationEvent_Array is array (Interfaces.C.unsigned) of AutomationEvent\n"
 
-    print()
+        out += "     with Convention => C;\n"
+    elif struct["name"] == "ModelAnimation":
+        out += "   type ModelAnimation_Array is array (Interfaces.C.unsigned) of ModelAnimation\n"
+        out += "     with Convention => C;\n"
+
+    out += "\n"
 
     TYPE_IDENTITY.append(struct["name"])
 
+    return out
+
 
 def gen_enum(enum):
+    out = ""
     if enum["name"].endswith("Flags") or enum["name"] in ["Gesture"]:
         # The enum represents flags that can be combined, so we use a modular type
 
-        print(f"   type {enum['name']} is new Interfaces.C.unsigned;")
-        print(f"   --  {enum['description']}")
-        print()
+        out += f"   type {enum['name']} is new Interfaces.C.unsigned;\n"
+        out += f"   --  {enum['description']}\n"
+        out += "\n"
+
         for value in enum["values"]:
-            print(
-                f"   {value['name']} : constant {enum['name']} := {value['value']}; -- {value['description']}"
-            )
+            out += f"   {value['name']} : constant {enum['name']} := {value['value']}; -- {value['description']}\n"
     elif enum["name"] in [
         "GamepadAxis",
         "GamepadButton",
@@ -219,34 +216,33 @@ def gen_enum(enum):
     ]:
         # In these cases the enum is just used as a list of default/common
         # values for the type.
-        print(f"   type {enum['name']} is new Interfaces.C.int;")
-        print(f"   --  {enum['description']}")
-        print()
+        out += f"   type {enum['name']} is new Interfaces.C.int;\n"
+        out += f"   --  {enum['description']}\n"
+        out += "\n"
         for value in enum["values"]:
-            print(
-                f"   {value['name']} : constant {enum['name']} := {value['value']}; -- {value['description']}"
-            )
+            out += f"   {value['name']} : constant {enum['name']} := {value['value']}; -- {value['description']}\n"
     else:
         # Otherwise use regular Ada enums
-        print(f"   type {enum['name']} is")
-        print("     (")
+        out += f"   type {enum['name']} is\n"
+        out += "     (\n"
         sorted_value = sorted(enum["values"], key=lambda d: d["value"])
         first = True
         for value in sorted_value:
             coma = "  " if first else ", "
-            print(f"       {coma}{value['name']} -- {value['description']}")
+            out += f"       {coma}{value['name']} -- {value['description']}\n"
             first = False
-        print("     )")
-        print("     with Convention => C;")
-        print(f"   for {enum['name']} use")
-        print("     (")
+        out += "     )\n"
+        out += "     with Convention => C;\n"
+        out += f"   for {enum['name']} use\n"
+        out += "     (\n"
         first = True
         for value in sorted_value:
             coma = "  " if first else ", "
-            print(f"       {coma}{value['name']} => {value['value']}")
+            out += f"       {coma}{value['name']} => {value['value']}\n"
             first = False
-        print("     );")
-    print()
+        out += "     );\n"
+    out += "\n"
+    return out
 
 
 def function_decl(function, spec=True, callback=False):
@@ -271,7 +267,7 @@ def function_decl(function, spec=True, callback=False):
     else:
         out += f"   function {function['name']}{params_str} return {function['returnType']}{term}\n"
     if spec and not callback:
-        out += f"   --  {function['description']}"
+        out += f"   --  {function['description']}\n"
     return out
 
 
@@ -313,8 +309,7 @@ def gen_string_function_body(function):
 
     out += f"   end {function['name']};\n\n"
 
-    global body
-    body += out
+    return out
 
 
 def process_params(params, function_name):
@@ -330,6 +325,8 @@ def process_params(params, function_name):
 
 
 def gen_function(function):
+    spec = ""
+    body = ""
     C_STRING_TYPE = "Interfaces.C.Strings.chars_ptr"
 
     function["returnType"] = to_ada_type(function["returnType"], "RETURNTYPE")
@@ -342,9 +339,8 @@ def gen_function(function):
     else:
         function["params"] = None
 
-    print(function_decl(function))
-    print(f"   pragma Import (C, {function['name']}, \"{function['name']}\");")
-    print()
+    spec += function_decl(function)
+    spec += f"   pragma Import (C, {function['name']}, \"{function['name']}\");\n\n"
 
     if has_string:
         # This sub-program either returns a string or takes a string argument.
@@ -358,66 +354,84 @@ def gen_function(function):
                 if p["type"] == C_STRING_TYPE:
                     p["type"] = "String"
 
-        print(function_decl(function))
-        gen_string_function_body(function)
-        print()
+        spec += function_decl(function) + "\n"
+        body += gen_string_function_body(function)
+    return (spec, body)
 
 
 def gen_define(define):
+    out = ""
     if define["type"] == "COLOR":
         r = re.compile("CLITERAL\(Color\)\{ ([0-9]+), ([0-9]+), ([0-9]+), ([0-9]+) \}")
         r, g, b, a = r.match(define["value"]).groups()
-        print(f"   {define['name']} : constant Color := ({r}, {g}, {b}, {a});")
+        out += f"   {define['name']} : constant Color := ({r}, {g}, {b}, {a});\n"
     elif define["type"] == "STRING":
-        print(f"   {define['name']} : constant String := \"{define['value']}\";")
+        out += f"   {define['name']} : constant String := \"{define['value']}\";\n"
     elif define["type"] == "INT" or define["type"] == "FLOAT":
-        print(f"   {define['name']} : constant := {define['value']};")
+        out += f"   {define['name']} : constant := {define['value']};\n"
+
+    return out
 
 
 def gen_callback(callback):
     global TYPE_IDENTITY
     TYPE_IDENTITY.append(callback["name"])
 
+    out = ""
     callback["returnType"] = to_ada_type(callback["returnType"], "RETURNTYPE")
     callback["params"], _ = process_params(callback["params"], callback["name"])
-    print(
-        function_decl(callback, spec=True, callback=True) + "     with Convention => C;"
-    )
+    out += function_decl(callback, spec=True, callback=True)
+    out += "\n     with Convention => C;\n"
+
     if callback["description"]:
-        print(f"   --  {callback['description']}")
-    print()
+        out += f"   --  {callback['description']}\n"
+    out += "\n"
+
+    return out
 
 
-print("with System;")
-print("with Interfaces.C;")
-print("with Interfaces.C.Strings;")
-print("package Raylib")
-print("  with Preelaborate")
-print("is")
-print('   pragma Style_Checks ("M2000");')
+test = os.system(
+    f"{CRATE_ROOT}/raylib/parser/raylib_parser -input {HEADER} -o {JSON_FILE} -f JSON"
+)
 
-print("   type Float2 is array (0 .. 1) of Interfaces.C.C_float;")
-print("   type Float4 is array (0 .. 3) of Interfaces.C.C_float;")
-print("   type Int4 is array (0 .. 3) of Interfaces.C.int;")
-print("   subtype String32 is String (1 .. 32);")
+with open(JSON_FILE) as file:
+    data = json.load(file)
+
+spec = "with System;\n"
+spec += "with Interfaces.C;\n"
+spec += "with Interfaces.C.Strings;\n"
+spec += "package Raylib\n"
+spec += "  with Preelaborate\n"
+spec += "is\n"
+spec += '   pragma Style_Checks ("M2000");\n'
+
+spec += "   type Float2 is array (0 .. 1) of Interfaces.C.C_float;\n"
+spec += "   type Float4 is array (0 .. 3) of Interfaces.C.C_float;\n"
+spec += "   type Int4 is array (0 .. 3) of Interfaces.C.int;\n"
+spec += "   subtype String32 is String (1 .. 32);\n"
 
 # Do the enums first as the contain definitions used in structs and functions
 for enum in data["enums"]:
-    gen_enum(enum)
+    spec += gen_enum(enum)
 
-print("   type ShaderLocationArray is array (ShaderLocationIndex) of Interfaces.C.int")
-print("     with Convention => C;")
-print()
+spec += (
+    "   type ShaderLocationArray is array (ShaderLocationIndex) of Interfaces.C.int\n"
+)
+spec += "     with Convention => C;\n"
+spec += "\n"
+
+body = "package body Raylib is\n"
+body += '   pragma Style_Checks ("M2000");\n'
 
 SKIP_CALLBACKS = ["TraceLogCallback"]
 for callback in data["callbacks"]:
     if callback["name"] not in SKIP_CALLBACKS:
-        gen_callback(callback)
+        spec += gen_callback(callback)
 
 SKIP_STRUCTS = []
 for struct in data["structs"]:
     if struct["name"] not in SKIP_STRUCTS:
-        gen_struct(struct)
+        spec += gen_struct(struct)
 
 
 SKIP_FUNCTIONS = [
@@ -429,11 +443,23 @@ for function in data["functions"]:
         "TraceLog" not in function["name"]  # Var args...
         and function["name"] not in SKIP_FUNCTIONS
     ):
-        gen_function(function)
+        f_spec, f_body = gen_function(function)
+        spec += f_spec
+        body += f_body
 
 for define in data["defines"]:
-    gen_define(define)
+    spec += gen_define(define)
 
-print("end Raylib;")
+spec += "end Raylib;\n"
+body += "end Raylib;\n"
 
-print(body)
+spec_filename = os.path.join(CRATE_ROOT, "src", "raylib.ads")
+body_filename = os.path.join(CRATE_ROOT, "src", "raylib.adb")
+
+with open(spec_filename, "w", encoding="utf-8") as f:
+    print(f"Writing {spec_filename}")
+    f.write(spec)
+
+with open(body_filename, "w", encoding="utf-8") as f:
+    print(f"Writing {body_filename}")
+    f.write(body)

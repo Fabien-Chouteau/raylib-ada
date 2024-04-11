@@ -1,6 +1,5 @@
 package body Raylib is
-   pragma Style_Checks ("M1000");
-
+   pragma Style_Checks ("M2000");
    procedure InitWindow (width : Interfaces.C.int; height : Interfaces.C.int; title : String) is
       use Interfaces.C.Strings;
       C_title : Interfaces.C.Strings.chars_ptr := New_String (title);
@@ -349,15 +348,6 @@ package body Raylib is
       Free (C_fileName);
       return Result;
    end LoadImageAnim;
-
-   function LoadImageAnimFromMemory (fileType : String; fileData : System.Address; dataSize : Interfaces.C.int; frames : access Interfaces.C.int) return Image is
-      use Interfaces.C.Strings;
-      C_fileType : Interfaces.C.Strings.chars_ptr := New_String (fileType);
-      Result : constant Image := LoadImageAnimFromMemory (C_fileType, fileData, dataSize, frames);
-   begin
-      Free (C_fileType);
-      return Result;
-   end LoadImageAnimFromMemory;
 
    function LoadImageFromMemory (fileType : String; fileData : System.Address; dataSize : Interfaces.C.int) return Image is
       use Interfaces.C.Strings;
@@ -717,15 +707,6 @@ package body Raylib is
       return Result;
    end TextToInteger;
 
-   function TextToFloat (text : String) return Interfaces.C.C_float is
-      use Interfaces.C.Strings;
-      C_text : Interfaces.C.Strings.chars_ptr := New_String (text);
-      Result : constant Interfaces.C.C_float := TextToFloat (C_text);
-   begin
-      Free (C_text);
-      return Result;
-   end TextToFloat;
-
    function LoadModel (fileName : String) return Model is
       use Interfaces.C.Strings;
       C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
@@ -743,15 +724,6 @@ package body Raylib is
       Free (C_fileName);
       return Result;
    end ExportMesh;
-
-   function ExportMeshAsCode (mesh_p : Mesh; fileName : String) return Interfaces.C.C_bool is
-      use Interfaces.C.Strings;
-      C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
-      Result : constant Interfaces.C.C_bool := ExportMeshAsCode (mesh_p, C_fileName);
-   begin
-      Free (C_fileName);
-      return Result;
-   end ExportMeshAsCode;
 
    function LoadMaterials (fileName : String; materialCount : access Interfaces.C.int) return access Material is
       use Interfaces.C.Strings;

@@ -163,7 +163,7 @@ is
    KEY_KP_ENTER : constant KeyboardKey := 335; -- Key: Keypad Enter
    KEY_KP_EQUAL : constant KeyboardKey := 336; -- Key: Keypad =
    KEY_BACK : constant KeyboardKey := 4; -- Key: Android back button
-   KEY_MENU : constant KeyboardKey := 5; -- Key: Android menu button
+   KEY_MENU : constant KeyboardKey := 82; -- Key: Android menu button
    KEY_VOLUME_UP : constant KeyboardKey := 24; -- Key: Android volume up button
    KEY_VOLUME_DOWN : constant KeyboardKey := 25; -- Key: Android volume down button
 
@@ -585,22 +585,27 @@ is
      with Convention => C;
 
    type LoadFileDataCallback is access    function  (fileName : Interfaces.C.Strings.chars_ptr; dataSize : access Interfaces.C.int) return access Interfaces.C.char
+
      with Convention => C;
    --  FileIO: Load binary data
 
    type SaveFileDataCallback is access    function  (fileName : Interfaces.C.Strings.chars_ptr; data : System.Address; dataSize : Interfaces.C.int) return Interfaces.C.C_bool
+
      with Convention => C;
    --  FileIO: Save binary data
 
    type LoadFileTextCallback is access    function  (fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr
+
      with Convention => C;
    --  FileIO: Load text data
 
    type SaveFileTextCallback is access    function  (fileName : Interfaces.C.Strings.chars_ptr; text : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool
+
      with Convention => C;
    --  FileIO: Save text data
 
    type AudioCallback is access    procedure  (bufferData : System.Address; frames : Interfaces.C.unsigned)
+
      with Convention => C;
 
    type Vector2 is record
@@ -872,6 +877,7 @@ is
       vResolution : Interfaces.C.int; -- Vertical resolution in pixels
       hScreenSize : Interfaces.C.C_float; -- Horizontal size in meters
       vScreenSize : Interfaces.C.C_float; -- Vertical size in meters
+      vScreenCenter : Interfaces.C.C_float; -- Screen center in meters
       eyeToScreenDistance : Interfaces.C.C_float; -- Distance between eye and display in meters
       lensSeparationDistance : Interfaces.C.C_float; -- Lens separation distance in meters
       interpupillaryDistance : Interfaces.C.C_float; -- IPD (distance between pupils) in meters
@@ -1271,29 +1277,9 @@ is
    --  Unload shader from GPU memory (VRAM)
    pragma Import (C, UnloadShader, "UnloadShader");
 
-   function GetScreenToWorldRay (mousePosition : Vector2; camera_p : Camera3D) return Ray;
+   function GetMouseRay (mousePosition : Vector2; camera_p : Camera3D) return Ray;
    --  Get a ray trace from mouse position
-   pragma Import (C, GetScreenToWorldRay, "GetScreenToWorldRay");
-
-   function GetScreenToWorldRayEx (mousePosition : Vector2; camera_p : Camera3D; width : Interfaces.C.C_float; height : Interfaces.C.C_float) return Ray;
-   --  Get a ray trace from mouse position in a viewport
-   pragma Import (C, GetScreenToWorldRayEx, "GetScreenToWorldRayEx");
-
-   function GetWorldToScreen (position : Vector3; camera_p : Camera3D) return Vector2;
-   --  Get the screen space position for a 3d world space position
-   pragma Import (C, GetWorldToScreen, "GetWorldToScreen");
-
-   function GetWorldToScreenEx (position : Vector3; camera_p : Camera3D; width : Interfaces.C.int; height : Interfaces.C.int) return Vector2;
-   --  Get size position for a 3d world space position
-   pragma Import (C, GetWorldToScreenEx, "GetWorldToScreenEx");
-
-   function GetWorldToScreen2D (position : Vector2; camera_p : Camera2D) return Vector2;
-   --  Get the screen space position for a 2d camera world space position
-   pragma Import (C, GetWorldToScreen2D, "GetWorldToScreen2D");
-
-   function GetScreenToWorld2D (position : Vector2; camera_p : Camera2D) return Vector2;
-   --  Get the world space position for a 2d camera screen space position
-   pragma Import (C, GetScreenToWorld2D, "GetScreenToWorld2D");
+   pragma Import (C, GetMouseRay, "GetMouseRay");
 
    function GetCameraMatrix (camera_p : Camera3D) return Matrix;
    --  Get camera transform matrix (view matrix)
@@ -1302,6 +1288,22 @@ is
    function GetCameraMatrix2D (camera_p : Camera2D) return Matrix;
    --  Get camera 2d transform matrix
    pragma Import (C, GetCameraMatrix2D, "GetCameraMatrix2D");
+
+   function GetWorldToScreen (position : Vector3; camera_p : Camera3D) return Vector2;
+   --  Get the screen space position for a 3d world space position
+   pragma Import (C, GetWorldToScreen, "GetWorldToScreen");
+
+   function GetScreenToWorld2D (position : Vector2; camera_p : Camera2D) return Vector2;
+   --  Get the world space position for a 2d camera screen space position
+   pragma Import (C, GetScreenToWorld2D, "GetScreenToWorld2D");
+
+   function GetWorldToScreenEx (position : Vector3; camera_p : Camera3D; width : Interfaces.C.int; height : Interfaces.C.int) return Vector2;
+   --  Get size position for a 3d world space position
+   pragma Import (C, GetWorldToScreenEx, "GetWorldToScreenEx");
+
+   function GetWorldToScreen2D (position : Vector2; camera_p : Camera2D) return Vector2;
+   --  Get the screen space position for a 2d camera world space position
+   pragma Import (C, GetWorldToScreen2D, "GetWorldToScreen2D");
 
    procedure SetTargetFPS (fps : Interfaces.C.int);
    --  Set target FPS (maximum)
@@ -1590,7 +1592,7 @@ is
    function LoadAutomationEventList (fileName : String) return AutomationEventList;
    --  Load automation events list from file, NULL for empty list, capacity = MAX_AUTOMATION_EVENTS
 
-   procedure UnloadAutomationEventList (list : AutomationEventList);
+   procedure UnloadAutomationEventList (list : access AutomationEventList);
    --  Unload automation events list from file
    pragma Import (C, UnloadAutomationEventList, "UnloadAutomationEventList");
 
@@ -1695,10 +1697,6 @@ is
 
    function SetGamepadMappings (mappings : String) return Interfaces.C.int;
    --  Set internal gamepad mappings (SDL_GameControllerDB)
-
-   procedure SetGamepadVibration (gamepad : Interfaces.C.int; leftMotor : Interfaces.C.C_float; rightMotor : Interfaces.C.C_float);
-   --  Set gamepad vibration for both motors
-   pragma Import (C, SetGamepadVibration, "SetGamepadVibration");
 
    function IsMouseButtonPressed (button : MouseButton) return Interfaces.C.C_bool;
    --  Check if a mouse button has been pressed once
@@ -1819,14 +1817,6 @@ is
    procedure SetShapesTexture (texture_p : Texture; source : Rectangle);
    --  Set texture and rectangle to be used on shapes drawing
    pragma Import (C, SetShapesTexture, "SetShapesTexture");
-
-   function GetShapesTexture return Texture;
-   --  Get texture that is used for shapes drawing
-   pragma Import (C, GetShapesTexture, "GetShapesTexture");
-
-   function GetShapesTextureRectangle return Rectangle;
-   --  Get texture source rectangle that is used for shapes drawing
-   pragma Import (C, GetShapesTextureRectangle, "GetShapesTextureRectangle");
 
    procedure DrawPixel (posX : Interfaces.C.int; posY : Interfaces.C.int; color_p : Color);
    --  Draw a pixel
@@ -2100,13 +2090,6 @@ is
    function LoadImageAnim (fileName : String; frames : access Interfaces.C.int) return Image;
    --  Load image sequence from file (frames appended to image.data)
 
-   function LoadImageAnimFromMemory (fileType : Interfaces.C.Strings.chars_ptr; fileData : System.Address; dataSize : Interfaces.C.int; frames : access Interfaces.C.int) return Image;
-   --  Load image sequence from memory buffer
-   pragma Import (C, LoadImageAnimFromMemory, "LoadImageAnimFromMemory");
-
-   function LoadImageAnimFromMemory (fileType : String; fileData : System.Address; dataSize : Interfaces.C.int; frames : access Interfaces.C.int) return Image;
-   --  Load image sequence from memory buffer
-
    function LoadImageFromMemory (fileType : Interfaces.C.Strings.chars_ptr; fileData : System.Address; dataSize : Interfaces.C.int) return Image;
    --  Load image from memory buffer, fileType refers to extension: i.e. '.png'
    pragma Import (C, LoadImageFromMemory, "LoadImageFromMemory");
@@ -2243,10 +2226,6 @@ is
    procedure ImageBlurGaussian (image_p : access Image; blurSize : Interfaces.C.int);
    --  Apply Gaussian blur using a box blur approximation
    pragma Import (C, ImageBlurGaussian, "ImageBlurGaussian");
-
-   procedure ImageKernelConvolution (image_p : access Image; kernel : access Interfaces.C.C_float; kernelSize : Interfaces.C.int);
-   --  Apply Custom Square image convolution kernel
-   pragma Import (C, ImageKernelConvolution, "ImageKernelConvolution");
 
    procedure ImageResize (image_p : access Image; newWidth : Interfaces.C.int; newHeight : Interfaces.C.int);
    --  Resize image (Bicubic scaling algorithm)
@@ -2485,16 +2464,12 @@ is
    --  Draws a texture (or part of it) that stretches or shrinks nicely
    pragma Import (C, DrawTextureNPatch, "DrawTextureNPatch");
 
-   function ColorIsEqual (col1 : Color; col2 : Color) return Interfaces.C.C_bool;
-   --  Check if two colors are equal
-   pragma Import (C, ColorIsEqual, "ColorIsEqual");
-
    function Fade (color_p : Color; alpha : Interfaces.C.C_float) return Color;
    --  Get color with alpha applied, alpha goes from 0.0f to 1.0f
    pragma Import (C, Fade, "Fade");
 
    function ColorToInt (color_p : Color) return Interfaces.C.int;
-   --  Get hexadecimal value for a Color (0xRRGGBBAA)
+   --  Get hexadecimal value for a Color
    pragma Import (C, ColorToInt, "ColorToInt");
 
    function ColorNormalize (color_p : Color) return Vector4;
@@ -2816,13 +2791,6 @@ is
    function TextToInteger (text : String) return Interfaces.C.int;
    --  Get integer value from text (negative values not supported)
 
-   function TextToFloat (text : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_float;
-   --  Get float value from text (negative values not supported)
-   pragma Import (C, TextToFloat, "TextToFloat");
-
-   function TextToFloat (text : String) return Interfaces.C.C_float;
-   --  Get float value from text (negative values not supported)
-
    procedure DrawLine3D (startPos : Vector3; endPos : Vector3; color_p : Color);
    --  Draw a line in 3D world space
    pragma Import (C, DrawLine3D, "DrawLine3D");
@@ -2982,14 +2950,6 @@ is
    --  Draw multiple mesh instances with material and different transforms
    pragma Import (C, DrawMeshInstanced, "DrawMeshInstanced");
 
-   function GetMeshBoundingBox (mesh_p : Mesh) return BoundingBox;
-   --  Compute mesh bounding box limits
-   pragma Import (C, GetMeshBoundingBox, "GetMeshBoundingBox");
-
-   procedure GenMeshTangents (mesh_p : access Mesh);
-   --  Compute mesh tangents
-   pragma Import (C, GenMeshTangents, "GenMeshTangents");
-
    function ExportMesh (mesh_p : Mesh; fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
    --  Export mesh data to file, returns true on success
    pragma Import (C, ExportMesh, "ExportMesh");
@@ -2997,12 +2957,13 @@ is
    function ExportMesh (mesh_p : Mesh; fileName : String) return Interfaces.C.C_bool;
    --  Export mesh data to file, returns true on success
 
-   function ExportMeshAsCode (mesh_p : Mesh; fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
-   --  Export mesh as code file (.h) defining multiple arrays of vertex attributes
-   pragma Import (C, ExportMeshAsCode, "ExportMeshAsCode");
+   function GetMeshBoundingBox (mesh_p : Mesh) return BoundingBox;
+   --  Compute mesh bounding box limits
+   pragma Import (C, GetMeshBoundingBox, "GetMeshBoundingBox");
 
-   function ExportMeshAsCode (mesh_p : Mesh; fileName : String) return Interfaces.C.C_bool;
-   --  Export mesh as code file (.h) defining multiple arrays of vertex attributes
+   procedure GenMeshTangents (mesh_p : access Mesh);
+   --  Compute mesh tangents
+   pragma Import (C, GenMeshTangents, "GenMeshTangents");
 
    function GenMeshPoly (sides : Interfaces.C.int; radius : Interfaces.C.C_float) return Mesh;
    --  Generate polygonal mesh
@@ -3416,9 +3377,9 @@ is
    pragma Import (C, DetachAudioMixedProcessor, "DetachAudioMixedProcessor");
 
    RAYLIB_VERSION_MAJOR : constant := 5;
-   RAYLIB_VERSION_MINOR : constant := 1;
+   RAYLIB_VERSION_MINOR : constant := 0;
    RAYLIB_VERSION_PATCH : constant := 0;
-   RAYLIB_VERSION : constant String := "5.1-dev";
+   RAYLIB_VERSION : constant String := "5.0";
    PI : constant := 3.141592653589793;
    LIGHTGRAY : constant Color := (200, 200, 200, 255);
    GRAY : constant Color := (130, 130, 130, 255);
