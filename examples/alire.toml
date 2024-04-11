@@ -19,3 +19,6 @@ raylib = { path = "../" }
 
 [[depends-on]]
 resources = "~0.1.0"
+
+# [build-profiles]
+# raylib = "development"
