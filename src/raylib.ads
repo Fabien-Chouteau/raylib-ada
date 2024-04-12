@@ -1,6 +1,6 @@
-with System;
 with Interfaces.C;
 with Interfaces.C.Strings;
+with System;
 package Raylib
   with Preelaborate
 is
@@ -9,6 +9,11 @@ is
    type Float4 is array (0 .. 3) of Interfaces.C.C_float;
    type Int4 is array (0 .. 3) of Interfaces.C.int;
    subtype String32 is String (1 .. 32);
+   type C_String_Array
+    is array (Interfaces.C.unsigned) of aliased Interfaces.C.Strings.chars_ptr
+    with Convention => C;
+   type C_String_Array_Access is access all C_String_Array;
+
    type ConfigFlags is new Interfaces.C.unsigned;
    --  System/Window config flags
 
@@ -41,6 +46,8 @@ is
        , LOG_NONE -- Disable logging
      )
      with Convention => C;
+   --  Trace log level
+
    for TraceLogLevel use
      (
          LOG_ALL => 0
@@ -193,6 +200,8 @@ is
        , MOUSE_CURSOR_NOT_ALLOWED -- The operation-not-allowed shape
      )
      with Convention => C;
+   --  Mouse cursor
+
    for MouseCursor use
      (
          MOUSE_CURSOR_DEFAULT => 0
@@ -255,6 +264,8 @@ is
        , MATERIAL_MAP_BRDF -- Brdf material
      )
      with Convention => C;
+   --  Material map index
+
    for MaterialMapIndex use
      (
          MATERIAL_MAP_ALBEDO => 0
@@ -300,6 +311,8 @@ is
        , SHADER_LOC_MAP_BRDF -- Shader location: sampler2d texture: brdf
      )
      with Convention => C;
+   --  Shader location index
+
    for ShaderLocationIndex use
      (
          SHADER_LOC_VERTEX_POSITION => 0
@@ -343,6 +356,8 @@ is
        , SHADER_UNIFORM_SAMPLER2D -- Shader uniform type: sampler2d
      )
      with Convention => C;
+   --  Shader uniform data type
+
    for ShaderUniformDataType use
      (
          SHADER_UNIFORM_FLOAT => 0
@@ -364,6 +379,8 @@ is
        , SHADER_ATTRIB_VEC4 -- Shader attribute type: vec4 (4 float)
      )
      with Convention => C;
+   --  Shader attribute data types
+
    for ShaderAttributeDataType use
      (
          SHADER_ATTRIB_FLOAT => 0
@@ -400,6 +417,8 @@ is
        , PIXELFORMAT_COMPRESSED_ASTC_8x8_RGBA -- 2 bpp
      )
      with Convention => C;
+   --  Pixel formats
+
    for PixelFormat use
      (
          PIXELFORMAT_UNCOMPRESSED_GRAYSCALE => 1
@@ -438,6 +457,8 @@ is
        , TEXTURE_FILTER_ANISOTROPIC_16X -- Anisotropic filtering 16x
      )
      with Convention => C;
+   --  Texture parameters: filter mode
+
    for TextureFilter use
      (
          TEXTURE_FILTER_POINT => 0
@@ -456,6 +477,8 @@ is
        , TEXTURE_WRAP_MIRROR_CLAMP -- Mirrors and clamps to border the texture in tiled mode
      )
      with Convention => C;
+   --  Texture parameters: wrap mode
+
    for TextureWrap use
      (
          TEXTURE_WRAP_REPEAT => 0
@@ -474,6 +497,8 @@ is
        , CUBEMAP_LAYOUT_PANORAMA -- Layout is defined by a panorama image (equirrectangular map)
      )
      with Convention => C;
+   --  Cubemap layouts
+
    for CubemapLayout use
      (
          CUBEMAP_LAYOUT_AUTO_DETECT => 0
@@ -491,6 +516,8 @@ is
        , FONT_SDF -- SDF font generation, requires external shader
      )
      with Convention => C;
+   --  Font type, defines generation method
+
    for FontType use
      (
          FONT_DEFAULT => 0
@@ -510,6 +537,8 @@ is
        , BLEND_CUSTOM_SEPARATE -- Blend textures using custom rgb/alpha separate src/dst factors (use rlSetBlendFactorsSeparate())
      )
      with Convention => C;
+   --  Color blending modes (pre-defined)
+
    for BlendMode use
      (
          BLEND_ALPHA => 0
@@ -546,6 +575,8 @@ is
        , CAMERA_THIRD_PERSON -- Third person camera
      )
      with Convention => C;
+   --  Camera system modes
+
    for CameraMode use
      (
          CAMERA_CUSTOM => 0
@@ -561,6 +592,8 @@ is
        , CAMERA_ORTHOGRAPHIC -- Orthographic projection
      )
      with Convention => C;
+   --  Camera projection
+
    for CameraProjection use
      (
          CAMERA_PERSPECTIVE => 0
@@ -574,6 +607,8 @@ is
        , NPATCH_THREE_PATCH_HORIZONTAL -- Npatch layout: 3x1 tiles
      )
      with Convention => C;
+   --  N-patch layout
+
    for NPatchLayout use
      (
          NPATCH_NINE_PATCH => 0
@@ -899,9 +934,9 @@ is
       with Convention => C_Pass_By_Copy;
 
    type FilePathList is record
-      capacity : Interfaces.C.size_t; -- Filepaths max entries
-      count : Interfaces.C.size_t; -- Filepaths entries count
-      paths : access constant Interfaces.C.Strings.chars_ptr_array; -- Filepaths entries
+      capacity : Interfaces.C.unsigned; -- Filepaths max entries
+      count : Interfaces.C.unsigned; -- Filepaths entries count
+      paths : access constant C_String_Array; -- Filepaths entries
    end record
       with Convention => C_Pass_By_Copy;
 
@@ -2510,6 +2545,7 @@ is
 
    function GetColor (hexValue : Interfaces.C.unsigned) return Color;
    --  Get Color structure from hexadecimal value
+   function GetColor (hexValue : Interfaces.C.int) return Color;
    pragma Import (C, GetColor, "GetColor");
 
    function GetPixelColor (srcPtr : System.Address; format : PixelFormat) return Color;

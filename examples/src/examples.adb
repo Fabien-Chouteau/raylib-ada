@@ -2,6 +2,8 @@ with Raylib;
 with Resources;
 with Examples_Config;
 with Interfaces.C; use Interfaces.C;
+with Interfaces.C.Strings;
+with Ada.Text_IO;
 
 procedure Examples is
 
@@ -44,6 +46,21 @@ begin
    Cam.up := (0.0, 1.0, 0.0);
    Cam.fovy := 45.0;
    Cam.projection := Raylib.CAMERA_PERSPECTIVE;
+
+   --  Test LoadDirectoryFiles
+   declare
+      use Raylib;
+      use Interfaces.C.Strings;
+      Files : constant FilePathList :=
+        LoadDirectoryFiles (Example_Resources.Resource_Path);
+   begin
+      if Files.count > 0 then
+         for X in 0 .. Files.count - 1 loop
+            Ada.Text_IO.Put_Line (Value (Files.paths (X)));
+         end loop;
+      end if;
+      UnloadDirectoryFiles (Files);
+   end;
 
    Raylib.DisableCursor;
    Raylib.SetTargetFPS (60);

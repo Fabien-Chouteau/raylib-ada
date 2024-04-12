@@ -7,8 +7,6 @@ import os
 import os
 
 CRATE_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-HEADER = os.path.join(CRATE_ROOT, "raylib", "src", "raylib.h")
-JSON_FILE = os.path.join(CRATE_ROOT, "scripts", "raylib_api.json")
 
 ADA_KEYWORD = ["end", "type"]
 
@@ -29,6 +27,7 @@ TYPE_CONVERSION = {
     "unsigned int *": "access Interfaces.C.unsigned",
     "unsigned char": "Interfaces.C.unsigned_char",
     "unsigned char *": "access Interfaces.C.char",
+    "unsigned short": "Interfaces.C.short",
     "unsigned short *": "access Interfaces.C.short",
     "void *": "System.Address",
     "const void *": "System.Address",
@@ -51,35 +50,7 @@ TYPE_CONVERSION = {
     "rAudioProcessor *": "System.Address",
 }
 
-TYPE_IDENTITY = [
-    "Image",
-    "Color",
-    "Vector2",
-    "Vector3",
-    "Vector4",
-    "Shader",
-    "Texture",
-    "Rectangle",
-    "Quaternion",
-    "Matrix",
-    "AudioStream",
-    "Transform",
-    "RenderTexture",
-    "Ray",
-    "VrStereoConfig",
-    "VrDeviceInfo",
-    "AutomationEvent",
-    "Font",
-    "GlyphInfo",
-    "MaterialMap",
-    "Material",
-    "BoneInfo",
-    "NPatchInfo",
-    "Mesh",
-    "Model",
-    "BoundingBox",
-    "ModelAnimation",
-]
+TYPE_IDENTITY = ["Quaternion"]
 
 
 def to_ada_type(c_type, name=None, parent=None):
@@ -121,15 +92,17 @@ def to_ada_type(c_type, name=None, parent=None):
             return "ShaderUniformDataType"
         elif name == "axis" and "Gamepad" in parent:
             return "GamepadAxis"
+        elif parent in ["GuiSetStyle", "GuiGetStyle"] and name == "control":
+            return "GuiControl"
 
     if c_type == "int *" and name == "locs":
         return "access ShaderLocationArray"
     elif c_type == "MaterialMap *" and name == "maps":
         return "access MaterialMapArray"
     elif c_type == "char **" and name == "paths":
-        return "access constant Interfaces.C.Strings.chars_ptr_array"
-    elif c_type == "unsigned int" and parent == "FilePathList":
-        return "Interfaces.C.size_t"
+        return "access constant C_String_Array"
+    elif c_type == "const char **" and name == "text" and parent == "GuiListViewEx":
+        return "C_String_Array_Access"
     elif c_type == "Transform **" and name == "framePoses":
         return "access Tranform_Array"
     elif c_type == "AutomationEvent *" and name == "events":
@@ -159,6 +132,7 @@ def is_type_name(name):
 
 
 def gen_struct(struct):
+
     out = f"   type {struct['name']} is record\n"
     for field in struct["fields"]:
         if field["name"] == "type":
@@ -166,8 +140,9 @@ def gen_struct(struct):
 
         if is_type_name(field["name"]):
             field["name"] = field["name"] + "_f"
-        # print(field)
-        out += f"      {field['name']} : {to_ada_type(field['type'], field['name'], struct['name'])}; -- {field['description']}\n"
+        desc = field["description"].strip()
+        desc = f" -- {desc}" if desc != "" else ""
+        out += f"      {field['name']} : {to_ada_type(field['type'], field['name'], struct['name'])};{desc}\n"
     out += "   end record\n"
     out += "      with Convention => C_Pass_By_Copy;\n"
 
@@ -197,30 +172,52 @@ def gen_struct(struct):
     return out
 
 
-def gen_enum(enum):
-    out = ""
-    if enum["name"].endswith("Flags") or enum["name"] in ["Gesture"]:
-        # The enum represents flags that can be combined, so we use a modular type
-
-        out += f"   type {enum['name']} is new Interfaces.C.unsigned;\n"
-        out += f"   --  {enum['description']}\n"
-        out += "\n"
-
-        for value in enum["values"]:
-            out += f"   {value['name']} : constant {enum['name']} := {value['value']}; -- {value['description']}\n"
-    elif enum["name"] in [
+def enum_kind(name):
+    if name.endswith("Flags") or name in ["Gesture"]:
+        return "unsigned_new_type"
+    elif (
+        name.startswith("Gui")
+        and name.endswith("Property")
+        or name in ["GuiTextAlignment", "GuiTextAlignmentVertical", "GuiTextWrapMode"]
+    ):
+        return "int_subtype"
+    elif name in [
         "GamepadAxis",
         "GamepadButton",
         "KeyboardKey",
         "MouseButton",
     ]:
+        return "int_new_type"
+    else:
+        return "ada_enums"
+
+
+def gen_enum(enum):
+    out = ""
+    kind = enum_kind(enum["name"])
+
+    if kind == "unsigned_new_type":
+        # The enum represents flags that can be combined, so we use a modular type
+        out += f"   type {enum['name']} is new Interfaces.C.unsigned;\n"
+    elif kind == "int_subtype":
+        out += f"   subtype {enum['name']} is Interfaces.C.int;\n"
+    elif kind == "int_new_type":
         # In these cases the enum is just used as a list of default/common
         # values for the type.
         out += f"   type {enum['name']} is new Interfaces.C.int;\n"
-        out += f"   --  {enum['description']}\n"
+
+    if kind in ["unsigned_new_type", "int_subtype", "int_new_type"]:
+        if len(enum["description"].strip()) != 0:
+            out += f"   --  {enum['description']}\n"
         out += "\n"
+
         for value in enum["values"]:
-            out += f"   {value['name']} : constant {enum['name']} := {value['value']}; -- {value['description']}\n"
+            desc = (
+                ""
+                if len(value["description"].strip()) == 0
+                else f" -- {value['description']}"
+            )
+            out += f"   {value['name']} : constant {enum['name']} := {value['value']};{desc}\n"
     else:
         # Otherwise use regular Ada enums
         out += f"   type {enum['name']} is\n"
@@ -229,10 +226,19 @@ def gen_enum(enum):
         first = True
         for value in sorted_value:
             coma = "  " if first else ", "
-            out += f"       {coma}{value['name']} -- {value['description']}\n"
+            desc = (
+                ""
+                if len(value["description"].strip()) == 0
+                else f" -- {value['description']}"
+            )
+            out += f"       {coma}{value['name']}{desc}\n"
             first = False
         out += "     )\n"
         out += "     with Convention => C;\n"
+        if len(enum["description"].strip()) != 0:
+            out += f"   --  {enum['description']}\n"
+        out += "\n"
+
         out += f"   for {enum['name']} use\n"
         out += "     (\n"
         first = True
@@ -324,6 +330,14 @@ def process_params(params, function_name):
     return params, has_string
 
 
+def GUI_string_exception(param, function):
+    """
+    Return true is the parameter should not be converted to an Ada String.
+    This is required for some GUI function that modify the string.
+    """
+    return function["name"] == "GuiTextInputBox" and param["name"] == "text"
+
+
 def gen_function(function):
     spec = ""
     body = ""
@@ -340,6 +354,9 @@ def gen_function(function):
         function["params"] = None
 
     spec += function_decl(function)
+    if function["name"] == "GetColor":
+        # Declare a variant of get color that will work with the output of GuiGetStyle
+        spec += "   function GetColor (hexValue : Interfaces.C.int) return Color;\n"
     spec += f"   pragma Import (C, {function['name']}, \"{function['name']}\");\n\n"
 
     if has_string:
@@ -351,7 +368,7 @@ def gen_function(function):
 
         if function["params"] is not None:
             for p in function["params"]:
-                if p["type"] == C_STRING_TYPE:
+                if p["type"] == C_STRING_TYPE and not GUI_string_exception(p, function):
                     p["type"] = "String"
 
         spec += function_decl(function) + "\n"
@@ -390,76 +407,126 @@ def gen_callback(callback):
     return out
 
 
-test = os.system(
-    f"{CRATE_ROOT}/raylib/parser/raylib_parser -input {HEADER} -o {JSON_FILE} -f JSON"
+def gen_binding(header_file, package_name, package_file, parser_options=""):
+    JSON_FILE = os.path.join(CRATE_ROOT, "scripts", f"{package_file}.json")
+
+    SKIP_CALLBACKS = ["TraceLogCallback"]
+    SKIP_STRUCTS = []
+    SKIP_FUNCTIONS = [
+        "TextFormat",  # Var args...
+        "GenImageFontAtlas",
+    ]
+
+    os.system(
+        f"{CRATE_ROOT}/raylib/parser/raylib_parser -input {header_file} -o {JSON_FILE} -f JSON "
+        + parser_options
+    )
+
+    with open(JSON_FILE, encoding="utf-8") as file:
+        data = json.load(file)
+
+    if package_name == "Raylib.GUI":
+        SKIP_STRUCTS += [
+            "Texture2D",
+            "Vector2",
+            "Vector3",
+            "Color",
+            "Rectangle",
+            "Image",
+            "GlyphInfo",
+            "Font",
+        ]
+
+    spec = ""
+    body = ""
+
+    spec = "with Interfaces.C;\n"
+    spec += "with Interfaces.C.Strings;\n"
+    if package_name == "Raylib":
+        spec += "with System;\n"
+
+    spec += f"package {package_name}\n"
+    spec += "  with Preelaborate\n"
+    spec += "is\n"
+    spec += '   pragma Style_Checks ("M2000");\n'
+
+    if package_name == "Raylib":
+        spec += "   type Float2 is array (0 .. 1) of Interfaces.C.C_float;\n"
+        spec += "   type Float4 is array (0 .. 3) of Interfaces.C.C_float;\n"
+        spec += "   type Int4 is array (0 .. 3) of Interfaces.C.int;\n"
+        spec += "   subtype String32 is String (1 .. 32);\n"
+        spec += "   type C_String_Array\n"
+        spec += "    is array (Interfaces.C.unsigned) of aliased Interfaces.C.Strings.chars_ptr\n"
+        spec += "    with Convention => C;\n"
+        spec += "   type C_String_Array_Access is access all C_String_Array;\n"
+        spec += "\n"
+
+    if package_name == "Raylib.GUI":
+        spec += "   function To_C_String_Array_Access (A : aliased Interfaces.C.Strings.chars_ptr_array) return C_String_Array_Access;\n"
+
+    # Do the enums first as the contain definitions used in structs and functions
+    for enum in data["enums"]:
+        spec += gen_enum(enum)
+
+    if package_name == "Raylib":
+        spec += "   type ShaderLocationArray is array (ShaderLocationIndex) of Interfaces.C.int\n"
+        spec += "     with Convention => C;\n"
+        spec += "\n"
+
+    if package_name == "Raylib.GUI":
+        body += "with Ada.Unchecked_Conversion;\n"
+
+    body += f"package body {package_name} is\n"
+
+    body += '   pragma Style_Checks ("M2000");\n'
+
+    if package_name == "Raylib.GUI":
+        body += "   function To_C_String_Array_Access (A : aliased Interfaces.C.Strings.chars_ptr_array) return C_String_Array_Access is\n"
+        body += "      function Convert\n"
+        body += "      is new Ada.Unchecked_Conversion (System.Address, C_String_Array_Access);\n"
+        body += "   begin\n"
+        body += "      return Convert (A'Address);\n"
+        body += "   end To_C_String_Array_Access;\n"
+
+    for callback in data["callbacks"]:
+        if callback["name"] not in SKIP_CALLBACKS:
+            spec += gen_callback(callback)
+
+    for struct in data["structs"]:
+        if struct["name"] not in SKIP_STRUCTS:
+            spec += gen_struct(struct)
+
+    for function in data["functions"]:
+        if (
+            "TraceLog" not in function["name"]  # Var args...
+            and function["name"] not in SKIP_FUNCTIONS
+        ):
+            f_spec, f_body = gen_function(function)
+            spec += f_spec
+            body += f_body
+
+    for define in data["defines"]:
+        spec += gen_define(define)
+
+    spec += f"end {package_name};\n"
+    body += f"end {package_name};\n"
+
+    spec_filename = os.path.join(CRATE_ROOT, "src", package_file + ".ads")
+    body_filename = os.path.join(CRATE_ROOT, "src", package_file + ".adb")
+
+    with open(spec_filename, "w", encoding="utf-8") as f:
+        print(f"Writing {spec_filename}")
+        f.write(spec)
+
+    with open(body_filename, "w", encoding="utf-8") as f:
+        print(f"Writing {body_filename}")
+        f.write(body)
+
+
+gen_binding(os.path.join(CRATE_ROOT, "raylib", "src", "raylib.h"), "Raylib", "raylib")
+gen_binding(
+    os.path.join(CRATE_ROOT, "raygui", "src", "raygui.h"),
+    "Raylib.GUI",
+    "raylib-gui",
+    '-d RAYGUIAPI -t "RAYGUI IMPLEMENTATION"',
 )
-
-with open(JSON_FILE) as file:
-    data = json.load(file)
-
-spec = "with System;\n"
-spec += "with Interfaces.C;\n"
-spec += "with Interfaces.C.Strings;\n"
-spec += "package Raylib\n"
-spec += "  with Preelaborate\n"
-spec += "is\n"
-spec += '   pragma Style_Checks ("M2000");\n'
-
-spec += "   type Float2 is array (0 .. 1) of Interfaces.C.C_float;\n"
-spec += "   type Float4 is array (0 .. 3) of Interfaces.C.C_float;\n"
-spec += "   type Int4 is array (0 .. 3) of Interfaces.C.int;\n"
-spec += "   subtype String32 is String (1 .. 32);\n"
-
-# Do the enums first as the contain definitions used in structs and functions
-for enum in data["enums"]:
-    spec += gen_enum(enum)
-
-spec += (
-    "   type ShaderLocationArray is array (ShaderLocationIndex) of Interfaces.C.int\n"
-)
-spec += "     with Convention => C;\n"
-spec += "\n"
-
-body = "package body Raylib is\n"
-body += '   pragma Style_Checks ("M2000");\n'
-
-SKIP_CALLBACKS = ["TraceLogCallback"]
-for callback in data["callbacks"]:
-    if callback["name"] not in SKIP_CALLBACKS:
-        spec += gen_callback(callback)
-
-SKIP_STRUCTS = []
-for struct in data["structs"]:
-    if struct["name"] not in SKIP_STRUCTS:
-        spec += gen_struct(struct)
-
-
-SKIP_FUNCTIONS = [
-    "TextFormat",  # Var args...
-    "GenImageFontAtlas",
-]
-for function in data["functions"]:
-    if (
-        "TraceLog" not in function["name"]  # Var args...
-        and function["name"] not in SKIP_FUNCTIONS
-    ):
-        f_spec, f_body = gen_function(function)
-        spec += f_spec
-        body += f_body
-
-for define in data["defines"]:
-    spec += gen_define(define)
-
-spec += "end Raylib;\n"
-body += "end Raylib;\n"
-
-spec_filename = os.path.join(CRATE_ROOT, "src", "raylib.ads")
-body_filename = os.path.join(CRATE_ROOT, "src", "raylib.adb")
-
-with open(spec_filename, "w", encoding="utf-8") as f:
-    print(f"Writing {spec_filename}")
-    f.write(spec)
-
-with open(body_filename, "w", encoding="utf-8") as f:
-    print(f"Writing {body_filename}")
-    f.write(body)
