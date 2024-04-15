@@ -21,7 +21,8 @@ in your `.gpr` file to link with the Raylib and math libraries.
 # Building the examples
 Checkout the repository and, using Alire, run the following commands:
 ```console
-$ cd examples
+$ git clone --recurse-submodules https://github.com/Fabien-Chouteau/raylib-ada
+$ cd raylib-ada/examples
 $ alr run examples
 $ alr run gui_example
 ```
