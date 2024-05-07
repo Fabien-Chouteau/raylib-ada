@@ -19,6 +19,7 @@ LIBRARY_PATH.append = "${CRATE_ROOT}/build-raylib/raylib/"
 [[depends-on]]
 gnat = ">=12 & <2000"
 make = "*"
+cmake = "*"
 
 [configuration.variables]
 ENABLE_RAYLIB_BUILD = { type = "Boolean", default = true}
