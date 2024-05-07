@@ -12,9 +12,7 @@ project Examples is
    end Compiler;
 
    package Linker is
-      for Switches ("Ada") use
-        ("-lraylib",
-         "-lm");
+      for Switches ("Ada") use ("-lraylib", "-lm");
    end Linker;
 
    package Binder is

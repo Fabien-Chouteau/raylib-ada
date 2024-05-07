@@ -9,7 +9,7 @@ licenses = "MIT OR Apache-2.0 WITH LLVM-exception"
 website = ""
 tags = []
 
-executables = ["examples"]
+executables = ["examples", "gui_example"]
 
 [[depends-on]]
 raylib = "*"
