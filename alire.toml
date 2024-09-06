@@ -1,6 +1,6 @@
 name = "raylib"
 description = "Ada bindings for Raylib"
-version = "1.0.0"
+version = "1.0.1"
 long-description = """
 # Using raylib-ada
 
