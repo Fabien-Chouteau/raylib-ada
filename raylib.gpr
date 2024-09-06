@@ -17,12 +17,6 @@ project Raylib is
 
    package Compiler is
       for Default_Switches ("Ada") use Raylib_Config.Ada_Compiler_Switches;
-
-      case Raylib_Config.ENABLE_RAYLIB_BUILD is
-         when "True" =>
-            for Default_Switches ("C") use ("-I" & Raylib'Project_Dir & "/raylib/src/");
-         when others => null;
-      end case;
    end Compiler;
 
    package Binder is
