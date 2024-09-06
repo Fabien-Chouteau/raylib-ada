@@ -1,7 +1,7 @@
 with "config/raylib_config.gpr";
 project Raylib is
 
-   for Library_Name use "Raylib";
+   for Library_Name use "RaylibAda";
    for Library_Version use Project'Library_Name & ".so." & Raylib_Config.Crate_Version;
 
    for Languages use ("Ada", "C");
