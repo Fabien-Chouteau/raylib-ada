@@ -2111,13 +2111,6 @@ is
    function LoadImageRaw (fileName : String; width : Interfaces.C.int; height : Interfaces.C.int; format : PixelFormat; headerSize : Interfaces.C.int) return Image;
    --  Load image from RAW file data
 
-   function LoadImageSvg (fileNameOrString : Interfaces.C.Strings.chars_ptr; width : Interfaces.C.int; height : Interfaces.C.int) return Image;
-   --  Load image from SVG file data or string with specified size
-   pragma Import (C, LoadImageSvg, "LoadImageSvg");
-
-   function LoadImageSvg (fileNameOrString : String; width : Interfaces.C.int; height : Interfaces.C.int) return Image;
-   --  Load image from SVG file data or string with specified size
-
    function LoadImageAnim (fileName : Interfaces.C.Strings.chars_ptr; frames : access Interfaces.C.int) return Image;
    --  Load image sequence from file (frames appended to image.data)
    pragma Import (C, LoadImageAnim, "LoadImageAnim");
