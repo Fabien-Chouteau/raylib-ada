@@ -331,15 +331,6 @@ package body Raylib is
       return Result;
    end LoadImageRaw;
 
-   function LoadImageSvg (fileNameOrString : String; width : Interfaces.C.int; height : Interfaces.C.int) return Image is
-      use Interfaces.C.Strings;
-      C_fileNameOrString : Interfaces.C.Strings.chars_ptr := New_String (fileNameOrString);
-      Result : constant Image := LoadImageSvg (C_fileNameOrString, width, height);
-   begin
-      Free (C_fileNameOrString);
-      return Result;
-   end LoadImageSvg;
-
    function LoadImageAnim (fileName : String; frames : access Interfaces.C.int) return Image is
       use Interfaces.C.Strings;
       C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
