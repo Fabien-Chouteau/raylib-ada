@@ -1314,7 +1314,11 @@ is
 
    function GetMouseRay (mousePosition : Vector2; camera_p : Camera3D) return Ray;
    --  Get a ray trace from mouse position
-   pragma Import (C, GetMouseRay, "GetMouseRay");
+   pragma Import (C, GetMouseRay, "GetScreenToWorldRay");
+
+   function GetScreenToWorldRay (mousePosition : Vector2; camera_p : Camera3D) return Ray;
+   --  Get a ray trace from mouse position
+   pragma Import (C, GetScreenToWorldRay, "GetScreenToWorldRay");
 
    function GetCameraMatrix (camera_p : Camera3D) return Matrix;
    --  Get camera transform matrix (view matrix)
@@ -3404,6 +3408,14 @@ is
    procedure DetachAudioMixedProcessor (processor : AudioCallback);
    --  Detach audio stream processor from the entire audio pipeline
    pragma Import (C, DetachAudioMixedProcessor, "DetachAudioMixedProcessor");
+
+   procedure EnableBackfaceCulling;
+   --  Enable backface culling globally
+   pragma Import (C, EnableBackfaceCulling, "rlEnableBackfaceCulling");
+
+   procedure DisableBackfaceCulling;
+   --  Disable backface culling globally
+   pragma Import (C, DisableBackfaceCulling, "rlDisableBackfaceCulling");
 
    RAYLIB_VERSION_MAJOR : constant := 5;
    RAYLIB_VERSION_MINOR : constant := 0;

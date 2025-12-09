@@ -82,7 +82,7 @@ begin
          if Raylib.IsMouseButtonPressed (Raylib.MOUSE_BUTTON_LEFT) then
             Raylib.PlaySound (Sound);
             if not Collision.hit then
-               Ray := Raylib.GetMouseRay (Raylib.GetMousePosition, Cam);
+               Ray := Raylib.GetScreenToWorldRay (Raylib.GetMousePosition, Cam);
                Collision := Raylib.GetRayCollisionBox
                  (Ray,
                   ((Cube_Position.x - Cube_Size.x / 2.0,
@@ -100,6 +100,8 @@ begin
       if Raylib.IsKeyDown (Raylib.KEY_Z) then
          Cam.target := (0.0, 0.0, 0.0);
       end if;
+
+      Raylib.DisableBackfaceCulling;
 
       Raylib.BeginDrawing;
 
