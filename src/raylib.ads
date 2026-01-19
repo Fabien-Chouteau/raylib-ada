@@ -1314,7 +1314,7 @@ is
 
    function GetMouseRay (mousePosition : Vector2; camera_p : Camera3D) return Ray;
    --  Get a ray trace from mouse position
-   pragma Import (C, GetMouseRay, "GetMouseRay");
+   pragma Import (C, GetMouseRay, "GetScreenToWorldRay"); -- update for raylib 5.5
 
    function GetCameraMatrix (camera_p : Camera3D) return Matrix;
    --  Get camera transform matrix (view matrix)
