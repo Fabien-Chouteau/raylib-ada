@@ -239,6 +239,15 @@ package body Raylib is
       return Result;
    end GetApplicationDirectory;
 
+   function MakeDirectory (dirPath : String) return Interfaces.C.int is
+      use Interfaces.C.Strings;
+      C_dirPath : Interfaces.C.Strings.chars_ptr := New_String (dirPath);
+      Result : constant Interfaces.C.int := MakeDirectory (C_dirPath);
+   begin
+      Free (C_dirPath);
+      return Result;
+   end MakeDirectory;
+
    function ChangeDirectory (dir : String) return Interfaces.C.C_bool is
       use Interfaces.C.Strings;
       C_dir : Interfaces.C.Strings.chars_ptr := New_String (dir);
@@ -256,6 +265,15 @@ package body Raylib is
       Free (C_path);
       return Result;
    end IsPathFile;
+
+   function IsFileNameValid (fileName : String) return Interfaces.C.C_bool is
+      use Interfaces.C.Strings;
+      C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
+      Result : constant Interfaces.C.C_bool := IsFileNameValid (C_fileName);
+   begin
+      Free (C_fileName);
+      return Result;
+   end IsFileNameValid;
 
    function LoadDirectoryFiles (dirPath : String) return FilePathList is
       use Interfaces.C.Strings;
@@ -339,6 +357,15 @@ package body Raylib is
       Free (C_fileName);
       return Result;
    end LoadImageAnim;
+
+   function LoadImageAnimFromMemory (fileType : String; fileData : System.Address; dataSize : Interfaces.C.int; frames : access Interfaces.C.int) return Image is
+      use Interfaces.C.Strings;
+      C_fileType : Interfaces.C.Strings.chars_ptr := New_String (fileType);
+      Result : constant Image := LoadImageAnimFromMemory (C_fileType, fileData, dataSize, frames);
+   begin
+      Free (C_fileType);
+      return Result;
+   end LoadImageAnimFromMemory;
 
    function LoadImageFromMemory (fileType : String; fileData : System.Address; dataSize : Interfaces.C.int) return Image is
       use Interfaces.C.Strings;
@@ -689,6 +716,24 @@ package body Raylib is
       return Result;
    end TextToPascal;
 
+   function TextToSnake (text : String) return String is
+      use Interfaces.C.Strings;
+      C_text : Interfaces.C.Strings.chars_ptr := New_String (text);
+      Result : constant String := Value (TextToSnake (C_text));
+   begin
+      Free (C_text);
+      return Result;
+   end TextToSnake;
+
+   function TextToCamel (text : String) return String is
+      use Interfaces.C.Strings;
+      C_text : Interfaces.C.Strings.chars_ptr := New_String (text);
+      Result : constant String := Value (TextToCamel (C_text));
+   begin
+      Free (C_text);
+      return Result;
+   end TextToCamel;
+
    function TextToInteger (text : String) return Interfaces.C.int is
       use Interfaces.C.Strings;
       C_text : Interfaces.C.Strings.chars_ptr := New_String (text);
@@ -697,6 +742,15 @@ package body Raylib is
       Free (C_text);
       return Result;
    end TextToInteger;
+
+   function TextToFloat (text : String) return Interfaces.C.C_float is
+      use Interfaces.C.Strings;
+      C_text : Interfaces.C.Strings.chars_ptr := New_String (text);
+      Result : constant Interfaces.C.C_float := TextToFloat (C_text);
+   begin
+      Free (C_text);
+      return Result;
+   end TextToFloat;
 
    function LoadModel (fileName : String) return Model is
       use Interfaces.C.Strings;
@@ -715,6 +769,15 @@ package body Raylib is
       Free (C_fileName);
       return Result;
    end ExportMesh;
+
+   function ExportMeshAsCode (mesh_p : Mesh; fileName : String) return Interfaces.C.C_bool is
+      use Interfaces.C.Strings;
+      C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
+      Result : constant Interfaces.C.C_bool := ExportMeshAsCode (mesh_p, C_fileName);
+   begin
+      Free (C_fileName);
+      return Result;
+   end ExportMeshAsCode;
 
    function LoadMaterials (fileName : String; materialCount : access Interfaces.C.int) return access Material is
       use Interfaces.C.Strings;

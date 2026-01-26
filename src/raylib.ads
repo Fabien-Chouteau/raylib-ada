@@ -13,6 +13,10 @@ is
     is array (Interfaces.C.unsigned) of aliased Interfaces.C.Strings.chars_ptr
     with Convention => C;
    type C_String_Array_Access is access all C_String_Array;
+   type C_Float_Array
+   is array (Interfaces.C.unsigned) of aliased Interfaces.C.C_float
+
+    with Convention => C;
 
    type ConfigFlags is new Interfaces.C.unsigned;
    --  System/Window config flags
@@ -170,7 +174,7 @@ is
    KEY_KP_ENTER : constant KeyboardKey := 335; -- Key: Keypad Enter
    KEY_KP_EQUAL : constant KeyboardKey := 336; -- Key: Keypad =
    KEY_BACK : constant KeyboardKey := 4; -- Key: Android back button
-   KEY_MENU : constant KeyboardKey := 82; -- Key: Android menu button
+   KEY_MENU : constant KeyboardKey := 5; -- Key: Android menu button
    KEY_VOLUME_UP : constant KeyboardKey := 24; -- Key: Android volume up button
    KEY_VOLUME_DOWN : constant KeyboardKey := 25; -- Key: Android volume down button
 
@@ -226,12 +230,12 @@ is
    GAMEPAD_BUTTON_LEFT_FACE_DOWN : constant GamepadButton := 3; -- Gamepad left DPAD down button
    GAMEPAD_BUTTON_LEFT_FACE_LEFT : constant GamepadButton := 4; -- Gamepad left DPAD left button
    GAMEPAD_BUTTON_RIGHT_FACE_UP : constant GamepadButton := 5; -- Gamepad right button up (i.e. PS3: Triangle, Xbox: Y)
-   GAMEPAD_BUTTON_RIGHT_FACE_RIGHT : constant GamepadButton := 6; -- Gamepad right button right (i.e. PS3: Square, Xbox: X)
+   GAMEPAD_BUTTON_RIGHT_FACE_RIGHT : constant GamepadButton := 6; -- Gamepad right button right (i.e. PS3: Circle, Xbox: B)
    GAMEPAD_BUTTON_RIGHT_FACE_DOWN : constant GamepadButton := 7; -- Gamepad right button down (i.e. PS3: Cross, Xbox: A)
-   GAMEPAD_BUTTON_RIGHT_FACE_LEFT : constant GamepadButton := 8; -- Gamepad right button left (i.e. PS3: Circle, Xbox: B)
+   GAMEPAD_BUTTON_RIGHT_FACE_LEFT : constant GamepadButton := 8; -- Gamepad right button left (i.e. PS3: Square, Xbox: X)
    GAMEPAD_BUTTON_LEFT_TRIGGER_1 : constant GamepadButton := 9; -- Gamepad top/back trigger left (first), it could be a trailing button
    GAMEPAD_BUTTON_LEFT_TRIGGER_2 : constant GamepadButton := 10; -- Gamepad top/back trigger left (second), it could be a trailing button
-   GAMEPAD_BUTTON_RIGHT_TRIGGER_1 : constant GamepadButton := 11; -- Gamepad top/back trigger right (one), it could be a trailing button
+   GAMEPAD_BUTTON_RIGHT_TRIGGER_1 : constant GamepadButton := 11; -- Gamepad top/back trigger right (first), it could be a trailing button
    GAMEPAD_BUTTON_RIGHT_TRIGGER_2 : constant GamepadButton := 12; -- Gamepad top/back trigger right (second), it could be a trailing button
    GAMEPAD_BUTTON_MIDDLE_LEFT : constant GamepadButton := 13; -- Gamepad center buttons, left one (i.e. PS3: Select)
    GAMEPAD_BUTTON_MIDDLE : constant GamepadButton := 14; -- Gamepad center buttons, middle one (i.e. PS3: PS, Xbox: XBOX)
@@ -309,6 +313,9 @@ is
        , SHADER_LOC_MAP_IRRADIANCE -- Shader location: samplerCube texture: irradiance
        , SHADER_LOC_MAP_PREFILTER -- Shader location: samplerCube texture: prefilter
        , SHADER_LOC_MAP_BRDF -- Shader location: sampler2d texture: brdf
+       , SHADER_LOC_VERTEX_BONEIDS -- Shader location: vertex attribute: boneIds
+       , SHADER_LOC_VERTEX_BONEWEIGHTS -- Shader location: vertex attribute: boneWeights
+       , SHADER_LOC_BONE_MATRICES -- Shader location: array of matrices uniform: boneMatrices
      )
      with Convention => C;
    --  Shader location index
@@ -341,6 +348,9 @@ is
        , SHADER_LOC_MAP_IRRADIANCE => 23
        , SHADER_LOC_MAP_PREFILTER => 24
        , SHADER_LOC_MAP_BRDF => 25
+       , SHADER_LOC_VERTEX_BONEIDS => 26
+       , SHADER_LOC_VERTEX_BONEWEIGHTS => 27
+       , SHADER_LOC_BONE_MATRICES => 28
      );
 
    type ShaderUniformDataType is
@@ -494,7 +504,6 @@ is
        , CUBEMAP_LAYOUT_LINE_HORIZONTAL -- Layout is defined by a horizontal line with faces
        , CUBEMAP_LAYOUT_CROSS_THREE_BY_FOUR -- Layout is defined by a 3x4 cross with cubemap faces
        , CUBEMAP_LAYOUT_CROSS_FOUR_BY_THREE -- Layout is defined by a 4x3 cross with cubemap faces
-       , CUBEMAP_LAYOUT_PANORAMA -- Layout is defined by a panorama image (equirrectangular map)
      )
      with Convention => C;
    --  Cubemap layouts
@@ -506,7 +515,6 @@ is
        , CUBEMAP_LAYOUT_LINE_HORIZONTAL => 2
        , CUBEMAP_LAYOUT_CROSS_THREE_BY_FOUR => 3
        , CUBEMAP_LAYOUT_CROSS_FOUR_BY_THREE => 4
-       , CUBEMAP_LAYOUT_PANORAMA => 5
      );
 
    type FontType is
@@ -568,11 +576,11 @@ is
 
    type CameraMode is
      (
-         CAMERA_CUSTOM -- Custom camera
-       , CAMERA_FREE -- Free camera
-       , CAMERA_ORBITAL -- Orbital camera
-       , CAMERA_FIRST_PERSON -- First person camera
-       , CAMERA_THIRD_PERSON -- Third person camera
+         CAMERA_CUSTOM -- Camera custom, controlled by user (UpdateCamera() does nothing)
+       , CAMERA_FREE -- Camera free mode
+       , CAMERA_ORBITAL -- Camera orbital, around target, zoom supported
+       , CAMERA_FIRST_PERSON -- Camera first person
+       , CAMERA_THIRD_PERSON -- Camera third person
      )
      with Convention => C;
    --  Camera system modes
@@ -648,6 +656,8 @@ is
       y : Interfaces.C.C_float; -- Vector y component
    end record
       with Convention => C_Pass_By_Copy;
+   type C_Vector2_Array is array (Interfaces.C.unsigned) of Vector2
+     with Convention => C;
 
    type Vector3 is record
       x : Interfaces.C.C_float; -- Vector x component
@@ -655,6 +665,8 @@ is
       z : Interfaces.C.C_float; -- Vector z component
    end record
       with Convention => C_Pass_By_Copy;
+   type C_Vector3_Array is array (Interfaces.C.unsigned) of  Vector3
+     with Convention => C;
 
    type Vector4 is record
       x : Interfaces.C.C_float; -- Vector x component
@@ -786,8 +798,10 @@ is
       indices : access Interfaces.C.short; -- Vertex indices (in case vertex data comes indexed)
       animVertices : access Interfaces.C.C_float; -- Animated vertex positions (after bones transformations)
       animNormals : access Interfaces.C.C_float; -- Animated normals (after bones transformations)
-      boneIds : access Interfaces.C.char; -- Vertex bone ids, max 255 bone ids, up to 4 bones influence by vertex (skinning)
-      boneWeights : access Interfaces.C.C_float; -- Vertex bone weight, up to 4 bones influence by vertex (skinning)
+      boneIds : access Interfaces.C.char; -- Vertex bone ids, max 255 bone ids, up to 4 bones influence by vertex (skinning) (shader-location = 6)
+      boneWeights : access Interfaces.C.C_float; -- Vertex bone weight, up to 4 bones influence by vertex (skinning) (shader-location = 7)
+      boneMatrices : access Matrix; -- Bones animated transformation matrices
+      boneCount : Interfaces.C.int; -- Number of bones
       vaoId : Interfaces.C.unsigned; -- OpenGL Vertex Array Object id
       vboId : access Interfaces.C.unsigned; -- OpenGL Vertex Buffer Objects id (default vertex data)
    end record
@@ -856,7 +870,7 @@ is
 
    type Ray is record
       position : Vector3; -- Ray position (origin)
-      direction : Vector3; -- Ray direction
+      direction : Vector3; -- Ray direction (normalized)
    end record
       with Convention => C_Pass_By_Copy;
 
@@ -912,7 +926,6 @@ is
       vResolution : Interfaces.C.int; -- Vertical resolution in pixels
       hScreenSize : Interfaces.C.C_float; -- Horizontal size in meters
       vScreenSize : Interfaces.C.C_float; -- Vertical size in meters
-      vScreenCenter : Interfaces.C.C_float; -- Screen center in meters
       eyeToScreenDistance : Interfaces.C.C_float; -- Distance between eye and display in meters
       lensSeparationDistance : Interfaces.C.C_float; -- Lens separation distance in meters
       interpupillaryDistance : Interfaces.C.C_float; -- IPD (distance between pupils) in meters
@@ -980,19 +993,19 @@ is
    pragma Import (C, IsWindowFullscreen, "IsWindowFullscreen");
 
    function IsWindowHidden return Interfaces.C.C_bool;
-   --  Check if window is currently hidden (only PLATFORM_DESKTOP)
+   --  Check if window is currently hidden
    pragma Import (C, IsWindowHidden, "IsWindowHidden");
 
    function IsWindowMinimized return Interfaces.C.C_bool;
-   --  Check if window is currently minimized (only PLATFORM_DESKTOP)
+   --  Check if window is currently minimized
    pragma Import (C, IsWindowMinimized, "IsWindowMinimized");
 
    function IsWindowMaximized return Interfaces.C.C_bool;
-   --  Check if window is currently maximized (only PLATFORM_DESKTOP)
+   --  Check if window is currently maximized
    pragma Import (C, IsWindowMaximized, "IsWindowMaximized");
 
    function IsWindowFocused return Interfaces.C.C_bool;
-   --  Check if window is currently focused (only PLATFORM_DESKTOP)
+   --  Check if window is currently focused
    pragma Import (C, IsWindowFocused, "IsWindowFocused");
 
    function IsWindowResized return Interfaces.C.C_bool;
@@ -1004,7 +1017,7 @@ is
    pragma Import (C, IsWindowState, "IsWindowState");
 
    procedure SetWindowState (flags : Interfaces.C.unsigned);
-   --  Set window configuration state using flags (only PLATFORM_DESKTOP)
+   --  Set window configuration state using flags
    pragma Import (C, SetWindowState, "SetWindowState");
 
    procedure ClearWindowState (flags : Interfaces.C.unsigned);
@@ -1012,42 +1025,42 @@ is
    pragma Import (C, ClearWindowState, "ClearWindowState");
 
    procedure ToggleFullscreen;
-   --  Toggle window state: fullscreen/windowed (only PLATFORM_DESKTOP)
+   --  Toggle window state: fullscreen/windowed, resizes monitor to match window resolution
    pragma Import (C, ToggleFullscreen, "ToggleFullscreen");
 
    procedure ToggleBorderlessWindowed;
-   --  Toggle window state: borderless windowed (only PLATFORM_DESKTOP)
+   --  Toggle window state: borderless windowed, resizes window to match monitor resolution
    pragma Import (C, ToggleBorderlessWindowed, "ToggleBorderlessWindowed");
 
    procedure MaximizeWindow;
-   --  Set window state: maximized, if resizable (only PLATFORM_DESKTOP)
+   --  Set window state: maximized, if resizable
    pragma Import (C, MaximizeWindow, "MaximizeWindow");
 
    procedure MinimizeWindow;
-   --  Set window state: minimized, if resizable (only PLATFORM_DESKTOP)
+   --  Set window state: minimized, if resizable
    pragma Import (C, MinimizeWindow, "MinimizeWindow");
 
    procedure RestoreWindow;
-   --  Set window state: not minimized/maximized (only PLATFORM_DESKTOP)
+   --  Set window state: not minimized/maximized
    pragma Import (C, RestoreWindow, "RestoreWindow");
 
    procedure SetWindowIcon (image_p : Image);
-   --  Set icon for window (single image, RGBA 32bit, only PLATFORM_DESKTOP)
+   --  Set icon for window (single image, RGBA 32bit)
    pragma Import (C, SetWindowIcon, "SetWindowIcon");
 
    procedure SetWindowIcons (images : access Image; count : Interfaces.C.int);
-   --  Set icon for window (multiple images, RGBA 32bit, only PLATFORM_DESKTOP)
+   --  Set icon for window (multiple images, RGBA 32bit)
    pragma Import (C, SetWindowIcons, "SetWindowIcons");
 
    procedure SetWindowTitle (title : Interfaces.C.Strings.chars_ptr);
-   --  Set title for window (only PLATFORM_DESKTOP and PLATFORM_WEB)
+   --  Set title for window
    pragma Import (C, SetWindowTitle, "SetWindowTitle");
 
    procedure SetWindowTitle (title : String);
-   --  Set title for window (only PLATFORM_DESKTOP and PLATFORM_WEB)
+   --  Set title for window
 
    procedure SetWindowPosition (x : Interfaces.C.int; y : Interfaces.C.int);
-   --  Set window position on screen (only PLATFORM_DESKTOP)
+   --  Set window position on screen
    pragma Import (C, SetWindowPosition, "SetWindowPosition");
 
    procedure SetWindowMonitor (monitor : Interfaces.C.int);
@@ -1067,11 +1080,11 @@ is
    pragma Import (C, SetWindowSize, "SetWindowSize");
 
    procedure SetWindowOpacity (opacity : Interfaces.C.C_float);
-   --  Set window opacity [0.0f..1.0f] (only PLATFORM_DESKTOP)
+   --  Set window opacity [0.0f..1.0f]
    pragma Import (C, SetWindowOpacity, "SetWindowOpacity");
 
    procedure SetWindowFocused;
-   --  Set window focused (only PLATFORM_DESKTOP)
+   --  Set window focused
    pragma Import (C, SetWindowFocused, "SetWindowFocused");
 
    function GetWindowHandle return System.Address;
@@ -1099,7 +1112,7 @@ is
    pragma Import (C, GetMonitorCount, "GetMonitorCount");
 
    function GetCurrentMonitor return Interfaces.C.int;
-   --  Get current connected monitor
+   --  Get current monitor where window is placed
    pragma Import (C, GetCurrentMonitor, "GetCurrentMonitor");
 
    function GetMonitorPosition (monitor : Interfaces.C.int) return Vector2;
@@ -1151,6 +1164,10 @@ is
 
    function GetClipboardText return String;
    --  Get clipboard text content
+
+   function GetClipboardImage return Image;
+   --  Get clipboard image content
+   pragma Import (C, GetClipboardImage, "GetClipboardImage");
 
    procedure EnableEventWaiting;
    --  Enable waiting for events on EndDrawing(), no automatic event polling
@@ -1274,9 +1291,9 @@ is
    function LoadShaderFromMemory (vsCode : String; fsCode : String) return Shader;
    --  Load shader from code strings and bind default locations
 
-   function IsShaderReady (shader_p : Shader) return Interfaces.C.C_bool;
-   --  Check if a shader is ready
-   pragma Import (C, IsShaderReady, "IsShaderReady");
+   function IsShaderValid (shader_p : Shader) return Interfaces.C.C_bool;
+   --  Check if a shader is valid (loaded on GPU)
+   pragma Import (C, IsShaderValid, "IsShaderValid");
 
    function GetShaderLocation (shader_p : Shader; uniformName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
    --  Get shader uniform location
@@ -1312,25 +1329,17 @@ is
    --  Unload shader from GPU memory (VRAM)
    pragma Import (C, UnloadShader, "UnloadShader");
 
-   function GetMouseRay (mousePosition : Vector2; camera_p : Camera3D) return Ray;
-   --  Get a ray trace from mouse position
-   pragma Import (C, GetMouseRay, "GetMouseRay");
+   function GetScreenToWorldRay (position : Vector2; camera_p : Camera3D) return Ray;
+   --  Get a ray trace from screen position (i.e mouse)
+   pragma Import (C, GetScreenToWorldRay, "GetScreenToWorldRay");
 
-   function GetCameraMatrix (camera_p : Camera3D) return Matrix;
-   --  Get camera transform matrix (view matrix)
-   pragma Import (C, GetCameraMatrix, "GetCameraMatrix");
-
-   function GetCameraMatrix2D (camera_p : Camera2D) return Matrix;
-   --  Get camera 2d transform matrix
-   pragma Import (C, GetCameraMatrix2D, "GetCameraMatrix2D");
+   function GetScreenToWorldRayEx (position : Vector2; camera_p : Camera3D; width : Interfaces.C.int; height : Interfaces.C.int) return Ray;
+   --  Get a ray trace from screen position (i.e mouse) in a viewport
+   pragma Import (C, GetScreenToWorldRayEx, "GetScreenToWorldRayEx");
 
    function GetWorldToScreen (position : Vector3; camera_p : Camera3D) return Vector2;
    --  Get the screen space position for a 3d world space position
    pragma Import (C, GetWorldToScreen, "GetWorldToScreen");
-
-   function GetScreenToWorld2D (position : Vector2; camera_p : Camera2D) return Vector2;
-   --  Get the world space position for a 2d camera screen space position
-   pragma Import (C, GetScreenToWorld2D, "GetScreenToWorld2D");
 
    function GetWorldToScreenEx (position : Vector3; camera_p : Camera3D; width : Interfaces.C.int; height : Interfaces.C.int) return Vector2;
    --  Get size position for a 3d world space position
@@ -1339,6 +1348,18 @@ is
    function GetWorldToScreen2D (position : Vector2; camera_p : Camera2D) return Vector2;
    --  Get the screen space position for a 2d camera world space position
    pragma Import (C, GetWorldToScreen2D, "GetWorldToScreen2D");
+
+   function GetScreenToWorld2D (position : Vector2; camera_p : Camera2D) return Vector2;
+   --  Get the world space position for a 2d camera screen space position
+   pragma Import (C, GetScreenToWorld2D, "GetScreenToWorld2D");
+
+   function GetCameraMatrix (camera_p : Camera3D) return Matrix;
+   --  Get camera transform matrix (view matrix)
+   pragma Import (C, GetCameraMatrix, "GetCameraMatrix");
+
+   function GetCameraMatrix2D (camera_p : Camera2D) return Matrix;
+   --  Get camera 2d transform matrix
+   pragma Import (C, GetCameraMatrix2D, "GetCameraMatrix2D");
 
    procedure SetTargetFPS (fps : Interfaces.C.int);
    --  Set target FPS (maximum)
@@ -1553,6 +1574,13 @@ is
    function GetApplicationDirectory return String;
    --  Get the directory of the running application (uses static string)
 
+   function MakeDirectory (dirPath : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
+   --  Create directories (including full path requested), returns 0 on success
+   pragma Import (C, MakeDirectory, "MakeDirectory");
+
+   function MakeDirectory (dirPath : String) return Interfaces.C.int;
+   --  Create directories (including full path requested), returns 0 on success
+
    function ChangeDirectory (dir : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
    --  Change working directory, return true on success
    pragma Import (C, ChangeDirectory, "ChangeDirectory");
@@ -1567,6 +1595,13 @@ is
    function IsPathFile (path : String) return Interfaces.C.C_bool;
    --  Check if a given path is a file or a directory
 
+   function IsFileNameValid (fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
+   --  Check if fileName is valid for the platform/OS
+   pragma Import (C, IsFileNameValid, "IsFileNameValid");
+
+   function IsFileNameValid (fileName : String) return Interfaces.C.C_bool;
+   --  Check if fileName is valid for the platform/OS
+
    function LoadDirectoryFiles (dirPath : Interfaces.C.Strings.chars_ptr) return FilePathList;
    --  Load directory filepaths
    pragma Import (C, LoadDirectoryFiles, "LoadDirectoryFiles");
@@ -1575,11 +1610,11 @@ is
    --  Load directory filepaths
 
    function LoadDirectoryFilesEx (basePath : Interfaces.C.Strings.chars_ptr; filter : Interfaces.C.Strings.chars_ptr; scanSubdirs : Interfaces.C.C_bool) return FilePathList;
-   --  Load directory filepaths with extension filtering and recursive directory scan
+   --  Load directory filepaths with extension filtering and recursive directory scan. Use 'DIR' in the filter string to include directories in the result
    pragma Import (C, LoadDirectoryFilesEx, "LoadDirectoryFilesEx");
 
    function LoadDirectoryFilesEx (basePath : String; filter : String; scanSubdirs : Interfaces.C.C_bool) return FilePathList;
-   --  Load directory filepaths with extension filtering and recursive directory scan
+   --  Load directory filepaths with extension filtering and recursive directory scan. Use 'DIR' in the filter string to include directories in the result
 
    procedure UnloadDirectoryFiles (files : FilePathList);
    --  Unload filepaths
@@ -1620,6 +1655,18 @@ is
    --  Decode Base64 string data, memory must be MemFree()
    pragma Import (C, DecodeDataBase64, "DecodeDataBase64");
 
+   function ComputeCRC32 (data : access Interfaces.C.char; dataSize : Interfaces.C.int) return Interfaces.C.unsigned;
+   --  Compute CRC32 hash code
+   pragma Import (C, ComputeCRC32, "ComputeCRC32");
+
+   function ComputeMD5 (data : access Interfaces.C.char; dataSize : Interfaces.C.int) return access Interfaces.C.unsigned;
+   --  Compute MD5 hash code, returns static int[4] (16 bytes)
+   pragma Import (C, ComputeMD5, "ComputeMD5");
+
+   function ComputeSHA1 (data : access Interfaces.C.char; dataSize : Interfaces.C.int) return access Interfaces.C.unsigned;
+   --  Compute SHA1 hash code, returns static int[5] (20 bytes)
+   pragma Import (C, ComputeSHA1, "ComputeSHA1");
+
    function LoadAutomationEventList (fileName : Interfaces.C.Strings.chars_ptr) return AutomationEventList;
    --  Load automation events list from file, NULL for empty list, capacity = MAX_AUTOMATION_EVENTS
    pragma Import (C, LoadAutomationEventList, "LoadAutomationEventList");
@@ -1627,7 +1674,7 @@ is
    function LoadAutomationEventList (fileName : String) return AutomationEventList;
    --  Load automation events list from file, NULL for empty list, capacity = MAX_AUTOMATION_EVENTS
 
-   procedure UnloadAutomationEventList (list : access AutomationEventList);
+   procedure UnloadAutomationEventList (list : AutomationEventList);
    --  Unload automation events list from file
    pragma Import (C, UnloadAutomationEventList, "UnloadAutomationEventList");
 
@@ -1663,7 +1710,7 @@ is
    pragma Import (C, IsKeyPressed, "IsKeyPressed");
 
    function IsKeyPressedRepeat (key : KeyboardKey) return Interfaces.C.C_bool;
-   --  Check if a key has been pressed again (Only PLATFORM_DESKTOP)
+   --  Check if a key has been pressed again
    pragma Import (C, IsKeyPressedRepeat, "IsKeyPressedRepeat");
 
    function IsKeyDown (key : KeyboardKey) return Interfaces.C.C_bool;
@@ -1732,6 +1779,10 @@ is
 
    function SetGamepadMappings (mappings : String) return Interfaces.C.int;
    --  Set internal gamepad mappings (SDL_GameControllerDB)
+
+   procedure SetGamepadVibration (gamepad : Interfaces.C.int; leftMotor : Interfaces.C.C_float; rightMotor : Interfaces.C.C_float; duration : Interfaces.C.C_float);
+   --  Set gamepad vibration for both motors (duration in seconds)
+   pragma Import (C, SetGamepadVibration, "SetGamepadVibration");
 
    function IsMouseButtonPressed (button : MouseButton) return Interfaces.C.C_bool;
    --  Check if a mouse button has been pressed once
@@ -1822,7 +1873,7 @@ is
    pragma Import (C, GetGestureDetected, "GetGestureDetected");
 
    function GetGestureHoldDuration return Interfaces.C.C_float;
-   --  Get gesture hold time in milliseconds
+   --  Get gesture hold time in seconds
    pragma Import (C, GetGestureHoldDuration, "GetGestureHoldDuration");
 
    function GetGestureDragVector return Vector2;
@@ -1853,12 +1904,20 @@ is
    --  Set texture and rectangle to be used on shapes drawing
    pragma Import (C, SetShapesTexture, "SetShapesTexture");
 
+   function GetShapesTexture return Texture;
+   --  Get texture that is used for shapes drawing
+   pragma Import (C, GetShapesTexture, "GetShapesTexture");
+
+   function GetShapesTextureRectangle return Rectangle;
+   --  Get texture source rectangle that is used for shapes drawing
+   pragma Import (C, GetShapesTextureRectangle, "GetShapesTextureRectangle");
+
    procedure DrawPixel (posX : Interfaces.C.int; posY : Interfaces.C.int; color_p : Color);
-   --  Draw a pixel
+   --  Draw a pixel using geometry [Can be slow, use with care]
    pragma Import (C, DrawPixel, "DrawPixel");
 
    procedure DrawPixelV (position : Vector2; color_p : Color);
-   --  Draw a pixel (Vector version)
+   --  Draw a pixel using geometry (Vector version) [Can be slow, use with care]
    pragma Import (C, DrawPixelV, "DrawPixelV");
 
    procedure DrawLine (startPosX : Interfaces.C.int; startPosY : Interfaces.C.int; endPosX : Interfaces.C.int; endPosY : Interfaces.C.int; color_p : Color);
@@ -1873,7 +1932,7 @@ is
    --  Draw a line (using triangles/quads)
    pragma Import (C, DrawLineEx, "DrawLineEx");
 
-   procedure DrawLineStrip (points : access Vector2; pointCount : Interfaces.C.int; color_p : Color);
+   procedure DrawLineStrip (points : access constant C_Vector2_Array; pointCount : Interfaces.C.int; color_p : Color);
    --  Draw lines sequence (using gl lines)
    pragma Import (C, DrawLineStrip, "DrawLineStrip");
 
@@ -1893,7 +1952,7 @@ is
    --  Draw circle sector outline
    pragma Import (C, DrawCircleSectorLines, "DrawCircleSectorLines");
 
-   procedure DrawCircleGradient (centerX : Interfaces.C.int; centerY : Interfaces.C.int; radius : Interfaces.C.C_float; color1 : Color; color2 : Color);
+   procedure DrawCircleGradient (centerX : Interfaces.C.int; centerY : Interfaces.C.int; radius : Interfaces.C.C_float; inner : Color; outer : Color);
    --  Draw a gradient-filled circle
    pragma Import (C, DrawCircleGradient, "DrawCircleGradient");
 
@@ -1941,15 +2000,15 @@ is
    --  Draw a color-filled rectangle with pro parameters
    pragma Import (C, DrawRectanglePro, "DrawRectanglePro");
 
-   procedure DrawRectangleGradientV (posX : Interfaces.C.int; posY : Interfaces.C.int; width : Interfaces.C.int; height : Interfaces.C.int; color1 : Color; color2 : Color);
+   procedure DrawRectangleGradientV (posX : Interfaces.C.int; posY : Interfaces.C.int; width : Interfaces.C.int; height : Interfaces.C.int; top : Color; bottom : Color);
    --  Draw a vertical-gradient-filled rectangle
    pragma Import (C, DrawRectangleGradientV, "DrawRectangleGradientV");
 
-   procedure DrawRectangleGradientH (posX : Interfaces.C.int; posY : Interfaces.C.int; width : Interfaces.C.int; height : Interfaces.C.int; color1 : Color; color2 : Color);
+   procedure DrawRectangleGradientH (posX : Interfaces.C.int; posY : Interfaces.C.int; width : Interfaces.C.int; height : Interfaces.C.int; left : Color; right : Color);
    --  Draw a horizontal-gradient-filled rectangle
    pragma Import (C, DrawRectangleGradientH, "DrawRectangleGradientH");
 
-   procedure DrawRectangleGradientEx (rec : Rectangle; col1 : Color; col2 : Color; col3 : Color; col4 : Color);
+   procedure DrawRectangleGradientEx (rec : Rectangle; topLeft : Color; bottomLeft : Color; topRight : Color; bottomRight : Color);
    --  Draw a gradient-filled rectangle with custom vertex colors
    pragma Import (C, DrawRectangleGradientEx, "DrawRectangleGradientEx");
 
@@ -1965,9 +2024,13 @@ is
    --  Draw rectangle with rounded edges
    pragma Import (C, DrawRectangleRounded, "DrawRectangleRounded");
 
-   procedure DrawRectangleRoundedLines (rec : Rectangle; roundness : Interfaces.C.C_float; segments : Interfaces.C.int; lineThick : Interfaces.C.C_float; color_p : Color);
-   --  Draw rectangle with rounded edges outline
+   procedure DrawRectangleRoundedLines (rec : Rectangle; roundness : Interfaces.C.C_float; segments : Interfaces.C.int; color_p : Color);
+   --  Draw rectangle lines with rounded edges
    pragma Import (C, DrawRectangleRoundedLines, "DrawRectangleRoundedLines");
+
+   procedure DrawRectangleRoundedLinesEx (rec : Rectangle; roundness : Interfaces.C.C_float; segments : Interfaces.C.int; lineThick : Interfaces.C.C_float; color_p : Color);
+   --  Draw rectangle with rounded edges outline
+   pragma Import (C, DrawRectangleRoundedLinesEx, "DrawRectangleRoundedLinesEx");
 
    procedure DrawTriangle (v1 : Vector2; v2 : Vector2; v3 : Vector2; color_p : Color);
    --  Draw a color-filled triangle (vertex in counter-clockwise order!)
@@ -1977,11 +2040,11 @@ is
    --  Draw triangle outline (vertex in counter-clockwise order!)
    pragma Import (C, DrawTriangleLines, "DrawTriangleLines");
 
-   procedure DrawTriangleFan (points : access Vector2; pointCount : Interfaces.C.int; color_p : Color);
+   procedure DrawTriangleFan (points : access constant C_Vector2_Array; pointCount : Interfaces.C.int; color_p : Color);
    --  Draw a triangle fan defined by points (first vertex is the center)
    pragma Import (C, DrawTriangleFan, "DrawTriangleFan");
 
-   procedure DrawTriangleStrip (points : access Vector2; pointCount : Interfaces.C.int; color_p : Color);
+   procedure DrawTriangleStrip (points : access constant C_Vector2_Array; pointCount : Interfaces.C.int; color_p : Color);
    --  Draw a triangle strip defined by points
    pragma Import (C, DrawTriangleStrip, "DrawTriangleStrip");
 
@@ -1997,23 +2060,23 @@ is
    --  Draw a polygon outline of n sides with extended parameters
    pragma Import (C, DrawPolyLinesEx, "DrawPolyLinesEx");
 
-   procedure DrawSplineLinear (points : access Vector2; pointCount : Interfaces.C.int; thick : Interfaces.C.C_float; color_p : Color);
+   procedure DrawSplineLinear (points : access constant C_Vector2_Array; pointCount : Interfaces.C.int; thick : Interfaces.C.C_float; color_p : Color);
    --  Draw spline: Linear, minimum 2 points
    pragma Import (C, DrawSplineLinear, "DrawSplineLinear");
 
-   procedure DrawSplineBasis (points : access Vector2; pointCount : Interfaces.C.int; thick : Interfaces.C.C_float; color_p : Color);
+   procedure DrawSplineBasis (points : access constant C_Vector2_Array; pointCount : Interfaces.C.int; thick : Interfaces.C.C_float; color_p : Color);
    --  Draw spline: B-Spline, minimum 4 points
    pragma Import (C, DrawSplineBasis, "DrawSplineBasis");
 
-   procedure DrawSplineCatmullRom (points : access Vector2; pointCount : Interfaces.C.int; thick : Interfaces.C.C_float; color_p : Color);
+   procedure DrawSplineCatmullRom (points : access constant C_Vector2_Array; pointCount : Interfaces.C.int; thick : Interfaces.C.C_float; color_p : Color);
    --  Draw spline: Catmull-Rom, minimum 4 points
    pragma Import (C, DrawSplineCatmullRom, "DrawSplineCatmullRom");
 
-   procedure DrawSplineBezierQuadratic (points : access Vector2; pointCount : Interfaces.C.int; thick : Interfaces.C.C_float; color_p : Color);
+   procedure DrawSplineBezierQuadratic (points : access constant C_Vector2_Array; pointCount : Interfaces.C.int; thick : Interfaces.C.C_float; color_p : Color);
    --  Draw spline: Quadratic Bezier, minimum 3 points (1 control point): [p1, c2, p3, c4...]
    pragma Import (C, DrawSplineBezierQuadratic, "DrawSplineBezierQuadratic");
 
-   procedure DrawSplineBezierCubic (points : access Vector2; pointCount : Interfaces.C.int; thick : Interfaces.C.C_float; color_p : Color);
+   procedure DrawSplineBezierCubic (points : access constant C_Vector2_Array; pointCount : Interfaces.C.int; thick : Interfaces.C.C_float; color_p : Color);
    --  Draw spline: Cubic Bezier, minimum 4 points (2 control points): [p1, c2, c3, p4, c5, c6...]
    pragma Import (C, DrawSplineBezierCubic, "DrawSplineBezierCubic");
 
@@ -2069,6 +2132,10 @@ is
    --  Check collision between circle and rectangle
    pragma Import (C, CheckCollisionCircleRec, "CheckCollisionCircleRec");
 
+   function CheckCollisionCircleLine (center : Vector2; radius : Interfaces.C.C_float; p1 : Vector2; p2 : Vector2) return Interfaces.C.C_bool;
+   --  Check if circle collides with a line created betweeen two points [p1] and [p2]
+   pragma Import (C, CheckCollisionCircleLine, "CheckCollisionCircleLine");
+
    function CheckCollisionPointRec (point : Vector2; rec : Rectangle) return Interfaces.C.C_bool;
    --  Check if point is inside rectangle
    pragma Import (C, CheckCollisionPointRec, "CheckCollisionPointRec");
@@ -2081,17 +2148,17 @@ is
    --  Check if point is inside a triangle
    pragma Import (C, CheckCollisionPointTriangle, "CheckCollisionPointTriangle");
 
-   function CheckCollisionPointPoly (point : Vector2; points : access Vector2; pointCount : Interfaces.C.int) return Interfaces.C.C_bool;
+   function CheckCollisionPointLine (point : Vector2; p1 : Vector2; p2 : Vector2; threshold : Interfaces.C.int) return Interfaces.C.C_bool;
+   --  Check if point belongs to line created between two points [p1] and [p2] with defined margin in pixels [threshold]
+   pragma Import (C, CheckCollisionPointLine, "CheckCollisionPointLine");
+
+   function CheckCollisionPointPoly (point : Vector2; points : access constant C_Vector2_Array; pointCount : Interfaces.C.int) return Interfaces.C.C_bool;
    --  Check if point is within a polygon described by array of vertices
    pragma Import (C, CheckCollisionPointPoly, "CheckCollisionPointPoly");
 
    function CheckCollisionLines (startPos1 : Vector2; endPos1 : Vector2; startPos2 : Vector2; endPos2 : Vector2; collisionPoint : access Vector2) return Interfaces.C.C_bool;
    --  Check the collision between two lines defined by two points each, returns collision point by reference
    pragma Import (C, CheckCollisionLines, "CheckCollisionLines");
-
-   function CheckCollisionPointLine (point : Vector2; p1 : Vector2; p2 : Vector2; threshold : Interfaces.C.int) return Interfaces.C.C_bool;
-   --  Check if point belongs to line created between two points [p1] and [p2] with defined margin in pixels [threshold]
-   pragma Import (C, CheckCollisionPointLine, "CheckCollisionPointLine");
 
    function GetCollisionRec (rec1 : Rectangle; rec2 : Rectangle) return Rectangle;
    --  Get collision rectangle for two rectangles collision
@@ -2118,6 +2185,13 @@ is
    function LoadImageAnim (fileName : String; frames : access Interfaces.C.int) return Image;
    --  Load image sequence from file (frames appended to image.data)
 
+   function LoadImageAnimFromMemory (fileType : Interfaces.C.Strings.chars_ptr; fileData : System.Address; dataSize : Interfaces.C.int; frames : access Interfaces.C.int) return Image;
+   --  Load image sequence from memory buffer
+   pragma Import (C, LoadImageAnimFromMemory, "LoadImageAnimFromMemory");
+
+   function LoadImageAnimFromMemory (fileType : String; fileData : System.Address; dataSize : Interfaces.C.int; frames : access Interfaces.C.int) return Image;
+   --  Load image sequence from memory buffer
+
    function LoadImageFromMemory (fileType : Interfaces.C.Strings.chars_ptr; fileData : System.Address; dataSize : Interfaces.C.int) return Image;
    --  Load image from memory buffer, fileType refers to extension: i.e. '.png'
    pragma Import (C, LoadImageFromMemory, "LoadImageFromMemory");
@@ -2133,9 +2207,9 @@ is
    --  Load image from screen buffer and (screenshot)
    pragma Import (C, LoadImageFromScreen, "LoadImageFromScreen");
 
-   function IsImageReady (image_p : Image) return Interfaces.C.C_bool;
-   --  Check if an image is ready
-   pragma Import (C, IsImageReady, "IsImageReady");
+   function IsImageValid (image_p : Image) return Interfaces.C.C_bool;
+   --  Check if an image is valid (data and parameters)
+   pragma Import (C, IsImageValid, "IsImageValid");
 
    procedure UnloadImage (image_p : Image);
    --  Unload image from CPU memory (RAM)
@@ -2209,6 +2283,10 @@ is
    --  Create an image from another image piece
    pragma Import (C, ImageFromImage, "ImageFromImage");
 
+   function ImageFromChannel (image_p : Image; selectedChannel : Interfaces.C.int) return Image;
+   --  Create an image from a selected channel of another image (GRAYSCALE)
+   pragma Import (C, ImageFromChannel, "ImageFromChannel");
+
    function ImageText (text : Interfaces.C.Strings.chars_ptr; fontSize : Interfaces.C.int; color_p : Color) return Image;
    --  Create an image from text (default font)
    pragma Import (C, ImageText, "ImageText");
@@ -2254,6 +2332,10 @@ is
    procedure ImageBlurGaussian (image_p : access Image; blurSize : Interfaces.C.int);
    --  Apply Gaussian blur using a box blur approximation
    pragma Import (C, ImageBlurGaussian, "ImageBlurGaussian");
+
+   procedure ImageKernelConvolution (image_p : access Image; kernel : access constant C_Float_Array; kernelSize : Interfaces.C.int);
+   --  Apply custom square convolution kernel to image
+   pragma Import (C, ImageKernelConvolution, "ImageKernelConvolution");
 
    procedure ImageResize (image_p : access Image; newWidth : Interfaces.C.int; newHeight : Interfaces.C.int);
    --  Resize image (Bicubic scaling algorithm)
@@ -2363,6 +2445,10 @@ is
    --  Draw line within an image (Vector version)
    pragma Import (C, ImageDrawLineV, "ImageDrawLineV");
 
+   procedure ImageDrawLineEx (dst : access Image; start : Vector2; end_p : Vector2; thick : Interfaces.C.int; color_p : Color);
+   --  Draw a line defining thickness within an image
+   pragma Import (C, ImageDrawLineEx, "ImageDrawLineEx");
+
    procedure ImageDrawCircle (dst : access Image; centerX : Interfaces.C.int; centerY : Interfaces.C.int; radius : Interfaces.C.int; color_p : Color);
    --  Draw a filled circle within an image
    pragma Import (C, ImageDrawCircle, "ImageDrawCircle");
@@ -2394,6 +2480,26 @@ is
    procedure ImageDrawRectangleLines (dst : access Image; rec : Rectangle; thick : Interfaces.C.int; color_p : Color);
    --  Draw rectangle lines within an image
    pragma Import (C, ImageDrawRectangleLines, "ImageDrawRectangleLines");
+
+   procedure ImageDrawTriangle (dst : access Image; v1 : Vector2; v2 : Vector2; v3 : Vector2; color_p : Color);
+   --  Draw triangle within an image
+   pragma Import (C, ImageDrawTriangle, "ImageDrawTriangle");
+
+   procedure ImageDrawTriangleEx (dst : access Image; v1 : Vector2; v2 : Vector2; v3 : Vector2; c1 : Color; c2 : Color; c3 : Color);
+   --  Draw triangle with interpolated colors within an image
+   pragma Import (C, ImageDrawTriangleEx, "ImageDrawTriangleEx");
+
+   procedure ImageDrawTriangleLines (dst : access Image; v1 : Vector2; v2 : Vector2; v3 : Vector2; color_p : Color);
+   --  Draw triangle outline within an image
+   pragma Import (C, ImageDrawTriangleLines, "ImageDrawTriangleLines");
+
+   procedure ImageDrawTriangleFan (dst : access Image; points : access Vector2; pointCount : Interfaces.C.int; color_p : Color);
+   --  Draw a triangle fan defined by points within an image (first vertex is the center)
+   pragma Import (C, ImageDrawTriangleFan, "ImageDrawTriangleFan");
+
+   procedure ImageDrawTriangleStrip (dst : access Image; points : access Vector2; pointCount : Interfaces.C.int; color_p : Color);
+   --  Draw a triangle strip defined by points within an image
+   pragma Import (C, ImageDrawTriangleStrip, "ImageDrawTriangleStrip");
 
    procedure ImageDraw (dst : access Image; src : Image; srcRec : Rectangle; dstRec : Rectangle; tint : Color);
    --  Draw a source image within a destination image (tint applied to source)
@@ -2432,17 +2538,17 @@ is
    --  Load texture for rendering (framebuffer)
    pragma Import (C, LoadRenderTexture, "LoadRenderTexture");
 
-   function IsTextureReady (texture_p : Texture) return Interfaces.C.C_bool;
-   --  Check if a texture is ready
-   pragma Import (C, IsTextureReady, "IsTextureReady");
+   function IsTextureValid (texture_p : Texture) return Interfaces.C.C_bool;
+   --  Check if a texture is valid (loaded in GPU)
+   pragma Import (C, IsTextureValid, "IsTextureValid");
 
    procedure UnloadTexture (texture_p : Texture);
    --  Unload texture from GPU memory (VRAM)
    pragma Import (C, UnloadTexture, "UnloadTexture");
 
-   function IsRenderTextureReady (target : RenderTexture) return Interfaces.C.C_bool;
-   --  Check if a render texture is ready
-   pragma Import (C, IsRenderTextureReady, "IsRenderTextureReady");
+   function IsRenderTextureValid (target : RenderTexture) return Interfaces.C.C_bool;
+   --  Check if a render texture is valid (loaded in GPU)
+   pragma Import (C, IsRenderTextureValid, "IsRenderTextureValid");
 
    procedure UnloadRenderTexture (target : RenderTexture);
    --  Unload render texture from GPU memory (VRAM)
@@ -2492,12 +2598,16 @@ is
    --  Draws a texture (or part of it) that stretches or shrinks nicely
    pragma Import (C, DrawTextureNPatch, "DrawTextureNPatch");
 
+   function ColorIsEqual (col1 : Color; col2 : Color) return Interfaces.C.C_bool;
+   --  Check if two colors are equal
+   pragma Import (C, ColorIsEqual, "ColorIsEqual");
+
    function Fade (color_p : Color; alpha : Interfaces.C.C_float) return Color;
    --  Get color with alpha applied, alpha goes from 0.0f to 1.0f
    pragma Import (C, Fade, "Fade");
 
    function ColorToInt (color_p : Color) return Interfaces.C.int;
-   --  Get hexadecimal value for a Color
+   --  Get hexadecimal value for a Color (0xRRGGBBAA)
    pragma Import (C, ColorToInt, "ColorToInt");
 
    function ColorNormalize (color_p : Color) return Vector4;
@@ -2536,6 +2646,10 @@ is
    --  Get src alpha-blended into dst color with tint
    pragma Import (C, ColorAlphaBlend, "ColorAlphaBlend");
 
+   function ColorLerp (color1 : Color; color2 : Color; factor : Interfaces.C.C_float) return Color;
+   --  Get color lerp interpolation between two colors, factor [0.0f..1.0f]
+   pragma Import (C, ColorLerp, "ColorLerp");
+
    function GetColor (hexValue : Interfaces.C.unsigned) return Color;
    --  Get Color structure from hexadecimal value
    function GetColor (hexValue : Interfaces.C.int) return Color;
@@ -2565,11 +2679,11 @@ is
    --  Load font from file into GPU memory (VRAM)
 
    function LoadFontEx (fileName : Interfaces.C.Strings.chars_ptr; fontSize : Interfaces.C.int; codepoints : access Interfaces.C.int; codepointCount : Interfaces.C.int) return Font;
-   --  Load font from file with extended parameters, use NULL for codepoints and 0 for codepointCount to load the default character setFont
+   --  Load font from file with extended parameters, use NULL for codepoints and 0 for codepointCount to load the default character set, font size is provided in pixels height
    pragma Import (C, LoadFontEx, "LoadFontEx");
 
    function LoadFontEx (fileName : String; fontSize : Interfaces.C.int; codepoints : access Interfaces.C.int; codepointCount : Interfaces.C.int) return Font;
-   --  Load font from file with extended parameters, use NULL for codepoints and 0 for codepointCount to load the default character setFont
+   --  Load font from file with extended parameters, use NULL for codepoints and 0 for codepointCount to load the default character set, font size is provided in pixels height
 
    function LoadFontFromImage (image_p : Image; key : Color; firstChar : Interfaces.C.int) return Font;
    --  Load font from Image (XNA style)
@@ -2582,9 +2696,9 @@ is
    function LoadFontFromMemory (fileType : String; fileData : System.Address; dataSize : Interfaces.C.int; fontSize : Interfaces.C.int; codepoints : access Interfaces.C.int; codepointCount : Interfaces.C.int) return Font;
    --  Load font from memory buffer, fileType refers to extension: i.e. '.ttf'
 
-   function IsFontReady (font_p : Font) return Interfaces.C.C_bool;
-   --  Check if a font is ready
-   pragma Import (C, IsFontReady, "IsFontReady");
+   function IsFontValid (font_p : Font) return Interfaces.C.C_bool;
+   --  Check if a font is valid (font data loaded, WARNING: GPU texture not checked)
+   pragma Import (C, IsFontValid, "IsFontValid");
 
    function LoadFontData (fileData : System.Address; dataSize : Interfaces.C.int; fontSize : Interfaces.C.int; codepoints : access Interfaces.C.int; codepointCount : Interfaces.C.int; type_p : FontType) return access GlyphInfo;
    --  Load font data for further use
@@ -2813,12 +2927,33 @@ is
    function TextToPascal (text : String) return String;
    --  Get Pascal case notation version of provided string
 
+   function TextToSnake (text : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
+   --  Get Snake case notation version of provided string
+   pragma Import (C, TextToSnake, "TextToSnake");
+
+   function TextToSnake (text : String) return String;
+   --  Get Snake case notation version of provided string
+
+   function TextToCamel (text : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
+   --  Get Camel case notation version of provided string
+   pragma Import (C, TextToCamel, "TextToCamel");
+
+   function TextToCamel (text : String) return String;
+   --  Get Camel case notation version of provided string
+
    function TextToInteger (text : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
    --  Get integer value from text (negative values not supported)
    pragma Import (C, TextToInteger, "TextToInteger");
 
    function TextToInteger (text : String) return Interfaces.C.int;
    --  Get integer value from text (negative values not supported)
+
+   function TextToFloat (text : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_float;
+   --  Get float value from text (negative values not supported)
+   pragma Import (C, TextToFloat, "TextToFloat");
+
+   function TextToFloat (text : String) return Interfaces.C.C_float;
+   --  Get float value from text (negative values not supported)
 
    procedure DrawLine3D (startPos : Vector3; endPos : Vector3; color_p : Color);
    --  Draw a line in 3D world space
@@ -2836,7 +2971,7 @@ is
    --  Draw a color-filled triangle (vertex in counter-clockwise order!)
    pragma Import (C, DrawTriangle3D, "DrawTriangle3D");
 
-   procedure DrawTriangleStrip3D (points : access Vector3; pointCount : Interfaces.C.int; color_p : Color);
+   procedure DrawTriangleStrip3D (points : access constant C_Vector3_Array; pointCount : Interfaces.C.int; color_p : Color);
    --  Draw a triangle strip defined by points
    pragma Import (C, DrawTriangleStrip3D, "DrawTriangleStrip3D");
 
@@ -2915,9 +3050,9 @@ is
    --  Load model from generated mesh (default material)
    pragma Import (C, LoadModelFromMesh, "LoadModelFromMesh");
 
-   function IsModelReady (model_p : Model) return Interfaces.C.C_bool;
-   --  Check if a model is ready
-   pragma Import (C, IsModelReady, "IsModelReady");
+   function IsModelValid (model_p : Model) return Interfaces.C.C_bool;
+   --  Check if a model is valid (loaded in GPU, VAO/VBOs)
+   pragma Import (C, IsModelValid, "IsModelValid");
 
    procedure UnloadModel (model_p : Model);
    --  Unload model (including meshes) from memory (RAM and/or VRAM)
@@ -2943,11 +3078,19 @@ is
    --  Draw a model wires (with texture if set) with extended parameters
    pragma Import (C, DrawModelWiresEx, "DrawModelWiresEx");
 
+   procedure DrawModelPoints (model_p : Model; position : Vector3; scale : Interfaces.C.C_float; tint : Color);
+   --  Draw a model as points
+   pragma Import (C, DrawModelPoints, "DrawModelPoints");
+
+   procedure DrawModelPointsEx (model_p : Model; position : Vector3; rotationAxis : Vector3; rotationAngle : Interfaces.C.C_float; scale : Vector3; tint : Color);
+   --  Draw a model as points with extended parameters
+   pragma Import (C, DrawModelPointsEx, "DrawModelPointsEx");
+
    procedure DrawBoundingBox (box : BoundingBox; color_p : Color);
    --  Draw bounding box (wires)
    pragma Import (C, DrawBoundingBox, "DrawBoundingBox");
 
-   procedure DrawBillboard (camera_p : Camera3D; texture_p : Texture; position : Vector3; size : Interfaces.C.C_float; tint : Color);
+   procedure DrawBillboard (camera_p : Camera3D; texture_p : Texture; position : Vector3; scale : Interfaces.C.C_float; tint : Color);
    --  Draw a billboard texture
    pragma Import (C, DrawBillboard, "DrawBillboard");
 
@@ -2979,13 +3122,6 @@ is
    --  Draw multiple mesh instances with material and different transforms
    pragma Import (C, DrawMeshInstanced, "DrawMeshInstanced");
 
-   function ExportMesh (mesh_p : Mesh; fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
-   --  Export mesh data to file, returns true on success
-   pragma Import (C, ExportMesh, "ExportMesh");
-
-   function ExportMesh (mesh_p : Mesh; fileName : String) return Interfaces.C.C_bool;
-   --  Export mesh data to file, returns true on success
-
    function GetMeshBoundingBox (mesh_p : Mesh) return BoundingBox;
    --  Compute mesh bounding box limits
    pragma Import (C, GetMeshBoundingBox, "GetMeshBoundingBox");
@@ -2993,6 +3129,20 @@ is
    procedure GenMeshTangents (mesh_p : access Mesh);
    --  Compute mesh tangents
    pragma Import (C, GenMeshTangents, "GenMeshTangents");
+
+   function ExportMesh (mesh_p : Mesh; fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
+   --  Export mesh data to file, returns true on success
+   pragma Import (C, ExportMesh, "ExportMesh");
+
+   function ExportMesh (mesh_p : Mesh; fileName : String) return Interfaces.C.C_bool;
+   --  Export mesh data to file, returns true on success
+
+   function ExportMeshAsCode (mesh_p : Mesh; fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
+   --  Export mesh as code file (.h) defining multiple arrays of vertex attributes
+   pragma Import (C, ExportMeshAsCode, "ExportMeshAsCode");
+
+   function ExportMeshAsCode (mesh_p : Mesh; fileName : String) return Interfaces.C.C_bool;
+   --  Export mesh as code file (.h) defining multiple arrays of vertex attributes
 
    function GenMeshPoly (sides : Interfaces.C.int; radius : Interfaces.C.C_float) return Mesh;
    --  Generate polygonal mesh
@@ -3049,9 +3199,9 @@ is
    --  Load default material (Supports: DIFFUSE, SPECULAR, NORMAL maps)
    pragma Import (C, LoadMaterialDefault, "LoadMaterialDefault");
 
-   function IsMaterialReady (material_p : Material) return Interfaces.C.C_bool;
-   --  Check if a material is ready
-   pragma Import (C, IsMaterialReady, "IsMaterialReady");
+   function IsMaterialValid (material_p : Material) return Interfaces.C.C_bool;
+   --  Check if a material is valid (shader assigned, map textures loaded in GPU)
+   pragma Import (C, IsMaterialValid, "IsMaterialValid");
 
    procedure UnloadMaterial (material_p : Material);
    --  Unload material from GPU memory (VRAM)
@@ -3073,8 +3223,12 @@ is
    --  Load model animations from file
 
    procedure UpdateModelAnimation (model_p : Model; anim : ModelAnimation; frame : Interfaces.C.int);
-   --  Update model animation pose
+   --  Update model animation pose (CPU)
    pragma Import (C, UpdateModelAnimation, "UpdateModelAnimation");
+
+   procedure UpdateModelAnimationBones (model_p : Model; anim : ModelAnimation; frame : Interfaces.C.int);
+   --  Update model animation mesh bone matrices (GPU skinning)
+   pragma Import (C, UpdateModelAnimationBones, "UpdateModelAnimationBones");
 
    procedure UnloadModelAnimation (anim : ModelAnimation);
    --  Unload animation data
@@ -3154,9 +3308,9 @@ is
    function LoadWaveFromMemory (fileType : String; fileData : System.Address; dataSize : Interfaces.C.int) return Wave;
    --  Load wave from memory buffer, fileType refers to extension: i.e. '.wav'
 
-   function IsWaveReady (wave_p : Wave) return Interfaces.C.C_bool;
-   --  Checks if wave data is ready
-   pragma Import (C, IsWaveReady, "IsWaveReady");
+   function IsWaveValid (wave_p : Wave) return Interfaces.C.C_bool;
+   --  Checks if wave data is valid (data loaded and parameters)
+   pragma Import (C, IsWaveValid, "IsWaveValid");
 
    function LoadSound (fileName : Interfaces.C.Strings.chars_ptr) return Sound;
    --  Load sound from file
@@ -3173,9 +3327,9 @@ is
    --  Create a new sound that shares the same sample data as the source sound, does not own the sound data
    pragma Import (C, LoadSoundAlias, "LoadSoundAlias");
 
-   function IsSoundReady (sound_p : Sound) return Interfaces.C.C_bool;
-   --  Checks if a sound is ready
-   pragma Import (C, IsSoundReady, "IsSoundReady");
+   function IsSoundValid (sound_p : Sound) return Interfaces.C.C_bool;
+   --  Checks if a sound is valid (data loaded and buffers initialized)
+   pragma Import (C, IsSoundValid, "IsSoundValid");
 
    procedure UpdateSound (sound_p : Sound; data : System.Address; sampleCount : Interfaces.C.int);
    --  Update sound buffer with new data
@@ -3243,8 +3397,8 @@ is
    --  Copy a wave to a new wave
    pragma Import (C, WaveCopy, "WaveCopy");
 
-   procedure WaveCrop (wave_p : access Wave; initSample : Interfaces.C.int; finalSample : Interfaces.C.int);
-   --  Crop a wave to defined samples range
+   procedure WaveCrop (wave_p : access Wave; initFrame : Interfaces.C.int; finalFrame : Interfaces.C.int);
+   --  Crop a wave to defined frames range
    pragma Import (C, WaveCrop, "WaveCrop");
 
    procedure WaveFormat (wave_p : access Wave; sampleRate : Interfaces.C.int; sampleSize : Interfaces.C.int; channels : Interfaces.C.int);
@@ -3273,9 +3427,9 @@ is
    function LoadMusicStreamFromMemory (fileType : String; data : System.Address; dataSize : Interfaces.C.int) return Music;
    --  Load music stream from data
 
-   function IsMusicReady (music_p : Music) return Interfaces.C.C_bool;
-   --  Checks if a music stream is ready
-   pragma Import (C, IsMusicReady, "IsMusicReady");
+   function IsMusicValid (music_p : Music) return Interfaces.C.C_bool;
+   --  Checks if a music stream is valid (context and buffers initialized)
+   pragma Import (C, IsMusicValid, "IsMusicValid");
 
    procedure UnloadMusicStream (music_p : Music);
    --  Unload music stream
@@ -3333,9 +3487,9 @@ is
    --  Load audio stream (to stream raw audio pcm data)
    pragma Import (C, LoadAudioStream, "LoadAudioStream");
 
-   function IsAudioStreamReady (stream : AudioStream) return Interfaces.C.C_bool;
-   --  Checks if an audio stream is ready
-   pragma Import (C, IsAudioStreamReady, "IsAudioStreamReady");
+   function IsAudioStreamValid (stream : AudioStream) return Interfaces.C.C_bool;
+   --  Checks if an audio stream is valid (buffers initialized)
+   pragma Import (C, IsAudioStreamValid, "IsAudioStreamValid");
 
    procedure UnloadAudioStream (stream : AudioStream);
    --  Unload audio stream and free memory
@@ -3390,7 +3544,7 @@ is
    pragma Import (C, SetAudioStreamCallback, "SetAudioStreamCallback");
 
    procedure AttachAudioStreamProcessor (stream : AudioStream; processor : AudioCallback);
-   --  Attach audio stream processor to stream, receives the samples as <float>s
+   --  Attach audio stream processor to stream, receives the samples as 'float'
    pragma Import (C, AttachAudioStreamProcessor, "AttachAudioStreamProcessor");
 
    procedure DetachAudioStreamProcessor (stream : AudioStream; processor : AudioCallback);
@@ -3398,7 +3552,7 @@ is
    pragma Import (C, DetachAudioStreamProcessor, "DetachAudioStreamProcessor");
 
    procedure AttachAudioMixedProcessor (processor : AudioCallback);
-   --  Attach audio stream processor to the entire audio pipeline, receives the samples as <float>s
+   --  Attach audio stream processor to the entire audio pipeline, receives the samples as 'float'
    pragma Import (C, AttachAudioMixedProcessor, "AttachAudioMixedProcessor");
 
    procedure DetachAudioMixedProcessor (processor : AudioCallback);
@@ -3406,9 +3560,9 @@ is
    pragma Import (C, DetachAudioMixedProcessor, "DetachAudioMixedProcessor");
 
    RAYLIB_VERSION_MAJOR : constant := 5;
-   RAYLIB_VERSION_MINOR : constant := 0;
+   RAYLIB_VERSION_MINOR : constant := 5;
    RAYLIB_VERSION_PATCH : constant := 0;
-   RAYLIB_VERSION : constant String := "5.0";
+   RAYLIB_VERSION : constant String := "5.5";
    PI : constant := 3.141592653589793;
    LIGHTGRAY : constant Color := (200, 200, 200, 255);
    GRAY : constant Color := (130, 130, 130, 255);

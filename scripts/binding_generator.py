@@ -109,6 +109,12 @@ def to_ada_type(c_type, name=None, parent=None):
         return "access AutomationEvent_Array"
     elif c_type == "ModelAnimation *" and name in ["animations", "RETURNTYPE"]:
         return "access ModelAnimation_Array"
+    elif c_type == "const Vector2 *":
+        return "access constant C_Vector2_Array"
+    elif c_type == "const Vector3 *":
+        return "access constant C_Vector3_Array"
+    elif c_type == "const float *":
+        return "access constant C_Float_Array"
 
     if c_type in TYPE_IDENTITY:
         return c_type
@@ -163,6 +169,13 @@ def gen_struct(struct):
         out += "     with Convention => C;\n"
     elif struct["name"] == "ModelAnimation":
         out += "   type ModelAnimation_Array is array (Interfaces.C.unsigned) of ModelAnimation\n"
+        out += "     with Convention => C;\n"
+    elif struct["name"] == "Vector2":
+        out += "   type C_Vector2_Array is array (Interfaces.C.unsigned) of Vector2\n"
+        out += "     with Convention => C;\n"
+
+    elif struct["name"] == "Vector3":
+        out += "   type C_Vector3_Array is array (Interfaces.C.unsigned) of  Vector3\n"
         out += "     with Convention => C;\n"
 
     out += "\n"
@@ -459,6 +472,9 @@ def gen_binding(header_file, package_name, package_file, parser_options=""):
         spec += "    is array (Interfaces.C.unsigned) of aliased Interfaces.C.Strings.chars_ptr\n"
         spec += "    with Convention => C;\n"
         spec += "   type C_String_Array_Access is access all C_String_Array;\n"
+        spec += "   type C_Float_Array\n"
+        spec += "    is array (Interfaces.C.unsigned) of aliased Interfaces.C.C_float\n"
+        spec += "    with Convention => C;\n"
         spec += "\n"
 
     if package_name == "Raylib.GUI":
