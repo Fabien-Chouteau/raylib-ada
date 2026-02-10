@@ -1412,7 +1412,7 @@ is
    procedure TakeScreenshot (fileName : String);
    --  Takes a screenshot of current screen (filename extension defines format)
 
-   procedure SetConfigFlags (flags : Interfaces.C.unsigned);
+   procedure SetConfigFlags (flags : ConfigFlags);
    --  Setup init configuration flags (view FLAGS)
    pragma Import (C, SetConfigFlags, "SetConfigFlags");
 
