@@ -30,24 +30,24 @@ GitHub (or build from source if you want).
 Alire will let you know with a message like this:
 ```
 warn: The following external dependencies are unavailable within Alire:
-warn:    libraylib^5
+warn:    libraylib^6
 warn: They should be made available in the environment by the user.
 ```
 
-Download the 5.0 release from this address:
+Download the 6.0 release from this address:
 ```
-$ wget https://github.com/raysan5/raylib/releases/download/5.0/raylib-5.0_linux_amd64.tar.gz
+$ wget https://github.com/raysan5/raylib/releases/download/6.0/raylib-6.0_linux_amd64.tar.gz
 ```
 
 Extract it:
 ```
-$ tar xf raylib-5.0_linux_amd64.tar.gz
+$ tar xf raylib-6.0_linux_amd64.tar.gz
 ```
 
 Set the environment variables like so:
 ```
-$ export C_INCLUDE_PATH=${PWD}/raylib-5.0_linux_amd64/include/:${C_INCLUDE_PATH}
-$ export LIBRARY_PATH=${PWD}/raylib-5.0_linux_amd64/lib/:${LIBRARY_PATH}
+$ export C_INCLUDE_PATH=${PWD}/raylib-6.0_linux_amd64/include/:${C_INCLUDE_PATH}
+$ export LIBRARY_PATH=${PWD}/raylib-6.0_linux_amd64/lib/:${LIBRARY_PATH}
 ```
 """
 
@@ -58,9 +58,6 @@ licenses = "MIT OR Apache-2.0 WITH LLVM-exception"
 website = ""
 tags = ["raylib", "gamedev", "binding"]
 
-[environment]
-LIBRARY_PATH.append = "${CRATE_ROOT}/build-raylib/raylib/"
-
 [[depends-on]]
 gnat = ">=12 & <2000"
-libraylib = "~5.5"
+libraylib = "~6.0"
