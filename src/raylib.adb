@@ -142,6 +142,72 @@ package body Raylib is
       return Result;
    end SaveFileText;
 
+   function FileRename (fileName : String; fileRename_p : String) return Interfaces.C.int is
+      use Interfaces.C.Strings;
+      C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
+      C_fileRename_p : Interfaces.C.Strings.chars_ptr := New_String (fileRename_p);
+      Result : constant Interfaces.C.int := FileRename (C_fileName, C_fileRename_p);
+   begin
+      Free (C_fileName);
+      Free (C_fileRename_p);
+      return Result;
+   end FileRename;
+
+   function FileRemove (fileName : String) return Interfaces.C.int is
+      use Interfaces.C.Strings;
+      C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
+      Result : constant Interfaces.C.int := FileRemove (C_fileName);
+   begin
+      Free (C_fileName);
+      return Result;
+   end FileRemove;
+
+   function FileCopy (srcPath : String; dstPath : String) return Interfaces.C.int is
+      use Interfaces.C.Strings;
+      C_srcPath : Interfaces.C.Strings.chars_ptr := New_String (srcPath);
+      C_dstPath : Interfaces.C.Strings.chars_ptr := New_String (dstPath);
+      Result : constant Interfaces.C.int := FileCopy (C_srcPath, C_dstPath);
+   begin
+      Free (C_srcPath);
+      Free (C_dstPath);
+      return Result;
+   end FileCopy;
+
+   function FileMove (srcPath : String; dstPath : String) return Interfaces.C.int is
+      use Interfaces.C.Strings;
+      C_srcPath : Interfaces.C.Strings.chars_ptr := New_String (srcPath);
+      C_dstPath : Interfaces.C.Strings.chars_ptr := New_String (dstPath);
+      Result : constant Interfaces.C.int := FileMove (C_srcPath, C_dstPath);
+   begin
+      Free (C_srcPath);
+      Free (C_dstPath);
+      return Result;
+   end FileMove;
+
+   function FileTextReplace (fileName : String; search : String; replacement : String) return Interfaces.C.int is
+      use Interfaces.C.Strings;
+      C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
+      C_search : Interfaces.C.Strings.chars_ptr := New_String (search);
+      C_replacement : Interfaces.C.Strings.chars_ptr := New_String (replacement);
+      Result : constant Interfaces.C.int := FileTextReplace (C_fileName, C_search, C_replacement);
+   begin
+      Free (C_fileName);
+      Free (C_search);
+      Free (C_replacement);
+      return Result;
+   end FileTextReplace;
+
+   function FileTextFindIndex (fileName : String; search : String) return Interfaces.C.int is
+      use Interfaces.C.Strings;
+      C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
+      C_search : Interfaces.C.Strings.chars_ptr := New_String (search);
+      Result : constant Interfaces.C.int := FileTextFindIndex (C_fileName, C_search);
+   begin
+      Free (C_fileName);
+      Free (C_search);
+      return Result;
+   end FileTextFindIndex;
+
    function FileExists (fileName : String) return Interfaces.C.C_bool is
       use Interfaces.C.Strings;
       C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
@@ -179,6 +245,15 @@ package body Raylib is
       Free (C_fileName);
       return Result;
    end GetFileLength;
+
+   function GetFileModTime (fileName : String) return Interfaces.C.long is
+      use Interfaces.C.Strings;
+      C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
+      Result : constant Interfaces.C.long := GetFileModTime (C_fileName);
+   begin
+      Free (C_fileName);
+      return Result;
+   end GetFileModTime;
 
    function GetFileExtension (fileName : String) return String is
       use Interfaces.C.Strings;
@@ -248,12 +323,12 @@ package body Raylib is
       return Result;
    end MakeDirectory;
 
-   function ChangeDirectory (dir : String) return Interfaces.C.C_bool is
+   function ChangeDirectory (dirPath : String) return Interfaces.C.C_bool is
       use Interfaces.C.Strings;
-      C_dir : Interfaces.C.Strings.chars_ptr := New_String (dir);
-      Result : constant Interfaces.C.C_bool := ChangeDirectory (C_dir);
+      C_dirPath : Interfaces.C.Strings.chars_ptr := New_String (dirPath);
+      Result : constant Interfaces.C.C_bool := ChangeDirectory (C_dirPath);
    begin
-      Free (C_dir);
+      Free (C_dirPath);
       return Result;
    end ChangeDirectory;
 
@@ -295,14 +370,34 @@ package body Raylib is
       return Result;
    end LoadDirectoryFilesEx;
 
-   function GetFileModTime (fileName : String) return Interfaces.C.long is
+   function GetDirectoryFileCount (dirPath : String) return Interfaces.C.unsigned is
       use Interfaces.C.Strings;
-      C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
-      Result : constant Interfaces.C.long := GetFileModTime (C_fileName);
+      C_dirPath : Interfaces.C.Strings.chars_ptr := New_String (dirPath);
+      Result : constant Interfaces.C.unsigned := GetDirectoryFileCount (C_dirPath);
    begin
-      Free (C_fileName);
+      Free (C_dirPath);
       return Result;
-   end GetFileModTime;
+   end GetDirectoryFileCount;
+
+   function GetDirectoryFileCountEx (basePath : String; filter : String; scanSubdirs : Interfaces.C.C_bool) return Interfaces.C.unsigned is
+      use Interfaces.C.Strings;
+      C_basePath : Interfaces.C.Strings.chars_ptr := New_String (basePath);
+      C_filter : Interfaces.C.Strings.chars_ptr := New_String (filter);
+      Result : constant Interfaces.C.unsigned := GetDirectoryFileCountEx (C_basePath, C_filter, scanSubdirs);
+   begin
+      Free (C_basePath);
+      Free (C_filter);
+      return Result;
+   end GetDirectoryFileCountEx;
+
+   function DecodeDataBase64 (text : String; outputSize : access Interfaces.C.int) return access Interfaces.C.char is
+      use Interfaces.C.Strings;
+      C_text : Interfaces.C.Strings.chars_ptr := New_String (text);
+      Result : constant access Interfaces.C.char := DecodeDataBase64 (C_text, outputSize);
+   begin
+      Free (C_text);
+      return Result;
+   end DecodeDataBase64;
 
    function LoadAutomationEventList (fileName : String) return AutomationEventList is
       use Interfaces.C.Strings;
@@ -464,7 +559,7 @@ package body Raylib is
       return Result;
    end LoadFont;
 
-   function LoadFontEx (fileName : String; fontSize : Interfaces.C.int; codepoints : access Interfaces.C.int; codepointCount : Interfaces.C.int) return Font is
+   function LoadFontEx (fileName : String; fontSize : Interfaces.C.int; codepoints : access constant Interfaces.C.int; codepointCount : Interfaces.C.int) return Font is
       use Interfaces.C.Strings;
       C_fileName : Interfaces.C.Strings.chars_ptr := New_String (fileName);
       Result : constant Font := LoadFontEx (C_fileName, fontSize, codepoints, codepointCount);
@@ -473,7 +568,7 @@ package body Raylib is
       return Result;
    end LoadFontEx;
 
-   function LoadFontFromMemory (fileType : String; fileData : System.Address; dataSize : Interfaces.C.int; fontSize : Interfaces.C.int; codepoints : access Interfaces.C.int; codepointCount : Interfaces.C.int) return Font is
+   function LoadFontFromMemory (fileType : String; fileData : System.Address; dataSize : Interfaces.C.int; fontSize : Interfaces.C.int; codepoints : access constant Interfaces.C.int; codepointCount : Interfaces.C.int) return Font is
       use Interfaces.C.Strings;
       C_fileType : Interfaces.C.Strings.chars_ptr := New_String (fileType);
       Result : constant Font := LoadFontFromMemory (C_fileType, fileData, dataSize, fontSize, codepoints, codepointCount);
@@ -586,6 +681,15 @@ package body Raylib is
       return Result;
    end GetCodepointPrevious;
 
+   function LoadTextLines (text : String; count : access Interfaces.C.int) return access Interfaces.C.Strings.chars_ptr is
+      use Interfaces.C.Strings;
+      C_text : Interfaces.C.Strings.chars_ptr := New_String (text);
+      Result : constant access Interfaces.C.Strings.chars_ptr := LoadTextLines (C_text, count);
+   begin
+      Free (C_text);
+      return Result;
+   end LoadTextLines;
+
    function TextCopy (dst : String; src : String) return Interfaces.C.int is
       use Interfaces.C.Strings;
       C_dst : Interfaces.C.Strings.chars_ptr := New_String (dst);
@@ -626,18 +730,83 @@ package body Raylib is
       return Result;
    end TextSubtext;
 
-   function TextReplace (text : String; replace : String; by : String) return String is
+   function TextRemoveSpaces (text : String) return String is
       use Interfaces.C.Strings;
       C_text : Interfaces.C.Strings.chars_ptr := New_String (text);
-      C_replace : Interfaces.C.Strings.chars_ptr := New_String (replace);
-      C_by : Interfaces.C.Strings.chars_ptr := New_String (by);
-      Result : constant String := Value (TextReplace (C_text, C_replace, C_by));
+      Result : constant String := Value (TextRemoveSpaces (C_text));
    begin
       Free (C_text);
-      Free (C_replace);
-      Free (C_by);
+      return Result;
+   end TextRemoveSpaces;
+
+   function GetTextBetween (text : String; begin_p : String; end_p : String) return String is
+      use Interfaces.C.Strings;
+      C_text : Interfaces.C.Strings.chars_ptr := New_String (text);
+      C_begin_p : Interfaces.C.Strings.chars_ptr := New_String (begin_p);
+      C_end_p : Interfaces.C.Strings.chars_ptr := New_String (end_p);
+      Result : constant String := Value (GetTextBetween (C_text, C_begin_p, C_end_p));
+   begin
+      Free (C_text);
+      Free (C_begin_p);
+      Free (C_end_p);
+      return Result;
+   end GetTextBetween;
+
+   function TextReplace (text : String; search : String; replacement : String) return String is
+      use Interfaces.C.Strings;
+      C_text : Interfaces.C.Strings.chars_ptr := New_String (text);
+      C_search : Interfaces.C.Strings.chars_ptr := New_String (search);
+      C_replacement : Interfaces.C.Strings.chars_ptr := New_String (replacement);
+      Result : constant String := Value (TextReplace (C_text, C_search, C_replacement));
+   begin
+      Free (C_text);
+      Free (C_search);
+      Free (C_replacement);
       return Result;
    end TextReplace;
+
+   function TextReplaceAlloc (text : String; search : String; replacement : String) return String is
+      use Interfaces.C.Strings;
+      C_text : Interfaces.C.Strings.chars_ptr := New_String (text);
+      C_search : Interfaces.C.Strings.chars_ptr := New_String (search);
+      C_replacement : Interfaces.C.Strings.chars_ptr := New_String (replacement);
+      Result : constant String := Value (TextReplaceAlloc (C_text, C_search, C_replacement));
+   begin
+      Free (C_text);
+      Free (C_search);
+      Free (C_replacement);
+      return Result;
+   end TextReplaceAlloc;
+
+   function TextReplaceBetween (text : String; begin_p : String; end_p : String; replacement : String) return String is
+      use Interfaces.C.Strings;
+      C_text : Interfaces.C.Strings.chars_ptr := New_String (text);
+      C_begin_p : Interfaces.C.Strings.chars_ptr := New_String (begin_p);
+      C_end_p : Interfaces.C.Strings.chars_ptr := New_String (end_p);
+      C_replacement : Interfaces.C.Strings.chars_ptr := New_String (replacement);
+      Result : constant String := Value (TextReplaceBetween (C_text, C_begin_p, C_end_p, C_replacement));
+   begin
+      Free (C_text);
+      Free (C_begin_p);
+      Free (C_end_p);
+      Free (C_replacement);
+      return Result;
+   end TextReplaceBetween;
+
+   function TextReplaceBetweenAlloc (text : String; begin_p : String; end_p : String; replacement : String) return String is
+      use Interfaces.C.Strings;
+      C_text : Interfaces.C.Strings.chars_ptr := New_String (text);
+      C_begin_p : Interfaces.C.Strings.chars_ptr := New_String (begin_p);
+      C_end_p : Interfaces.C.Strings.chars_ptr := New_String (end_p);
+      C_replacement : Interfaces.C.Strings.chars_ptr := New_String (replacement);
+      Result : constant String := Value (TextReplaceBetweenAlloc (C_text, C_begin_p, C_end_p, C_replacement));
+   begin
+      Free (C_text);
+      Free (C_begin_p);
+      Free (C_end_p);
+      Free (C_replacement);
+      return Result;
+   end TextReplaceBetweenAlloc;
 
    function TextInsert (text : String; insert : String; position : Interfaces.C.int) return String is
       use Interfaces.C.Strings;
@@ -649,6 +818,17 @@ package body Raylib is
       Free (C_insert);
       return Result;
    end TextInsert;
+
+   function TextInsertAlloc (text : String; insert : String; position : Interfaces.C.int) return String is
+      use Interfaces.C.Strings;
+      C_text : Interfaces.C.Strings.chars_ptr := New_String (text);
+      C_insert : Interfaces.C.Strings.chars_ptr := New_String (insert);
+      Result : constant String := Value (TextInsertAlloc (C_text, C_insert, position));
+   begin
+      Free (C_text);
+      Free (C_insert);
+      return Result;
+   end TextInsertAlloc;
 
    function TextJoin (textList : access Interfaces.C.Strings.chars_ptr; count : Interfaces.C.int; delimiter : String) return String is
       use Interfaces.C.Strings;
@@ -678,14 +858,14 @@ package body Raylib is
       Free (C_append);
    end TextAppend;
 
-   function TextFindIndex (text : String; find : String) return Interfaces.C.int is
+   function TextFindIndex (text : String; search : String) return Interfaces.C.int is
       use Interfaces.C.Strings;
       C_text : Interfaces.C.Strings.chars_ptr := New_String (text);
-      C_find : Interfaces.C.Strings.chars_ptr := New_String (find);
-      Result : constant Interfaces.C.int := TextFindIndex (C_text, C_find);
+      C_search : Interfaces.C.Strings.chars_ptr := New_String (search);
+      Result : constant Interfaces.C.int := TextFindIndex (C_text, C_search);
    begin
       Free (C_text);
-      Free (C_find);
+      Free (C_search);
       return Result;
    end TextFindIndex;
 

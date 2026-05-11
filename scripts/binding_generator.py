@@ -8,7 +8,7 @@ import os
 
 CRATE_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 
-ADA_KEYWORD = ["end", "type"]
+ADA_KEYWORD = ["end", "type", "begin"]
 
 TYPE_CONVERSION = {
     "char": "Interfaces.C.char",
@@ -104,7 +104,7 @@ def to_ada_type(c_type, name=None, parent=None):
     elif c_type == "const char **" and name == "text" and parent == "GuiListViewEx":
         return "C_String_Array_Access"
     elif c_type == "Transform **" and name == "framePoses":
-        return "access Tranform_Array"
+        return "access Transform_Array"
     elif c_type == "AutomationEvent *" and name == "events":
         return "access AutomationEvent_Array"
     elif c_type == "ModelAnimation *" and name in ["animations", "RETURNTYPE"]:
@@ -115,6 +115,10 @@ def to_ada_type(c_type, name=None, parent=None):
         return "access constant C_Vector3_Array"
     elif c_type == "const float *":
         return "access constant C_Float_Array"
+    elif c_type == "ModelAnimPose":
+        return "access Transform_Array"
+    elif c_type == "ModelAnimPose *":
+        return "access Transform_Array_Array"
 
     if c_type in TYPE_IDENTITY:
         return c_type
@@ -161,7 +165,9 @@ def gen_struct(struct):
         out += "   type MaterialMapArray is array (MaterialMapIndex) of MaterialMap\n"
         out += "     with Convention => C;\n"
     elif struct["name"] == "Transform":
-        out += "   type Tranform_Array is array (Interfaces.C.int) of Transform\n"
+        out += "   type Transform_Array is array (Interfaces.C.int) of Transform\n"
+        out += "     with Convention => C;\n"
+        out += "   type Transform_Array_Array is array (Interfaces.C.int) of access Transform_Array\n"
         out += "     with Convention => C;\n"
     elif struct["name"] == "AutomationEvent":
         out += "   type AutomationEvent_Array is array (Interfaces.C.unsigned) of AutomationEvent\n"
@@ -335,7 +341,11 @@ def process_params(params, function_name):
     C_STRING_TYPE = "Interfaces.C.Strings.chars_ptr"
     has_string = False
     for p in params:
-        if p["name"] in ADA_KEYWORD or is_type_name(p["name"]):
+        if (
+            p["name"] in ADA_KEYWORD
+            or is_type_name(p["name"])
+            or p["name"].lower() == function_name.lower()
+        ):
             p["name"] = p["name"] + "_p"
         p["type"] = to_ada_type(p["type"], p["name"], function_name)
         if p["type"] == C_STRING_TYPE:
@@ -431,7 +441,7 @@ def gen_binding(header_file, package_name, package_file, parser_options=""):
     ]
 
     os.system(
-        f"{CRATE_ROOT}/raylib/parser/raylib_parser -input {header_file} -o {JSON_FILE} -f JSON "
+        f"{CRATE_ROOT}/raylib/tools/rlparser/rlparser -input {header_file} -o {JSON_FILE} -f JSON "
         + parser_options
     )
 

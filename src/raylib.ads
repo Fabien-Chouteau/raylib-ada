@@ -14,8 +14,7 @@ is
     with Convention => C;
    type C_String_Array_Access is access all C_String_Array;
    type C_Float_Array
-   is array (Interfaces.C.unsigned) of aliased Interfaces.C.C_float
-
+    is array (Interfaces.C.unsigned) of aliased Interfaces.C.C_float
     with Convention => C;
 
    type ConfigFlags is new Interfaces.C.unsigned;
@@ -224,7 +223,7 @@ is
    type GamepadButton is new Interfaces.C.int;
    --  Gamepad buttons
 
-   GAMEPAD_BUTTON_UNKNOWN : constant GamepadButton := 0; -- Unknown button, just for error checking
+   GAMEPAD_BUTTON_UNKNOWN : constant GamepadButton := 0; -- Unknown button, for error checking
    GAMEPAD_BUTTON_LEFT_FACE_UP : constant GamepadButton := 1; -- Gamepad left DPAD up button
    GAMEPAD_BUTTON_LEFT_FACE_RIGHT : constant GamepadButton := 2; -- Gamepad left DPAD right button
    GAMEPAD_BUTTON_LEFT_FACE_DOWN : constant GamepadButton := 3; -- Gamepad left DPAD down button
@@ -244,7 +243,7 @@ is
    GAMEPAD_BUTTON_RIGHT_THUMB : constant GamepadButton := 17; -- Gamepad joystick pressed button right
 
    type GamepadAxis is new Interfaces.C.int;
-   --  Gamepad axis
+   --  Gamepad axes
 
    GAMEPAD_AXIS_LEFT_X : constant GamepadAxis := 0; -- Gamepad left stick X axis
    GAMEPAD_AXIS_LEFT_Y : constant GamepadAxis := 1; -- Gamepad left stick Y axis
@@ -308,14 +307,15 @@ is
        , SHADER_LOC_MAP_ROUGHNESS -- Shader location: sampler2d texture: roughness
        , SHADER_LOC_MAP_OCCLUSION -- Shader location: sampler2d texture: occlusion
        , SHADER_LOC_MAP_EMISSION -- Shader location: sampler2d texture: emission
-       , SHADER_LOC_MAP_HEIGHT -- Shader location: sampler2d texture: height
+       , SHADER_LOC_MAP_HEIGHT -- Shader location: sampler2d texture: heightmap
        , SHADER_LOC_MAP_CUBEMAP -- Shader location: samplerCube texture: cubemap
        , SHADER_LOC_MAP_IRRADIANCE -- Shader location: samplerCube texture: irradiance
        , SHADER_LOC_MAP_PREFILTER -- Shader location: samplerCube texture: prefilter
        , SHADER_LOC_MAP_BRDF -- Shader location: sampler2d texture: brdf
-       , SHADER_LOC_VERTEX_BONEIDS -- Shader location: vertex attribute: boneIds
-       , SHADER_LOC_VERTEX_BONEWEIGHTS -- Shader location: vertex attribute: boneWeights
-       , SHADER_LOC_BONE_MATRICES -- Shader location: array of matrices uniform: boneMatrices
+       , SHADER_LOC_VERTEX_BONEIDS -- Shader location: vertex attribute: bone indices
+       , SHADER_LOC_VERTEX_BONEWEIGHTS -- Shader location: vertex attribute: bone weights
+       , SHADER_LOC_MATRIX_BONETRANSFORMS -- Shader location: matrix attribute: bone transforms (animation)
+       , SHADER_LOC_VERTEX_INSTANCETRANSFORM -- Shader location: vertex attribute: instance transforms
      )
      with Convention => C;
    --  Shader location index
@@ -350,7 +350,8 @@ is
        , SHADER_LOC_MAP_BRDF => 25
        , SHADER_LOC_VERTEX_BONEIDS => 26
        , SHADER_LOC_VERTEX_BONEWEIGHTS => 27
-       , SHADER_LOC_BONE_MATRICES => 28
+       , SHADER_LOC_MATRIX_BONETRANSFORMS => 28
+       , SHADER_LOC_VERTEX_INSTANCETRANSFORM => 29
      );
 
    type ShaderUniformDataType is
@@ -363,6 +364,10 @@ is
        , SHADER_UNIFORM_IVEC2 -- Shader uniform type: ivec2 (2 int)
        , SHADER_UNIFORM_IVEC3 -- Shader uniform type: ivec3 (3 int)
        , SHADER_UNIFORM_IVEC4 -- Shader uniform type: ivec4 (4 int)
+       , SHADER_UNIFORM_UINT -- Shader uniform type: unsigned int
+       , SHADER_UNIFORM_UIVEC2 -- Shader uniform type: uivec2 (2 unsigned int)
+       , SHADER_UNIFORM_UIVEC3 -- Shader uniform type: uivec3 (3 unsigned int)
+       , SHADER_UNIFORM_UIVEC4 -- Shader uniform type: uivec4 (4 unsigned int)
        , SHADER_UNIFORM_SAMPLER2D -- Shader uniform type: sampler2d
      )
      with Convention => C;
@@ -378,7 +383,11 @@ is
        , SHADER_UNIFORM_IVEC2 => 5
        , SHADER_UNIFORM_IVEC3 => 6
        , SHADER_UNIFORM_IVEC4 => 7
-       , SHADER_UNIFORM_SAMPLER2D => 8
+       , SHADER_UNIFORM_UINT => 8
+       , SHADER_UNIFORM_UIVEC2 => 9
+       , SHADER_UNIFORM_UIVEC3 => 10
+       , SHADER_UNIFORM_UIVEC4 => 11
+       , SHADER_UNIFORM_SAMPLER2D => 12
      );
 
    type ShaderAttributeDataType is
@@ -459,7 +468,7 @@ is
 
    type TextureFilter is
      (
-         TEXTURE_FILTER_POINT -- No filter, just pixel approximation
+         TEXTURE_FILTER_POINT -- No filter, pixel approximation
        , TEXTURE_FILTER_BILINEAR -- Linear filtering
        , TEXTURE_FILTER_TRILINEAR -- Trilinear filtering (linear with mipmaps)
        , TEXTURE_FILTER_ANISOTROPIC_4X -- Anisotropic filtering 4x
@@ -773,16 +782,16 @@ is
       position : Vector3; -- Camera position
       target : Vector3; -- Camera target it looks-at
       up : Vector3; -- Camera up vector (rotation over its axis)
-      fovy : Interfaces.C.C_float; -- Camera field-of-view aperture in Y (degrees) in perspective, used as near plane width in orthographic
+      fovy : Interfaces.C.C_float; -- Camera field-of-view aperture in Y (degrees) in perspective, used as near plane height in world units in orthographic
       projection : CameraProjection; -- Camera projection: CAMERA_PERSPECTIVE or CAMERA_ORTHOGRAPHIC
    end record
       with Convention => C_Pass_By_Copy;
 
    type Camera2D is record
-      offset : Vector2; -- Camera offset (displacement from target)
-      target : Vector2; -- Camera target (rotation and zoom origin)
-      rotation : Interfaces.C.C_float; -- Camera rotation in degrees
-      zoom : Interfaces.C.C_float; -- Camera zoom (scaling), should be 1.0f by default
+      offset : Vector2; -- Camera offset (screen space offset from window origin)
+      target : Vector2; -- Camera target (world space target point that is mapped to screen space offset)
+      rotation : Interfaces.C.C_float; -- Camera rotation in degrees (pivots around target)
+      zoom : Interfaces.C.C_float; -- Camera zoom (scaling around target), must not be set to 0, set to 1.0f for no scale
    end record
       with Convention => C_Pass_By_Copy;
 
@@ -796,12 +805,11 @@ is
       tangents : access Interfaces.C.C_float; -- Vertex tangents (XYZW - 4 components per vertex) (shader-location = 4)
       colors : access Interfaces.C.char; -- Vertex colors (RGBA - 4 components per vertex) (shader-location = 3)
       indices : access Interfaces.C.short; -- Vertex indices (in case vertex data comes indexed)
+      boneCount : Interfaces.C.int; -- Number of bones (MAX: 256 bones)
+      boneIndices : access Interfaces.C.char; -- Vertex bone indices, up to 4 bones influence by vertex (skinning) (shader-location = 6)
+      boneWeights : access Interfaces.C.C_float; -- Vertex bone weight, up to 4 bones influence by vertex (skinning) (shader-location = 7)
       animVertices : access Interfaces.C.C_float; -- Animated vertex positions (after bones transformations)
       animNormals : access Interfaces.C.C_float; -- Animated normals (after bones transformations)
-      boneIds : access Interfaces.C.char; -- Vertex bone ids, max 255 bone ids, up to 4 bones influence by vertex (skinning) (shader-location = 6)
-      boneWeights : access Interfaces.C.C_float; -- Vertex bone weight, up to 4 bones influence by vertex (skinning) (shader-location = 7)
-      boneMatrices : access Matrix; -- Bones animated transformation matrices
-      boneCount : Interfaces.C.int; -- Number of bones
       vaoId : Interfaces.C.unsigned; -- OpenGL Vertex Array Object id
       vboId : access Interfaces.C.unsigned; -- OpenGL Vertex Buffer Objects id (default vertex data)
    end record
@@ -835,12 +843,21 @@ is
       scale : Vector3; -- Scale
    end record
       with Convention => C_Pass_By_Copy;
-   type Tranform_Array is array (Interfaces.C.int) of Transform
+   type Transform_Array is array (Interfaces.C.int) of Transform
+     with Convention => C;
+   type Transform_Array_Array is array (Interfaces.C.int) of access Transform_Array
      with Convention => C;
 
    type BoneInfo is record
       name : String32; -- Bone name
       parent : Interfaces.C.int; -- Bone parent
+   end record
+      with Convention => C_Pass_By_Copy;
+
+   type ModelSkeleton is record
+      boneCount : Interfaces.C.int; -- Number of bones
+      bones : access BoneInfo; -- Bones information (skeleton)
+      bindPose : access Transform_Array; -- Bones base transformation (Transform[])
    end record
       with Convention => C_Pass_By_Copy;
 
@@ -851,18 +868,17 @@ is
       meshes : access Mesh; -- Meshes array
       materials : access Material; -- Materials array
       meshMaterial : access Interfaces.C.int; -- Mesh material number
-      boneCount : Interfaces.C.int; -- Number of bones
-      bones : access BoneInfo; -- Bones information (skeleton)
-      bindPose : access Transform; -- Bones base transformation (pose)
+      skeleton : ModelSkeleton; -- Skeleton for animation
+      currentPose : access Transform_Array; -- Current animation pose (Transform[])
+      boneMatrices : access Matrix; -- Bones animated transformation matrices
    end record
       with Convention => C_Pass_By_Copy;
 
    type ModelAnimation is record
-      boneCount : Interfaces.C.int; -- Number of bones
-      frameCount : Interfaces.C.int; -- Number of animation frames
-      bones : access BoneInfo; -- Bones information (skeleton)
-      framePoses : access Tranform_Array; -- Poses array by frame
       name : String32; -- Animation name
+      boneCount : Interfaces.C.int; -- Number of bones (per pose)
+      keyframeCount : Interfaces.C.int; -- Number of animation key frames
+      keyframePoses : access Transform_Array_Array; -- Animation sequence keyframe poses [keyframe][pose]
    end record
       with Convention => C_Pass_By_Copy;
    type ModelAnimation_Array is array (Interfaces.C.unsigned) of ModelAnimation
@@ -947,7 +963,6 @@ is
       with Convention => C_Pass_By_Copy;
 
    type FilePathList is record
-      capacity : Interfaces.C.unsigned; -- Filepaths max entries
       count : Interfaces.C.unsigned; -- Filepaths entries count
       paths : access constant C_String_Array; -- Filepaths entries
    end record
@@ -1041,7 +1056,7 @@ is
    pragma Import (C, MinimizeWindow, "MinimizeWindow");
 
    procedure RestoreWindow;
-   --  Set window state: not minimized/maximized
+   --  Restore window from being minimized/maximized
    pragma Import (C, RestoreWindow, "RestoreWindow");
 
    procedure SetWindowIcon (image_p : Image);
@@ -1322,7 +1337,7 @@ is
    pragma Import (C, SetShaderValueMatrix, "SetShaderValueMatrix");
 
    procedure SetShaderValueTexture (shader_p : Shader; locIndex : Interfaces.C.int; texture_p : Texture);
-   --  Set shader uniform value for texture (sampler2d)
+   --  Set shader uniform value and bind the texture (sampler2d)
    pragma Import (C, SetShaderValueTexture, "SetShaderValueTexture");
 
    procedure UnloadShader (shader_p : Shader);
@@ -1435,22 +1450,6 @@ is
    --  Internal memory free
    pragma Import (C, MemFree, "MemFree");
 
-   procedure SetLoadFileDataCallback (callback : LoadFileDataCallback);
-   --  Set custom file binary data loader
-   pragma Import (C, SetLoadFileDataCallback, "SetLoadFileDataCallback");
-
-   procedure SetSaveFileDataCallback (callback : SaveFileDataCallback);
-   --  Set custom file binary data saver
-   pragma Import (C, SetSaveFileDataCallback, "SetSaveFileDataCallback");
-
-   procedure SetLoadFileTextCallback (callback : LoadFileTextCallback);
-   --  Set custom file text data loader
-   pragma Import (C, SetLoadFileTextCallback, "SetLoadFileTextCallback");
-
-   procedure SetSaveFileTextCallback (callback : SaveFileTextCallback);
-   --  Set custom file text data saver
-   pragma Import (C, SetSaveFileTextCallback, "SetSaveFileTextCallback");
-
    function LoadFileData (fileName : Interfaces.C.Strings.chars_ptr; dataSize : access Interfaces.C.int) return access Interfaces.C.char;
    --  Load file data as byte array (read)
    pragma Import (C, LoadFileData, "LoadFileData");
@@ -1497,6 +1496,64 @@ is
    function SaveFileText (fileName : String; text : String) return Interfaces.C.C_bool;
    --  Save text data to file (write), string must be '\0' terminated, returns true on success
 
+   procedure SetLoadFileDataCallback (callback : LoadFileDataCallback);
+   --  Set custom file binary data loader
+   pragma Import (C, SetLoadFileDataCallback, "SetLoadFileDataCallback");
+
+   procedure SetSaveFileDataCallback (callback : SaveFileDataCallback);
+   --  Set custom file binary data saver
+   pragma Import (C, SetSaveFileDataCallback, "SetSaveFileDataCallback");
+
+   procedure SetLoadFileTextCallback (callback : LoadFileTextCallback);
+   --  Set custom file text data loader
+   pragma Import (C, SetLoadFileTextCallback, "SetLoadFileTextCallback");
+
+   procedure SetSaveFileTextCallback (callback : SaveFileTextCallback);
+   --  Set custom file text data saver
+   pragma Import (C, SetSaveFileTextCallback, "SetSaveFileTextCallback");
+
+   function FileRename (fileName : Interfaces.C.Strings.chars_ptr; fileRename_p : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
+   --  Rename file (if exists)
+   pragma Import (C, FileRename, "FileRename");
+
+   function FileRename (fileName : String; fileRename_p : String) return Interfaces.C.int;
+   --  Rename file (if exists)
+
+   function FileRemove (fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
+   --  Remove file (if exists)
+   pragma Import (C, FileRemove, "FileRemove");
+
+   function FileRemove (fileName : String) return Interfaces.C.int;
+   --  Remove file (if exists)
+
+   function FileCopy (srcPath : Interfaces.C.Strings.chars_ptr; dstPath : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
+   --  Copy file from one path to another, dstPath created if it doesn't exist
+   pragma Import (C, FileCopy, "FileCopy");
+
+   function FileCopy (srcPath : String; dstPath : String) return Interfaces.C.int;
+   --  Copy file from one path to another, dstPath created if it doesn't exist
+
+   function FileMove (srcPath : Interfaces.C.Strings.chars_ptr; dstPath : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
+   --  Move file from one directory to another, dstPath created if it doesn't exist
+   pragma Import (C, FileMove, "FileMove");
+
+   function FileMove (srcPath : String; dstPath : String) return Interfaces.C.int;
+   --  Move file from one directory to another, dstPath created if it doesn't exist
+
+   function FileTextReplace (fileName : Interfaces.C.Strings.chars_ptr; search : Interfaces.C.Strings.chars_ptr; replacement : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
+   --  Replace text in an existing file
+   pragma Import (C, FileTextReplace, "FileTextReplace");
+
+   function FileTextReplace (fileName : String; search : String; replacement : String) return Interfaces.C.int;
+   --  Replace text in an existing file
+
+   function FileTextFindIndex (fileName : Interfaces.C.Strings.chars_ptr; search : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
+   --  Find text in existing file
+   pragma Import (C, FileTextFindIndex, "FileTextFindIndex");
+
+   function FileTextFindIndex (fileName : String; search : String) return Interfaces.C.int;
+   --  Find text in existing file
+
    function FileExists (fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
    --  Check if file exists
    pragma Import (C, FileExists, "FileExists");
@@ -1512,11 +1569,11 @@ is
    --  Check if a directory path exists
 
    function IsFileExtension (fileName : Interfaces.C.Strings.chars_ptr; ext : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
-   --  Check file extension (including point: .png, .wav)
+   --  Check file extension (recommended include point: .png, .wav)
    pragma Import (C, IsFileExtension, "IsFileExtension");
 
    function IsFileExtension (fileName : String; ext : String) return Interfaces.C.C_bool;
-   --  Check file extension (including point: .png, .wav)
+   --  Check file extension (recommended include point: .png, .wav)
 
    function GetFileLength (fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
    --  Get file length in bytes (NOTE: GetFileSize() conflicts with windows.h)
@@ -1524,6 +1581,13 @@ is
 
    function GetFileLength (fileName : String) return Interfaces.C.int;
    --  Get file length in bytes (NOTE: GetFileSize() conflicts with windows.h)
+
+   function GetFileModTime (fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.long;
+   --  Get file modification time (last write time)
+   pragma Import (C, GetFileModTime, "GetFileModTime");
+
+   function GetFileModTime (fileName : String) return Interfaces.C.long;
+   --  Get file modification time (last write time)
 
    function GetFileExtension (fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
    --  Get pointer to extension for a filename string (includes dot: '.png')
@@ -1581,11 +1645,11 @@ is
    function MakeDirectory (dirPath : String) return Interfaces.C.int;
    --  Create directories (including full path requested), returns 0 on success
 
-   function ChangeDirectory (dir : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
+   function ChangeDirectory (dirPath : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
    --  Change working directory, return true on success
    pragma Import (C, ChangeDirectory, "ChangeDirectory");
 
-   function ChangeDirectory (dir : String) return Interfaces.C.C_bool;
+   function ChangeDirectory (dirPath : String) return Interfaces.C.C_bool;
    --  Change working directory, return true on success
 
    function IsPathFile (path : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
@@ -1603,18 +1667,18 @@ is
    --  Check if fileName is valid for the platform/OS
 
    function LoadDirectoryFiles (dirPath : Interfaces.C.Strings.chars_ptr) return FilePathList;
-   --  Load directory filepaths
+   --  Load directory filepaths, files and directories, no subdirs scan
    pragma Import (C, LoadDirectoryFiles, "LoadDirectoryFiles");
 
    function LoadDirectoryFiles (dirPath : String) return FilePathList;
-   --  Load directory filepaths
+   --  Load directory filepaths, files and directories, no subdirs scan
 
    function LoadDirectoryFilesEx (basePath : Interfaces.C.Strings.chars_ptr; filter : Interfaces.C.Strings.chars_ptr; scanSubdirs : Interfaces.C.C_bool) return FilePathList;
-   --  Load directory filepaths with extension filtering and recursive directory scan. Use 'DIR' in the filter string to include directories in the result
+   --  Load directory filepaths with extension filtering and subdir scan; some filters available:
    pragma Import (C, LoadDirectoryFilesEx, "LoadDirectoryFilesEx");
 
    function LoadDirectoryFilesEx (basePath : String; filter : String; scanSubdirs : Interfaces.C.C_bool) return FilePathList;
-   --  Load directory filepaths with extension filtering and recursive directory scan. Use 'DIR' in the filter string to include directories in the result
+   --  Load directory filepaths with extension filtering and subdir scan; some filters available:
 
    procedure UnloadDirectoryFiles (files : FilePathList);
    --  Unload filepaths
@@ -1632,12 +1696,19 @@ is
    --  Unload dropped filepaths
    pragma Import (C, UnloadDroppedFiles, "UnloadDroppedFiles");
 
-   function GetFileModTime (fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.long;
-   --  Get file modification time (last write time)
-   pragma Import (C, GetFileModTime, "GetFileModTime");
+   function GetDirectoryFileCount (dirPath : Interfaces.C.Strings.chars_ptr) return Interfaces.C.unsigned;
+   --  Get the file count in a directory
+   pragma Import (C, GetDirectoryFileCount, "GetDirectoryFileCount");
 
-   function GetFileModTime (fileName : String) return Interfaces.C.long;
-   --  Get file modification time (last write time)
+   function GetDirectoryFileCount (dirPath : String) return Interfaces.C.unsigned;
+   --  Get the file count in a directory
+
+   function GetDirectoryFileCountEx (basePath : Interfaces.C.Strings.chars_ptr; filter : Interfaces.C.Strings.chars_ptr; scanSubdirs : Interfaces.C.C_bool) return Interfaces.C.unsigned;
+   --  Get the file count in a directory with extension filtering and recursive directory scan. Use 'DIR' in the filter string to include directories in the result
+   pragma Import (C, GetDirectoryFileCountEx, "GetDirectoryFileCountEx");
+
+   function GetDirectoryFileCountEx (basePath : String; filter : String; scanSubdirs : Interfaces.C.C_bool) return Interfaces.C.unsigned;
+   --  Get the file count in a directory with extension filtering and recursive directory scan. Use 'DIR' in the filter string to include directories in the result
 
    function CompressData (data : System.Address; dataSize : Interfaces.C.int; compDataSize : access Interfaces.C.int) return access Interfaces.C.char;
    --  Compress data (DEFLATE algorithm), memory must be MemFree()
@@ -1648,12 +1719,15 @@ is
    pragma Import (C, DecompressData, "DecompressData");
 
    function EncodeDataBase64 (data : System.Address; dataSize : Interfaces.C.int; outputSize : access Interfaces.C.int) return Interfaces.C.Strings.chars_ptr;
-   --  Encode data to Base64 string, memory must be MemFree()
+   --  Encode data to Base64 string (includes NULL terminator), memory must be MemFree()
    pragma Import (C, EncodeDataBase64, "EncodeDataBase64");
 
-   function DecodeDataBase64 (data : System.Address; outputSize : access Interfaces.C.int) return access Interfaces.C.char;
-   --  Decode Base64 string data, memory must be MemFree()
+   function DecodeDataBase64 (text : Interfaces.C.Strings.chars_ptr; outputSize : access Interfaces.C.int) return access Interfaces.C.char;
+   --  Decode Base64 string (expected NULL terminated), memory must be MemFree()
    pragma Import (C, DecodeDataBase64, "DecodeDataBase64");
+
+   function DecodeDataBase64 (text : String; outputSize : access Interfaces.C.int) return access Interfaces.C.char;
+   --  Decode Base64 string (expected NULL terminated), memory must be MemFree()
 
    function ComputeCRC32 (data : access Interfaces.C.char; dataSize : Interfaces.C.int) return Interfaces.C.unsigned;
    --  Compute CRC32 hash code
@@ -1666,6 +1740,10 @@ is
    function ComputeSHA1 (data : access Interfaces.C.char; dataSize : Interfaces.C.int) return access Interfaces.C.unsigned;
    --  Compute SHA1 hash code, returns static int[5] (20 bytes)
    pragma Import (C, ComputeSHA1, "ComputeSHA1");
+
+   function ComputeSHA256 (data : access Interfaces.C.char; dataSize : Interfaces.C.int) return access Interfaces.C.unsigned;
+   --  Compute SHA256 hash code, returns static int[8] (32 bytes)
+   pragma Import (C, ComputeSHA256, "ComputeSHA256");
 
    function LoadAutomationEventList (fileName : Interfaces.C.Strings.chars_ptr) return AutomationEventList;
    --  Load automation events list from file, NULL for empty list, capacity = MAX_AUTOMATION_EVENTS
@@ -1733,6 +1811,10 @@ is
    --  Get char pressed (unicode), call it multiple times for chars queued, returns 0 when the queue is empty
    pragma Import (C, GetCharPressed, "GetCharPressed");
 
+   function GetKeyName (key : KeyboardKey) return Interfaces.C.Strings.chars_ptr;
+   --  Get name of a QWERTY key on the current keyboard layout (eg returns string 'q' for KEY_A on an AZERTY keyboard)
+   pragma Import (C, GetKeyName, "GetKeyName");
+
    procedure SetExitKey (key : KeyboardKey);
    --  Set a custom key to exit program (default is ESC)
    pragma Import (C, SetExitKey, "SetExitKey");
@@ -1766,11 +1848,11 @@ is
    pragma Import (C, GetGamepadButtonPressed, "GetGamepadButtonPressed");
 
    function GetGamepadAxisCount (gamepad : Interfaces.C.int) return Interfaces.C.int;
-   --  Get gamepad axis count for a gamepad
+   --  Get axis count for a gamepad
    pragma Import (C, GetGamepadAxisCount, "GetGamepadAxisCount");
 
    function GetGamepadAxisMovement (gamepad : Interfaces.C.int; axis : GamepadAxis) return Interfaces.C.C_float;
-   --  Get axis movement value for a gamepad axis
+   --  Get movement value for a gamepad axis
    pragma Import (C, GetGamepadAxisMovement, "GetGamepadAxisMovement");
 
    function SetGamepadMappings (mappings : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
@@ -1940,9 +2022,21 @@ is
    --  Draw line segment cubic-bezier in-out interpolation
    pragma Import (C, DrawLineBezier, "DrawLineBezier");
 
+   procedure DrawLineDashed (startPos : Vector2; endPos : Vector2; dashSize : Interfaces.C.int; spaceSize : Interfaces.C.int; color_p : Color);
+   --  Draw a dashed line
+   pragma Import (C, DrawLineDashed, "DrawLineDashed");
+
    procedure DrawCircle (centerX : Interfaces.C.int; centerY : Interfaces.C.int; radius : Interfaces.C.C_float; color_p : Color);
    --  Draw a color-filled circle
    pragma Import (C, DrawCircle, "DrawCircle");
+
+   procedure DrawCircleV (center : Vector2; radius : Interfaces.C.C_float; color_p : Color);
+   --  Draw a color-filled circle (Vector version)
+   pragma Import (C, DrawCircleV, "DrawCircleV");
+
+   procedure DrawCircleGradient (center : Vector2; radius : Interfaces.C.C_float; inner : Color; outer : Color);
+   --  Draw a gradient-filled circle
+   pragma Import (C, DrawCircleGradient, "DrawCircleGradient");
 
    procedure DrawCircleSector (center : Vector2; radius : Interfaces.C.C_float; startAngle : Interfaces.C.C_float; endAngle : Interfaces.C.C_float; segments : Interfaces.C.int; color_p : Color);
    --  Draw a piece of a circle
@@ -1951,14 +2045,6 @@ is
    procedure DrawCircleSectorLines (center : Vector2; radius : Interfaces.C.C_float; startAngle : Interfaces.C.C_float; endAngle : Interfaces.C.C_float; segments : Interfaces.C.int; color_p : Color);
    --  Draw circle sector outline
    pragma Import (C, DrawCircleSectorLines, "DrawCircleSectorLines");
-
-   procedure DrawCircleGradient (centerX : Interfaces.C.int; centerY : Interfaces.C.int; radius : Interfaces.C.C_float; inner : Color; outer : Color);
-   --  Draw a gradient-filled circle
-   pragma Import (C, DrawCircleGradient, "DrawCircleGradient");
-
-   procedure DrawCircleV (center : Vector2; radius : Interfaces.C.C_float; color_p : Color);
-   --  Draw a color-filled circle (Vector version)
-   pragma Import (C, DrawCircleV, "DrawCircleV");
 
    procedure DrawCircleLines (centerX : Interfaces.C.int; centerY : Interfaces.C.int; radius : Interfaces.C.C_float; color_p : Color);
    --  Draw circle outline
@@ -1972,9 +2058,17 @@ is
    --  Draw ellipse
    pragma Import (C, DrawEllipse, "DrawEllipse");
 
+   procedure DrawEllipseV (center : Vector2; radiusH : Interfaces.C.C_float; radiusV : Interfaces.C.C_float; color_p : Color);
+   --  Draw ellipse (Vector version)
+   pragma Import (C, DrawEllipseV, "DrawEllipseV");
+
    procedure DrawEllipseLines (centerX : Interfaces.C.int; centerY : Interfaces.C.int; radiusH : Interfaces.C.C_float; radiusV : Interfaces.C.C_float; color_p : Color);
    --  Draw ellipse outline
    pragma Import (C, DrawEllipseLines, "DrawEllipseLines");
+
+   procedure DrawEllipseLinesV (center : Vector2; radiusH : Interfaces.C.C_float; radiusV : Interfaces.C.C_float; color_p : Color);
+   --  Draw ellipse outline (Vector version)
+   pragma Import (C, DrawEllipseLinesV, "DrawEllipseLinesV");
 
    procedure DrawRing (center : Vector2; innerRadius : Interfaces.C.C_float; outerRadius : Interfaces.C.C_float; startAngle : Interfaces.C.C_float; endAngle : Interfaces.C.C_float; segments : Interfaces.C.int; color_p : Color);
    --  Draw ring
@@ -2008,7 +2102,7 @@ is
    --  Draw a horizontal-gradient-filled rectangle
    pragma Import (C, DrawRectangleGradientH, "DrawRectangleGradientH");
 
-   procedure DrawRectangleGradientEx (rec : Rectangle; topLeft : Color; bottomLeft : Color; topRight : Color; bottomRight : Color);
+   procedure DrawRectangleGradientEx (rec : Rectangle; topLeft : Color; bottomLeft : Color; bottomRight : Color; topRight : Color);
    --  Draw a gradient-filled rectangle with custom vertex colors
    pragma Import (C, DrawRectangleGradientEx, "DrawRectangleGradientEx");
 
@@ -2223,11 +2317,11 @@ is
    --  Export image data to file, returns true on success
 
    function ExportImageToMemory (image_p : Image; fileType : Interfaces.C.Strings.chars_ptr; fileSize : access Interfaces.C.int) return access Interfaces.C.char;
-   --  Export image to memory buffer
+   --  Export image to memory buffer, memory must be MemFree()
    pragma Import (C, ExportImageToMemory, "ExportImageToMemory");
 
    function ExportImageToMemory (image_p : Image; fileType : String; fileSize : access Interfaces.C.int) return access Interfaces.C.char;
-   --  Export image to memory buffer
+   --  Export image to memory buffer, memory must be MemFree()
 
    function ExportImageAsCode (image_p : Image; fileName : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_bool;
    --  Export image as code file defining an array of bytes, returns true on success
@@ -2493,11 +2587,11 @@ is
    --  Draw triangle outline within an image
    pragma Import (C, ImageDrawTriangleLines, "ImageDrawTriangleLines");
 
-   procedure ImageDrawTriangleFan (dst : access Image; points : access Vector2; pointCount : Interfaces.C.int; color_p : Color);
+   procedure ImageDrawTriangleFan (dst : access Image; points : access constant C_Vector2_Array; pointCount : Interfaces.C.int; color_p : Color);
    --  Draw a triangle fan defined by points within an image (first vertex is the center)
    pragma Import (C, ImageDrawTriangleFan, "ImageDrawTriangleFan");
 
-   procedure ImageDrawTriangleStrip (dst : access Image; points : access Vector2; pointCount : Interfaces.C.int; color_p : Color);
+   procedure ImageDrawTriangleStrip (dst : access Image; points : access constant C_Vector2_Array; pointCount : Interfaces.C.int; color_p : Color);
    --  Draw a triangle strip defined by points within an image
    pragma Import (C, ImageDrawTriangleStrip, "ImageDrawTriangleStrip");
 
@@ -2555,11 +2649,11 @@ is
    pragma Import (C, UnloadRenderTexture, "UnloadRenderTexture");
 
    procedure UpdateTexture (texture_p : Texture; pixels : System.Address);
-   --  Update GPU texture with new data
+   --  Update GPU texture with new data (pixels should be able to fill texture)
    pragma Import (C, UpdateTexture, "UpdateTexture");
 
    procedure UpdateTextureRec (texture_p : Texture; rec : Rectangle; pixels : System.Address);
-   --  Update GPU texture rectangle with new data
+   --  Update GPU texture rectangle with new data (pixels and rec should fit in texture)
    pragma Import (C, UpdateTextureRec, "UpdateTextureRec");
 
    procedure GenTextureMipmaps (texture_p : access Texture);
@@ -2678,29 +2772,29 @@ is
    function LoadFont (fileName : String) return Font;
    --  Load font from file into GPU memory (VRAM)
 
-   function LoadFontEx (fileName : Interfaces.C.Strings.chars_ptr; fontSize : Interfaces.C.int; codepoints : access Interfaces.C.int; codepointCount : Interfaces.C.int) return Font;
+   function LoadFontEx (fileName : Interfaces.C.Strings.chars_ptr; fontSize : Interfaces.C.int; codepoints : access constant Interfaces.C.int; codepointCount : Interfaces.C.int) return Font;
    --  Load font from file with extended parameters, use NULL for codepoints and 0 for codepointCount to load the default character set, font size is provided in pixels height
    pragma Import (C, LoadFontEx, "LoadFontEx");
 
-   function LoadFontEx (fileName : String; fontSize : Interfaces.C.int; codepoints : access Interfaces.C.int; codepointCount : Interfaces.C.int) return Font;
+   function LoadFontEx (fileName : String; fontSize : Interfaces.C.int; codepoints : access constant Interfaces.C.int; codepointCount : Interfaces.C.int) return Font;
    --  Load font from file with extended parameters, use NULL for codepoints and 0 for codepointCount to load the default character set, font size is provided in pixels height
 
    function LoadFontFromImage (image_p : Image; key : Color; firstChar : Interfaces.C.int) return Font;
    --  Load font from Image (XNA style)
    pragma Import (C, LoadFontFromImage, "LoadFontFromImage");
 
-   function LoadFontFromMemory (fileType : Interfaces.C.Strings.chars_ptr; fileData : System.Address; dataSize : Interfaces.C.int; fontSize : Interfaces.C.int; codepoints : access Interfaces.C.int; codepointCount : Interfaces.C.int) return Font;
+   function LoadFontFromMemory (fileType : Interfaces.C.Strings.chars_ptr; fileData : System.Address; dataSize : Interfaces.C.int; fontSize : Interfaces.C.int; codepoints : access constant Interfaces.C.int; codepointCount : Interfaces.C.int) return Font;
    --  Load font from memory buffer, fileType refers to extension: i.e. '.ttf'
    pragma Import (C, LoadFontFromMemory, "LoadFontFromMemory");
 
-   function LoadFontFromMemory (fileType : String; fileData : System.Address; dataSize : Interfaces.C.int; fontSize : Interfaces.C.int; codepoints : access Interfaces.C.int; codepointCount : Interfaces.C.int) return Font;
+   function LoadFontFromMemory (fileType : String; fileData : System.Address; dataSize : Interfaces.C.int; fontSize : Interfaces.C.int; codepoints : access constant Interfaces.C.int; codepointCount : Interfaces.C.int) return Font;
    --  Load font from memory buffer, fileType refers to extension: i.e. '.ttf'
 
    function IsFontValid (font_p : Font) return Interfaces.C.C_bool;
    --  Check if a font is valid (font data loaded, WARNING: GPU texture not checked)
    pragma Import (C, IsFontValid, "IsFontValid");
 
-   function LoadFontData (fileData : System.Address; dataSize : Interfaces.C.int; fontSize : Interfaces.C.int; codepoints : access Interfaces.C.int; codepointCount : Interfaces.C.int; type_p : FontType) return access GlyphInfo;
+   function LoadFontData (fileData : System.Address; dataSize : Interfaces.C.int; fontSize : Interfaces.C.int; codepoints : access constant Interfaces.C.int; codepointCount : Interfaces.C.int; type_p : FontType; glyphCount : access Interfaces.C.int) return access GlyphInfo;
    --  Load font data for further use
    pragma Import (C, LoadFontData, "LoadFontData");
 
@@ -2770,6 +2864,10 @@ is
    function MeasureTextEx (font_p : Font; text : String; fontSize : Interfaces.C.C_float; spacing : Interfaces.C.C_float) return Vector2;
    --  Measure string size for Font
 
+   function MeasureTextCodepoints (font_p : Font; codepoints : access constant Interfaces.C.int; length : Interfaces.C.int; fontSize : Interfaces.C.C_float; spacing : Interfaces.C.C_float) return Vector2;
+   --  Measure string size for an existing array of codepoints for Font
+   pragma Import (C, MeasureTextCodepoints, "MeasureTextCodepoints");
+
    function GetGlyphIndex (font_p : Font; codepoint : Interfaces.C.int) return Interfaces.C.int;
    --  Get glyph index position in font for a codepoint (unicode character), fallback to '?' if not found
    pragma Import (C, GetGlyphIndex, "GetGlyphIndex");
@@ -2836,6 +2934,17 @@ is
    --  Encode one codepoint into UTF-8 byte array (array length returned as parameter)
    pragma Import (C, CodepointToUTF8, "CodepointToUTF8");
 
+   function LoadTextLines (text : Interfaces.C.Strings.chars_ptr; count : access Interfaces.C.int) return access Interfaces.C.Strings.chars_ptr;
+   --  Load text as separate lines ('\n')
+   pragma Import (C, LoadTextLines, "LoadTextLines");
+
+   function LoadTextLines (text : String; count : access Interfaces.C.int) return access Interfaces.C.Strings.chars_ptr;
+   --  Load text as separate lines ('\n')
+
+   procedure UnloadTextLines (text : access Interfaces.C.Strings.chars_ptr; lineCount : Interfaces.C.int);
+   --  Unload text lines
+   pragma Import (C, UnloadTextLines, "UnloadTextLines");
+
    function TextCopy (dst : Interfaces.C.Strings.chars_ptr; src : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
    --  Copy one string to another, returns bytes copied
    pragma Import (C, TextCopy, "TextCopy");
@@ -2864,19 +2973,61 @@ is
    function TextSubtext (text : String; position : Interfaces.C.int; length : Interfaces.C.int) return String;
    --  Get a piece of a text string
 
-   function TextReplace (text : Interfaces.C.Strings.chars_ptr; replace : Interfaces.C.Strings.chars_ptr; by : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
-   --  Replace text string (WARNING: memory must be freed!)
+   function TextRemoveSpaces (text : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
+   --  Remove text spaces, concat words
+   pragma Import (C, TextRemoveSpaces, "TextRemoveSpaces");
+
+   function TextRemoveSpaces (text : String) return String;
+   --  Remove text spaces, concat words
+
+   function GetTextBetween (text : Interfaces.C.Strings.chars_ptr; begin_p : Interfaces.C.Strings.chars_ptr; end_p : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
+   --  Get text between two strings
+   pragma Import (C, GetTextBetween, "GetTextBetween");
+
+   function GetTextBetween (text : String; begin_p : String; end_p : String) return String;
+   --  Get text between two strings
+
+   function TextReplace (text : Interfaces.C.Strings.chars_ptr; search : Interfaces.C.Strings.chars_ptr; replacement : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
+   --  Replace text string with new string
    pragma Import (C, TextReplace, "TextReplace");
 
-   function TextReplace (text : String; replace : String; by : String) return String;
-   --  Replace text string (WARNING: memory must be freed!)
+   function TextReplace (text : String; search : String; replacement : String) return String;
+   --  Replace text string with new string
+
+   function TextReplaceAlloc (text : Interfaces.C.Strings.chars_ptr; search : Interfaces.C.Strings.chars_ptr; replacement : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
+   --  Replace text string with new string, memory must be MemFree()
+   pragma Import (C, TextReplaceAlloc, "TextReplaceAlloc");
+
+   function TextReplaceAlloc (text : String; search : String; replacement : String) return String;
+   --  Replace text string with new string, memory must be MemFree()
+
+   function TextReplaceBetween (text : Interfaces.C.Strings.chars_ptr; begin_p : Interfaces.C.Strings.chars_ptr; end_p : Interfaces.C.Strings.chars_ptr; replacement : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
+   --  Replace text between two specific strings
+   pragma Import (C, TextReplaceBetween, "TextReplaceBetween");
+
+   function TextReplaceBetween (text : String; begin_p : String; end_p : String; replacement : String) return String;
+   --  Replace text between two specific strings
+
+   function TextReplaceBetweenAlloc (text : Interfaces.C.Strings.chars_ptr; begin_p : Interfaces.C.Strings.chars_ptr; end_p : Interfaces.C.Strings.chars_ptr; replacement : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
+   --  Replace text between two specific strings, memory must be MemFree()
+   pragma Import (C, TextReplaceBetweenAlloc, "TextReplaceBetweenAlloc");
+
+   function TextReplaceBetweenAlloc (text : String; begin_p : String; end_p : String; replacement : String) return String;
+   --  Replace text between two specific strings, memory must be MemFree()
 
    function TextInsert (text : Interfaces.C.Strings.chars_ptr; insert : Interfaces.C.Strings.chars_ptr; position : Interfaces.C.int) return Interfaces.C.Strings.chars_ptr;
-   --  Insert text in a position (WARNING: memory must be freed!)
+   --  Insert text in a defined byte position
    pragma Import (C, TextInsert, "TextInsert");
 
    function TextInsert (text : String; insert : String; position : Interfaces.C.int) return String;
-   --  Insert text in a position (WARNING: memory must be freed!)
+   --  Insert text in a defined byte position
+
+   function TextInsertAlloc (text : Interfaces.C.Strings.chars_ptr; insert : Interfaces.C.Strings.chars_ptr; position : Interfaces.C.int) return Interfaces.C.Strings.chars_ptr;
+   --  Insert text in a defined byte position, memory must be MemFree()
+   pragma Import (C, TextInsertAlloc, "TextInsertAlloc");
+
+   function TextInsertAlloc (text : String; insert : String; position : Interfaces.C.int) return String;
+   --  Insert text in a defined byte position, memory must be MemFree()
 
    function TextJoin (textList : access Interfaces.C.Strings.chars_ptr; count : Interfaces.C.int; delimiter : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
    --  Join text strings with delimiter
@@ -2886,25 +3037,25 @@ is
    --  Join text strings with delimiter
 
    function TextSplit (text : Interfaces.C.Strings.chars_ptr; delimiter : Interfaces.C.char; count : access Interfaces.C.int) return access Interfaces.C.Strings.chars_ptr;
-   --  Split text into multiple strings
+   --  Split text into multiple strings, using MAX_TEXTSPLIT_COUNT static strings
    pragma Import (C, TextSplit, "TextSplit");
 
    function TextSplit (text : String; delimiter : Interfaces.C.char; count : access Interfaces.C.int) return access Interfaces.C.Strings.chars_ptr;
-   --  Split text into multiple strings
+   --  Split text into multiple strings, using MAX_TEXTSPLIT_COUNT static strings
 
    procedure TextAppend (text : Interfaces.C.Strings.chars_ptr; append : Interfaces.C.Strings.chars_ptr; position : access Interfaces.C.int);
-   --  Append text at specific position and move cursor!
+   --  Append text at specific position and move cursor
    pragma Import (C, TextAppend, "TextAppend");
 
    procedure TextAppend (text : String; append : String; position : access Interfaces.C.int);
-   --  Append text at specific position and move cursor!
+   --  Append text at specific position and move cursor
 
-   function TextFindIndex (text : Interfaces.C.Strings.chars_ptr; find : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
-   --  Find first text occurrence within a string
+   function TextFindIndex (text : Interfaces.C.Strings.chars_ptr; search : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
+   --  Find first text occurrence within a string, -1 if not found
    pragma Import (C, TextFindIndex, "TextFindIndex");
 
-   function TextFindIndex (text : String; find : String) return Interfaces.C.int;
-   --  Find first text occurrence within a string
+   function TextFindIndex (text : String; search : String) return Interfaces.C.int;
+   --  Find first text occurrence within a string, -1 if not found
 
    function TextToUpper (text : Interfaces.C.Strings.chars_ptr) return Interfaces.C.Strings.chars_ptr;
    --  Get upper case version of provided string
@@ -2942,18 +3093,18 @@ is
    --  Get Camel case notation version of provided string
 
    function TextToInteger (text : Interfaces.C.Strings.chars_ptr) return Interfaces.C.int;
-   --  Get integer value from text (negative values not supported)
+   --  Get integer value from text
    pragma Import (C, TextToInteger, "TextToInteger");
 
    function TextToInteger (text : String) return Interfaces.C.int;
-   --  Get integer value from text (negative values not supported)
+   --  Get integer value from text
 
    function TextToFloat (text : Interfaces.C.Strings.chars_ptr) return Interfaces.C.C_float;
-   --  Get float value from text (negative values not supported)
+   --  Get float value from text
    pragma Import (C, TextToFloat, "TextToFloat");
 
    function TextToFloat (text : String) return Interfaces.C.C_float;
-   --  Get float value from text (negative values not supported)
+   --  Get float value from text
 
    procedure DrawLine3D (startPos : Vector3; endPos : Vector3; color_p : Color);
    --  Draw a line in 3D world space
@@ -3077,14 +3228,6 @@ is
    procedure DrawModelWiresEx (model_p : Model; position : Vector3; rotationAxis : Vector3; rotationAngle : Interfaces.C.C_float; scale : Vector3; tint : Color);
    --  Draw a model wires (with texture if set) with extended parameters
    pragma Import (C, DrawModelWiresEx, "DrawModelWiresEx");
-
-   procedure DrawModelPoints (model_p : Model; position : Vector3; scale : Interfaces.C.C_float; tint : Color);
-   --  Draw a model as points
-   pragma Import (C, DrawModelPoints, "DrawModelPoints");
-
-   procedure DrawModelPointsEx (model_p : Model; position : Vector3; rotationAxis : Vector3; rotationAngle : Interfaces.C.C_float; scale : Vector3; tint : Color);
-   --  Draw a model as points with extended parameters
-   pragma Import (C, DrawModelPointsEx, "DrawModelPointsEx");
 
    procedure DrawBoundingBox (box : BoundingBox; color_p : Color);
    --  Draw bounding box (wires)
@@ -3222,17 +3365,13 @@ is
    function LoadModelAnimations (fileName : String; animCount : access Interfaces.C.int) return access ModelAnimation_Array;
    --  Load model animations from file
 
-   procedure UpdateModelAnimation (model_p : Model; anim : ModelAnimation; frame : Interfaces.C.int);
-   --  Update model animation pose (CPU)
+   procedure UpdateModelAnimation (model_p : Model; anim : ModelAnimation; frame : Interfaces.C.C_float);
+   --  Update model animation pose (vertex buffers and bone matrices)
    pragma Import (C, UpdateModelAnimation, "UpdateModelAnimation");
 
-   procedure UpdateModelAnimationBones (model_p : Model; anim : ModelAnimation; frame : Interfaces.C.int);
-   --  Update model animation mesh bone matrices (GPU skinning)
-   pragma Import (C, UpdateModelAnimationBones, "UpdateModelAnimationBones");
-
-   procedure UnloadModelAnimation (anim : ModelAnimation);
-   --  Unload animation data
-   pragma Import (C, UnloadModelAnimation, "UnloadModelAnimation");
+   procedure UpdateModelAnimationEx (model_p : Model; animA : ModelAnimation; frameA : Interfaces.C.C_float; animB : ModelAnimation; frameB : Interfaces.C.C_float; blend : Interfaces.C.C_float);
+   --  Update model animation pose, blending two animations
+   pragma Import (C, UpdateModelAnimationEx, "UpdateModelAnimationEx");
 
    procedure UnloadModelAnimations (animations : access ModelAnimation_Array; animCount : Interfaces.C.int);
    --  Unload animation array data
@@ -3332,7 +3471,7 @@ is
    pragma Import (C, IsSoundValid, "IsSoundValid");
 
    procedure UpdateSound (sound_p : Sound; data : System.Address; sampleCount : Interfaces.C.int);
-   --  Update sound buffer with new data
+   --  Update sound buffer with new data (default data format: 32 bit float, stereo)
    pragma Import (C, UpdateSound, "UpdateSound");
 
    procedure UnloadWave (wave_p : Wave);
@@ -3390,7 +3529,7 @@ is
    pragma Import (C, SetSoundPitch, "SetSoundPitch");
 
    procedure SetSoundPan (sound_p : Sound; pan : Interfaces.C.C_float);
-   --  Set pan for a sound (0.5 is center)
+   --  Set pan for a sound (-1.0 left, 0.0 center, 1.0 right)
    pragma Import (C, SetSoundPan, "SetSoundPan");
 
    function WaveCopy (wave_p : Wave) return Wave;
@@ -3472,7 +3611,7 @@ is
    pragma Import (C, SetMusicPitch, "SetMusicPitch");
 
    procedure SetMusicPan (music_p : Music; pan : Interfaces.C.C_float);
-   --  Set pan for a music (0.5 is center)
+   --  Set pan for a music (-1.0 left, 0.0 center, 1.0 right)
    pragma Import (C, SetMusicPan, "SetMusicPan");
 
    function GetMusicTimeLength (music_p : Music) return Interfaces.C.C_float;
@@ -3532,7 +3671,7 @@ is
    pragma Import (C, SetAudioStreamPitch, "SetAudioStreamPitch");
 
    procedure SetAudioStreamPan (stream : AudioStream; pan : Interfaces.C.C_float);
-   --  Set pan for audio stream (0.5 is centered)
+   --  Set pan for audio stream (-1.0 to 1.0 range, 0.0 is centered)
    pragma Import (C, SetAudioStreamPan, "SetAudioStreamPan");
 
    procedure SetAudioStreamBufferSizeDefault (size : Interfaces.C.int);
@@ -3544,7 +3683,7 @@ is
    pragma Import (C, SetAudioStreamCallback, "SetAudioStreamCallback");
 
    procedure AttachAudioStreamProcessor (stream : AudioStream; processor : AudioCallback);
-   --  Attach audio stream processor to stream, receives the samples as 'float'
+   --  Attach audio stream processor to stream, receives frames x 2 samples as 'float' (stereo)
    pragma Import (C, AttachAudioStreamProcessor, "AttachAudioStreamProcessor");
 
    procedure DetachAudioStreamProcessor (stream : AudioStream; processor : AudioCallback);
@@ -3552,17 +3691,17 @@ is
    pragma Import (C, DetachAudioStreamProcessor, "DetachAudioStreamProcessor");
 
    procedure AttachAudioMixedProcessor (processor : AudioCallback);
-   --  Attach audio stream processor to the entire audio pipeline, receives the samples as 'float'
+   --  Attach audio stream processor to the entire audio pipeline, receives frames x 2 samples as 'float' (stereo)
    pragma Import (C, AttachAudioMixedProcessor, "AttachAudioMixedProcessor");
 
    procedure DetachAudioMixedProcessor (processor : AudioCallback);
    --  Detach audio stream processor from the entire audio pipeline
    pragma Import (C, DetachAudioMixedProcessor, "DetachAudioMixedProcessor");
 
-   RAYLIB_VERSION_MAJOR : constant := 5;
-   RAYLIB_VERSION_MINOR : constant := 5;
+   RAYLIB_VERSION_MAJOR : constant := 6;
+   RAYLIB_VERSION_MINOR : constant := 0;
    RAYLIB_VERSION_PATCH : constant := 0;
-   RAYLIB_VERSION : constant String := "5.5";
+   RAYLIB_VERSION : constant String := "6.0";
    PI : constant := 3.141592653589793;
    LIGHTGRAY : constant Color := (200, 200, 200, 255);
    GRAY : constant Color := (130, 130, 130, 255);
