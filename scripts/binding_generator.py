@@ -119,6 +119,15 @@ def to_ada_type(c_type, name=None, parent=None):
         return "access Transform_Array"
     elif c_type == "ModelAnimPose *":
         return "access Transform_Array_Array"
+    elif c_type == "unsigned int" and parent in [
+        "IsWindowState",
+        "SetWindowState",
+        "ClearWindowState",
+        "SetConfigFlags",
+    ]:
+        return "ConfigFlags"
+    elif c_type == "unsigned int" and parent == "SetGesturesEnabled":
+        return "Gesture"
 
     if c_type in TYPE_IDENTITY:
         return c_type

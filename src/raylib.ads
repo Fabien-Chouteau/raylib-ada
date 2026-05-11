@@ -1027,15 +1027,15 @@ is
    --  Check if window has been resized last frame
    pragma Import (C, IsWindowResized, "IsWindowResized");
 
-   function IsWindowState (flag : Interfaces.C.unsigned) return Interfaces.C.C_bool;
+   function IsWindowState (flag : ConfigFlags) return Interfaces.C.C_bool;
    --  Check if one specific window flag is enabled
    pragma Import (C, IsWindowState, "IsWindowState");
 
-   procedure SetWindowState (flags : Interfaces.C.unsigned);
+   procedure SetWindowState (flags : ConfigFlags);
    --  Set window configuration state using flags
    pragma Import (C, SetWindowState, "SetWindowState");
 
-   procedure ClearWindowState (flags : Interfaces.C.unsigned);
+   procedure ClearWindowState (flags : ConfigFlags);
    --  Clear window configuration state flags
    pragma Import (C, ClearWindowState, "ClearWindowState");
 
@@ -1427,7 +1427,7 @@ is
    procedure TakeScreenshot (fileName : String);
    --  Takes a screenshot of current screen (filename extension defines format)
 
-   procedure SetConfigFlags (flags : Interfaces.C.unsigned);
+   procedure SetConfigFlags (flags : ConfigFlags);
    --  Setup init configuration flags (view FLAGS)
    pragma Import (C, SetConfigFlags, "SetConfigFlags");
 
@@ -1942,7 +1942,7 @@ is
    --  Get number of touch points
    pragma Import (C, GetTouchPointCount, "GetTouchPointCount");
 
-   procedure SetGesturesEnabled (flags : Interfaces.C.unsigned);
+   procedure SetGesturesEnabled (flags : Gesture);
    --  Enable a set of gestures using flags
    pragma Import (C, SetGesturesEnabled, "SetGesturesEnabled");
 
