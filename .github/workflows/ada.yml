@@ -20,7 +20,7 @@ jobs:
           submodules: true
 
     - name: Set up alire
-      uses: alire-project/setup-alire@v5
+      uses: alire-project/setup-alire@v6
 
     - name: Build crate
       run: |
